@@ -1,0 +1,32 @@
+import { h } from "preact";
+import { StraumurCheckoutConfiguration } from "../models/models";
+import { SuccessResponse } from "../services/models";
+import CardComponent from "./card/card-component";
+import GooglePayComponent from "./google-pay/google-pay-component";
+import StoredCardContainerComponent from "./stored-card/stored-card-container-component";
+import PaymentMethodGroup from "../components/payment-method-group/payment-method-group";
+import ResultComponent from "./result-component/result-component";
+import ThreeDSecureComponent from "./three-d-secure-component/three-d-secure-component";
+import PaymentMethodsWrapper from "./payment-methods-wrapper/payment-methods-wrapper";
+
+interface StraumurCheckoutContainerProps {
+  configuration: StraumurCheckoutConfiguration;
+  paymentMethods: SuccessResponse;
+}
+
+function StraumurCheckoutContainer({ configuration, paymentMethods }: StraumurCheckoutContainerProps): h.JSX.Element {
+  return (
+    <PaymentMethodGroup initialValue={null}>
+      <PaymentMethodsWrapper>
+        <StoredCardContainerComponent configuration={configuration} paymentMethods={paymentMethods} />
+        <CardComponent configuration={configuration} paymentMethods={paymentMethods} />
+        <GooglePayComponent configuration={configuration} paymentMethods={paymentMethods} />
+      </PaymentMethodsWrapper>
+
+      <ThreeDSecureComponent />
+      <ResultComponent configuration={configuration} />
+    </PaymentMethodGroup>
+  );
+}
+
+export default StraumurCheckoutContainer;
