@@ -1,0 +1,47 @@
+{
+  "name": "straumur-web-component",
+  "version": "0.0.1",
+  "license": "MIT",
+  "homepage": "https://docs.straumur.is",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "unpkg": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.cjs"
+  },
+  "description": "",
+  "keywords": [
+    "straumur",
+    "checkout",
+    "payment",
+    "payments",
+    "components"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Straumur-Greidslumidlun/straumur-web-component.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Straumur-Greidslumidlun/straumur-web-component/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup src/index.ts --watch",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@adyen/adyen-web": "^6.12.0",
+    "preact": "^10.26.5"
+  },
+  "devDependencies": {
+    "postcss": "^8.5.3",
+    "tslib": "^2.8.1",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
+  }
+}

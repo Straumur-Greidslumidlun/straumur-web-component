@@ -1,0 +1,19 @@
+* {
+  font-family: "AkzidenzGroteskPro", sans-serif;
+  max-width: 440px;
+}
+
+.render-brand-icons__overflow {
+  color: #72889d;
+}
+
+.component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 300px;
+  background-color: white;
+  border-radius: 16px;
+}

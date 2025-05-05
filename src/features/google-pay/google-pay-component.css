@@ -1,0 +1,88 @@
+.google-pay-component {
+  position: relative;
+  cursor: pointer;
+  background: white;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  padding: 16px 24px;
+}
+
+.google-pay-component__radio-selector {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.google-pay-component__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.google-pay-component__radio-selector:checked + .google-pay-component__content {
+  padding-bottom: 16px;
+}
+
+.google-pay-component--circle {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #e6ebef;
+  background: #eef0f2;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.google-pay-component__content:hover .google-pay-component--circle {
+  border: 1px solid #cdd8e2;
+}
+
+.google-pay-component--circle::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
+}
+
+.google-pay-component__radio-selector:checked + .google-pay-component__content .google-pay-component--circle {
+  background: #bce6f3;
+  border-color: transparent;
+}
+
+.google-pay-component__radio-selector:checked + .google-pay-component__content .google-pay-component--circle::after {
+  transform: translate(-50%, -50%) scale(1);
+  background: #002649;
+  height: 10px;
+  width: 10px;
+}
+
+.google-pay-component--text {
+  color: #213547;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.google-pay-component__expandable {
+  background: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.google-pay-component__radio-selector:checked ~ .google-pay-component__expandable {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.google-pay-component__expandable p {
+  margin: 0;
+  color: #213547;
+  font-size: 0.9rem;
+}
