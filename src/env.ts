@@ -1,7 +1,7 @@
 const getEnv = (): Env => {
   return {
     STAGING_BASE_URL: "https://checkout-api.staging.straumur.is/api/v1/embeddedcheckout",
-    PRODUCTION_BASE_URL: "",
+    PRODUCTION_BASE_URL: "https://greidslugatt.straumur.is/api/v1/embeddedcheckout",
 
     GET_PAYMENT_METHODS_URL: "payment-methods",
     POST_PAYMENT_URL: "payment",
