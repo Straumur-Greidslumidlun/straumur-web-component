@@ -52,7 +52,7 @@ export function RenderBrandIcons({ brands, brandHidden = [], limit = 3 }: Render
                   </span>
                 }
               >
-                <span key={brand} className="render-brand-icons__overflow">
+                <span key={brand} className="straumur__render-brand-icons__overflow">
                   +{brandToShow.length - Math.min(limit, widthLimit)}
                 </span>
               </Tooltip>

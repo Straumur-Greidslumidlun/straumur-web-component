@@ -29,9 +29,11 @@ class StraumurCheckout {
       }
 
       render(
-        <div className="component">
-          <LoaderIcon />
-        </div>,
+        <RootComponent>
+          <div className="straumur__component">
+            <LoaderIcon />
+          </div>
+        </RootComponent>,
         this.mountElement
       );
 
@@ -54,7 +56,9 @@ class StraumurCheckout {
     if (!this.mountElement) return;
 
     render(
-      <StraumurCheckoutContainer configuration={this.configuration} paymentMethods={this.paymentMethods!} />,
+      <RootComponent>
+        <StraumurCheckoutContainer configuration={this.configuration} paymentMethods={this.paymentMethods!} />
+      </RootComponent>,
       this.mountElement
     );
   }
@@ -87,13 +91,19 @@ class StraumurCheckout {
 
   handleError(message: TranslationKey) {
     render(
-      <div className="component">
-        <FailureIcon />
-        <p>{i18n(this.configuration.locale, message)}</p>
-      </div>,
+      <RootComponent>
+        <div className="straumur__component">
+          <FailureIcon />
+          <p>{i18n(this.configuration.locale, message)}</p>
+        </div>
+      </RootComponent>,
       this.mountElement!
     );
   }
 }
 
 export default StraumurCheckout;
+
+function RootComponent({ children }: { children: h.JSX.Element }) {
+  return <div className="straumur__root-component">{children}</div>;
+}

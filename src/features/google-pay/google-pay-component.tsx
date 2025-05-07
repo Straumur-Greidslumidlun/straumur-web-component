@@ -102,7 +102,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     setActivePaymentMethod("googlepay");
   };
 
-  function handleOnError(error: AdyenCheckoutError, _?: UIElement<UIElementProps> | undefined): void {
+  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
     handleError("error.unknownError");
   }
 
@@ -203,19 +203,19 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
   }
 
   return (
-    <label className="google-pay-component">
+    <label className="straumur__google-pay-component">
       <input
         type="radio"
-        className="google-pay-component__radio-selector"
+        className="straumur__google-pay-component__radio-selector"
         checked={activePaymentMethod === "googlepay"}
         onChange={handleBoxChange}
       />
-      <span className="google-pay-component__content">
-        <span className="google-pay-component--circle"></span>
+      <span className="straumur__google-pay-component__content">
+        <span className="straumur__google-pay-component--circle"></span>
         <GooglePayIcon />
-        <span className="google-pay-component--text">{i18n(configuration.locale, "googlepay.title")}</span>
+        <span className="straumur__google-pay-component--text">{i18n(configuration.locale, "googlepay.title")}</span>
       </span>
-      <div className="google-pay-component__expandable">
+      <div className="straumur__google-pay-component__expandable">
         <div ref={googlePayElementRef}></div>
       </div>
     </label>

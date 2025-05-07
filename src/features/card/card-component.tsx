@@ -256,80 +256,86 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
   }
 
   return (
-    <label className="card-component">
+    <label className="straumur__card-component">
       <input
         type="radio"
-        className="card-component__radio-selector"
+        className="straumur__card-component__radio-selector"
         checked={activePaymentMethod === "card"}
         onChange={handleBoxChange}
       />
-      <span className="card-component__content">
-        <span className="card-component--circle"></span>
+      <span className="straumur__card-component__content">
+        <span className="straumur__card-component--circle"></span>
         <CardIcon />
-        <span className="card-component--text">{i18n(configuration.locale, "cards.title")}</span>
-        <span className="card-component--brands">
+        <span className="straumur__card-component--text">{i18n(configuration.locale, "cards.title")}</span>
+        <span className="straumur__card-component--brands">
           <RenderBrandIcons brands={brands} brandHidden={brandHidden} />
         </span>
       </span>
-      <div className="card-component__expandable" ref={cardElementRef}>
+      <div className="straumur__card-component__expandable" ref={cardElementRef}>
         {!isPaymentMethodInitialized.card && (
-          <div className="card-component__loading-text">
+          <div className="straumur__card-component__loading-text">
             <LoaderIcon />
           </div>
         )}
 
         <div
-          className="card-component__form"
+          className="straumur__card-component__form"
           style={{
             opacity: isPaymentMethodInitialized.card ? 1 : 0,
             position: isPaymentMethodInitialized.card ? "relative" : "absolute",
             transition: "opacity 0.3s ease-in-out",
           }}
         >
-          <div className="card-component__form--wrapper">
+          <div className="straumur__card-component__form--wrapper">
             <label
-              className={`${"card-component__form--wrapper--label"} ${
-                formErrors.encryptedCardNumber.visible ? "card-component__form--wrapper--label--error" : ""
+              className={`${"straumur__card-component__form--wrapper--label"} ${
+                formErrors.encryptedCardNumber.visible ? "straumur__card-component__form--wrapper--label--error" : ""
               }`}
             >
               {i18n(configuration.locale, "cards.cardNumber")}
             </label>
             <span
-              className={`${"card-component__form--wrapper--input"} ${
-                formErrors.encryptedCardNumber.visible ? "card-component__form--wrapper--input--error" : ""
+              className={`${"straumur__card-component__form--wrapper--input"} ${
+                formErrors.encryptedCardNumber.visible ? "straumur__card-component__form--wrapper--input--error" : ""
               }`}
               data-cse="encryptedCardNumber"
             />
             {formErrors.encryptedCardNumber.visible && (
-              <span className="card-component__form--wrapper--error">{formErrors.encryptedCardNumber.message}</span>
+              <span className="straumur__card-component__form--wrapper--error">
+                {formErrors.encryptedCardNumber.message}
+              </span>
             )}
           </div>
-          <div className="card-component__form--field-wrapper">
-            <div className="card-component__form--wrapper">
+          <div className="straumur__card-component__form--field-wrapper">
+            <div className="straumur__card-component__form--wrapper">
               <label
-                className={`${"card-component__form--wrapper--label"} ${
+                className={`${"straumur__card-component__form--wrapper--label"} ${
                   formErrors.encryptedExpiryDate.visible ? "card-component__form--wrapper--label--error" : ""
                 }`}
               >
                 {i18n(configuration.locale, "cards.expiryDate")}
               </label>
               <span
-                className={`${"card-component__form--wrapper--input"} ${
-                  formErrors.encryptedExpiryDate.visible ? "card-component__form--wrapper--input--error" : ""
+                className={`${"straumur__card-component__form--wrapper--input"} ${
+                  formErrors.encryptedExpiryDate.visible ? "straumur__card-component__form--wrapper--input--error" : ""
                 }`}
                 data-cse="encryptedExpiryDate"
               />
               {formErrors.encryptedExpiryDate.visible && (
-                <span className="card-component__form--wrapper--error">{formErrors.encryptedExpiryDate.message}</span>
+                <span className="straumur__card-component__form--wrapper--error">
+                  {formErrors.encryptedExpiryDate.message}
+                </span>
               )}
             </div>
 
-            <div className="card-component__form--wrapper">
+            <div className="straumur__card-component__form--wrapper">
               {(securityCodePolicy === "optional" || securityCodePolicy === "required") && (
                 <Fragment>
                   <label
-                    className={`${"card-component__form--wrapper--label"} ${
-                      formErrors.encryptedSecurityCode.visible ? "card-component__form--wrapper--label--error" : ""
+                    className={`${"straumur__card-component__form--wrapper--label"} ${
+                      formErrors.encryptedSecurityCode.visible
+                        ? "straumur__card-component__form--wrapper--label--error"
+                        : ""
                     }`}
                   >
                     {securityCodePolicy === "optional"
@@ -337,17 +343,19 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
                       : i18n(configuration.locale, "cards.securityCode3Digits")}
                   </label>
                   <span
-                    className={`${"card-component__form--wrapper--input"} ${
-                      formErrors.encryptedSecurityCode.visible ? "card-component__form--wrapper--input--error" : ""
+                    className={`${"straumur__card-component__form--wrapper--input"} ${
+                      formErrors.encryptedSecurityCode.visible
+                        ? "straumur__card-component__form--wrapper--input--error"
+                        : ""
                     }`}
                     data-cse="encryptedSecurityCode"
                   />
                   {formErrors.encryptedSecurityCode.visible && (
-                    <span className="card-component__form--wrapper--error">
+                    <span className="straumur__card-component__form--wrapper--error">
                       {formErrors.encryptedSecurityCode.message}
                     </span>
                   )}
-                  <div className="card-component__form--wrapper--label--info">
+                  <div className="straumur__card-component__form--wrapper--label--info">
                     <Tooltip content={<span>{i18n(configuration.locale, "cards.securityCode3DigitsInfo")}</span>}>
                       <InfoIcon />
                     </Tooltip>
@@ -358,15 +366,19 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
           </div>
 
           {paymentMethods.enableStoreDetails === "AskForConsent" && (
-            <label className="card-component__form--wrapper--label-checkbox">
+            <label className="straumur__card-component__form--wrapper--label-checkbox">
               <div
-                className={`${"card-component__form--wrapper--label-checkbox--checkmark"} ${
-                  storePaymentMethod ? "card-component__form--wrapper--label-checkbox--checkmark--checked" : ""
+                className={`${"straumur__card-component__form--wrapper--label-checkbox--checkmark"} ${
+                  storePaymentMethod
+                    ? "straumur__card-component__form--wrapper--label-checkbox--checkmark--checked"
+                    : ""
                 }`}
               >
                 <div
-                  className={`${"card-component__form--wrapper--label-checkbox--checkmark--icon"} ${
-                    storePaymentMethod ? "card-component__form--wrapper--label-checkbox--checkmark--icon--checked" : ""
+                  className={`${"straumur__card-component__form--wrapper--label-checkbox--checkmark--icon"} ${
+                    storePaymentMethod
+                      ? "straumur__card-component__form--wrapper--label-checkbox--checkmark--icon--checked"
+                      : ""
                   }`}
                 >
                   <CheckmarkIcon />
@@ -374,7 +386,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
               </div>
               <input
                 type="checkbox"
-                className="card-component__form--wrapper--label-checkbox--checkbox"
+                className="straumur__card-component__form--wrapper--label-checkbox--checkbox"
                 checked={storePaymentMethod}
                 onChange={handleStorePaymentMethodChange}
               />
@@ -382,7 +394,11 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
             </label>
           )}
 
-          <button className="card-component__submit-button" disabled={payButtonDisabled} onClick={handleSubmitClick}>
+          <button
+            className="straumur__card-component__submit-button"
+            disabled={payButtonDisabled}
+            onClick={handleSubmitClick}
+          >
             {paymentMethods.formattedAmount}
           </button>
         </div>

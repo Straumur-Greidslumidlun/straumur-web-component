@@ -1,12 +1,11 @@
 {
   "name": "straumur-web-component",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "homepage": "https://docs.straumur.is",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "unpkg": "dist/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     "import": "./dist/index.mjs",
