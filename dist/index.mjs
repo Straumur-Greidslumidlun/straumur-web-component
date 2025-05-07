@@ -963,7 +963,6 @@ var checkmark_default = CheckmarkIcon;
 
 // src/features/card/card-component.tsx
 function CardComponent({ configuration, paymentMethods }) {
-  var _a, _b, _c;
   const cardElementRef = useRef3(null);
   const adyenCardRef = useRef3();
   const customCardRef = useRef3();
@@ -977,7 +976,7 @@ function CardComponent({ configuration, paymentMethods }) {
     encryptedExpiryDate: { visible: false },
     encryptedSecurityCode: { visible: false }
   });
-  if (!((_a = paymentMethods.paymentMethods.paymentMethods) == null ? void 0 : _a.some((x) => x.type === "scheme"))) {
+  if (!paymentMethods.paymentMethods.paymentMethods?.some((x) => x.type === "scheme")) {
     return null;
   }
   const {
@@ -1064,7 +1063,7 @@ function CardComponent({ configuration, paymentMethods }) {
   const handleBoxChange = () => {
     setActivePaymentMethod("card");
   };
-  if (((_c = (_b = paymentMethods.paymentMethods) == null ? void 0 : _b.paymentMethods) == null ? void 0 : _c.length) === 0) {
+  if (paymentMethods.paymentMethods?.paymentMethods?.length === 0) {
     return null;
   }
   const brands = schemeBrands.map((x) => {
@@ -1101,7 +1100,7 @@ function CardComponent({ configuration, paymentMethods }) {
     const { resultCode, action } = response;
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef == null ? void 0 : threeDSecureRef.current);
+      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
       return;
     }
     actions.resolve({ resultCode, action });
@@ -1308,7 +1307,6 @@ var googlepay_default = GooglePayIcon;
 
 // src/features/google-pay/google-pay-component.tsx
 function GooglePayComponent({ configuration, paymentMethods }) {
-  var _a;
   const googlePayElementRef = useRef4(null);
   const adyenCardRef = useRef4();
   const googlePayRef = useRef4();
@@ -1392,7 +1390,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
     const { resultCode, action } = response;
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef == null ? void 0 : threeDSecureRef.current);
+      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
       return;
     }
     actions.resolve({ resultCode, action });
@@ -1427,7 +1425,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       handleError("error.paymentUnsuccessful");
     }
   }
-  const hasGooglePay = (_a = paymentMethods.paymentMethods.paymentMethods) == null ? void 0 : _a.some((x) => x.type === "googlepay");
+  const hasGooglePay = paymentMethods.paymentMethods.paymentMethods?.some((x) => x.type === "googlepay");
   if (!hasGooglePay) {
     return null;
   }
@@ -1616,7 +1614,7 @@ function StoredCardComponent({
     const { resultCode, action } = response;
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef == null ? void 0 : threeDSecureRef.current);
+      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
       return;
     }
     actions.resolve({ resultCode, action });
@@ -1745,11 +1743,10 @@ function StoredCardContainerComponent({
   configuration,
   paymentMethods
 }) {
-  var _a;
   const [storedPaymentMethods, setStoredPaymentMethods] = useState6(
-    (_a = paymentMethods.paymentMethods.storedPaymentMethods) != null ? _a : []
+    paymentMethods.paymentMethods.storedPaymentMethods ?? []
   );
-  if (!storedPaymentMethods || (storedPaymentMethods == null ? void 0 : storedPaymentMethods.length) === 0) {
+  if (!storedPaymentMethods || storedPaymentMethods?.length === 0) {
     return null;
   }
   function handleStoredCardRemoved(storedPaymentMethodId) {
@@ -1757,7 +1754,7 @@ function StoredCardContainerComponent({
       (prevStoredPaymentMethods) => prevStoredPaymentMethods.filter((storedPaymentMethod) => storedPaymentMethod.id !== storedPaymentMethodId)
     );
   }
-  return /* @__PURE__ */ h21(Fragment4, null, storedPaymentMethods == null ? void 0 : storedPaymentMethods.map((storedPaymentMethod) => /* @__PURE__ */ h21(
+  return /* @__PURE__ */ h21(Fragment4, null, storedPaymentMethods?.map((storedPaymentMethod) => /* @__PURE__ */ h21(
     stored_card_component_default,
     {
       key: storedPaymentMethod.id,
@@ -1940,9 +1937,10 @@ var straumur_checkout_container_default = StraumurCheckoutContainer2;
 
 // src/straumur-checkout.tsx
 var StraumurCheckout = class {
+  configuration;
+  paymentMethods = null;
+  mountElement = null;
   constructor(config) {
-    this.paymentMethods = null;
-    this.mountElement = null;
     this.configuration = { ...config, locale: config.locale || "en-US" };
   }
   async mount(selector) {
