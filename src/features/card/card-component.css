@@ -1,46 +1,46 @@
-.card-component {
+.straumur__card-component {
   position: relative;
   cursor: pointer;
-  background: white;
-  border-radius: 12px;
+  background: var(--straumur__color-white);
+  border-radius: var(--straumur__border-radius-lg);
   transition: all 0.3s ease;
-  padding: 16px 24px;
+  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);
 }
 
-.card-component__radio-selector {
+.straumur__card-component__radio-selector {
   position: absolute;
   opacity: 0;
   cursor: pointer;
 }
 
-.card-component__content {
+.straumur__card-component__content {
   display: grid;
   grid-template-columns: 26px 40px auto 1fr;
   /* display: flex; */
   align-items: center;
-  gap: 12px;
+  gap: var(--straumur__space-lg);
   transition: background-color 0.3s ease;
 }
 
-.card-component__radio-selector:checked + .card-component__content {
-  padding-bottom: 16px;
+.straumur__card-component__radio-selector:checked + .straumur__card-component__content {
+  padding-bottom: var(--straumur__space-xxlg);
 }
 
-.card-component--circle {
-  width: 24px;
-  height: 24px;
-  border: 1px solid #e6ebef;
-  background: #eef0f2;
+.straumur__card-component--circle {
+  width: var(--straumur__space-5xlg);
+  height: var(--straumur__space-5xlg);
+  border: 1px solid var(--straumur__color-cosmos-blue-gamma);
+  background: var(--straumur__color-secondary-gamma);
   border-radius: 50%;
   position: relative;
   transition: all 0.3s ease;
 }
 
-.card-component__content:hover .card-component--circle {
-  border: 1px solid #cdd8e2;
+.straumur__card-component__content:hover .straumur__card-component--circle {
+  border: 1px solid var(--straumur__color-cosmos-blue-delta);
 }
 
-.card-component--circle::after {
+.straumur__card-component--circle::after {
   content: "";
   position: absolute;
   width: 100%;
@@ -52,57 +52,61 @@
   transition: transform 0.2s ease;
 }
 
-.card-component__radio-selector:checked + .card-component__content .card-component--circle {
-  background: #bce6f3;
-  border-color: transparent;
+.straumur__card-component__radio-selector:checked
+  + .straumur__card-component__content
+  .straumur__card-component--circle {
+  background: var(--straumur__color-blue-beta);
+  border-color: var(--straumur__color-transparent);
 }
 
-.card-component__radio-selector:checked + .card-component__content .card-component--circle::after {
+.straumur__card-component__radio-selector:checked
+  + .straumur__card-component__content
+  .straumur__card-component--circle::after {
   transform: translate(-50%, -50%) scale(1);
-  background: #002649;
-  height: 10px;
-  width: 10px;
+  background: var(--straumur__color-primary);
+  height: var(--straumur__space-md);
+  width: var(--straumur__space-md);
 }
 
-.card-component--text {
+.straumur__card-component--text {
   color: #213547;
   font-size: 1rem;
   user-select: none;
 }
 
-.card-component--brands {
+.straumur__card-component--brands {
   display: flex;
   margin-left: auto;
   align-items: center;
-  gap: 4px;
+  gap: var(--straumur__space-xxs);
 }
 
-.card-component__expandable {
-  background: white;
+.straumur__card-component__expandable {
+  background: var(--straumur__color-white);
   max-height: 0;
   overflow: hidden;
   transition: all 0.3s ease;
   opacity: 0;
 }
 
-.card-component__loading-text {
+.straumur__card-component__loading-text {
   display: flex;
   justify-content: center;
 }
 
-.card-component__radio-selector:checked ~ .card-component__expandable {
+.straumur__card-component__radio-selector:checked ~ .straumur__card-component__expandable {
   max-height: 400px;
   opacity: 1;
 }
 
-.card-component__form {
+.straumur__card-component__form {
   display: flex;
-  padding-top: 16px;
+  padding-top: var(--straumur__space-xxlg);
   flex-direction: column;
-  gap: 24px;
+  gap: var(--straumur__space-5xlg);
 }
 
-.card-component__form--wrapper {
+.straumur__card-component__form--wrapper {
   display: flex;
   flex-direction: column;
   justify-items: start;
@@ -110,129 +114,134 @@
   width: 100%;
 }
 
-.card-component__form--wrapper--error {
-  color: #ff4d4f;
+.straumur__card-component__form--wrapper--error {
+  color: var(--straumur__color-red-beta);
   font-size: 12px;
 }
 
-.card-component__form--wrapper--label {
-  transform: translateX(10px) translateY(-50%);
+.straumur__card-component__form--wrapper--label {
+  transform: translateX(var(--straumur__space-md)) translateY(-50%);
   z-index: 1;
-  background: linear-gradient(to top, #eef0f2 53%, transparent 50%);
+  background: linear-gradient(
+    to top,
+    var(--straumur__color-secondary-gamma) 53%,
+    var(--straumur__color-transparent) 50%
+  );
   position: absolute;
   font-weight: 500;
   font-size: 14px;
-  padding: 0 4px;
+  padding: 0 var(--straumur__space-xxs);
 }
 
-.card-component__form--wrapper--label--error {
-  color: #ff4d4f;
-  background: linear-gradient(to top, #fff8f5 53%, transparent 50%);
+.straumur__card-component__form--wrapper--label--error {
+  color: var(--straumur__color-red-beta);
+  background: linear-gradient(to top, var(--straumur__color-red-gamma) 53%, var(--straumur__color-transparent) 50%);
 }
 
-.card-component__form--wrapper--label--info {
+.straumur__card-component__form--wrapper--label--info {
   position: absolute;
   top: 33%;
-  right: 10px;
+  right: var(--straumur__space-md);
 }
 
-.card-component__form--wrapper--input {
-  background: #eef0f2;
+.straumur__card-component__form--wrapper--input {
+  background: var(--straumur__color-secondary-gamma);
   color: #00112c;
   display: block;
   font-family: inherit;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  border: 1px solid var(--straumur__color-transparent);
+  border-radius: var(--straumur__border-radius-s);
   font-size: 1rem;
   height: 48px;
   outline: none;
-  padding-left: 12px;
+  padding-left: var(--straumur__space-lg);
   transition: border 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
-.card-component__form--wrapper--input:hover {
-  border: 1px solid #cdd8e2;
+.straumur__card-component__form--wrapper--input:hover {
+  border: 1px solid var(--straumur__color-cosmos-blue-delta);
 }
 
-.card-component__form--wrapper--input--error {
-  background: #fff8f5;
-  border: 1px solid #ff4d4f;
+.straumur__card-component__form--wrapper--input--error {
+  background: var(--straumur__color-red-gamma);
+  border: 1px solid var(--straumur__color-red-beta);
 }
 
-.card-component__form--wrapper--input--error:hover {
-  border: 1px solid #ff4d4f;
+.straumur__card-component__form--wrapper--input--error:hover {
+  border: 1px solid var(--straumur__color-red-beta);
 }
 
-.card-component__form--field-wrapper {
+.straumur__card-component__form--field-wrapper {
   display: flex;
   width: 100%;
-  gap: 24px;
+  gap: var(--straumur__space-5xlg);
 }
 
-.card-component__submit-button {
-  background: #002649;
+.straumur__card-component__submit-button {
+  background: var(--straumur__color-primary);
   border: none;
-  border-radius: 8px;
-  color: #ffffff;
+  border-radius: var(--straumur__border-radius-s);
+  color: var(--straumur__color-white);
   cursor: pointer;
   font-size: 1rem;
   height: 40px;
   outline: none;
-  padding: 0 16px;
+  padding: 0 var(--straumur__space-xxlg);
   transition: background 0.2s ease-out;
   width: 100%;
 }
 
-.card-component__submit-button:hover {
-  background: #002649;
+.straumur__card-component__submit-button:hover {
+  background: var(--straumur__color-primary);
   border: 1px solid #dbdee2;
 }
 
-.card-component__submit-button:disabled {
+.straumur__card-component__submit-button:disabled {
   background: #72889d;
   border: 1px solid #dbdee2;
   cursor: not-allowed;
 }
 
-.card-component__form--wrapper--label-checkbox {
+.straumur__card-component__form--wrapper--label-checkbox {
   height: 38px;
   display: flex;
   align-items: center;
   padding: 8px;
-  gap: 8px;
-  border-radius: 8px;
+  gap: var(--straumur__space-s);
+  border-radius: var(--straumur__border-radius-s);
   cursor: pointer;
   user-select: none;
   transition: background-color 0.25s ease-in-out;
 }
-.card-component__form--wrapper--label-checkbox:hover {
-  background-color: #eff8fa;
+.straumur__card-component__form--wrapper--label-checkbox:hover {
+  background-color: var(--straumur__color-blue-gamma);
 }
 
-.card-component__form--wrapper--label-checkbox:hover .card-component__form--wrapper--label-checkbox--checkmark {
-  border: 1px solid #cdd8e2;
+.straumur__card-component__form--wrapper--label-checkbox:hover
+  .straumur__card-component__form--wrapper--label-checkbox--checkmark {
+  border: 1px solid var(--straumur__color-cosmos-blue-delta);
 }
 
-.card-component__form--wrapper--label-checkbox--checkmark {
-  height: 24px;
-  width: 24px;
-  background-color: #eef0f2;
-  border-radius: 4px;
+.straumur__card-component__form--wrapper--label-checkbox--checkmark {
+  height: var(--straumur__space-5xlg);
+  width: var(--straumur__space-5xlg);
+  background-color: var(--straumur__color-secondary-gamma);
+  border-radius: var(--straumur__border-radius-xxs);
   flex-shrink: 0;
-  border: 1px solid transparent;
+  border: 1px solid var(--straumur__color-transparent);
   transition: all 0.2s ease-in;
 }
 
-.card-component__form--wrapper--label-checkbox:hover
-  .card-component__form--wrapper--label-checkbox--checkmark.card-component__form--wrapper--label-checkbox--checkmark--checked {
-  border: 1px solid transparent;
+.straumur__card-component__form--wrapper--label-checkbox:hover
+  .straumur__card-component__form--wrapper--label-checkbox--checkmark.straumur__card-component__form--wrapper--label-checkbox--checkmark--checked {
+  border: 1px solid var(--straumur__color-transparent);
 }
 
-.card-component__form--wrapper--label-checkbox--checkmark--checked {
-  background-color: #bce6f3;
+.straumur__card-component__form--wrapper--label-checkbox--checkmark--checked {
+  background-color: var(--straumur__color-blue-beta);
 }
 
-.card-component__form--wrapper--label-checkbox--checkmark--icon {
+.straumur__card-component__form--wrapper--label-checkbox--checkmark--icon {
   height: 100%;
   display: flex;
   justify-content: center;
@@ -243,11 +252,11 @@
   transition: all 0.2s ease-in;
 }
 
-.card-component__form--wrapper--label-checkbox--checkmark--icon--checked {
+.straumur__card-component__form--wrapper--label-checkbox--checkmark--icon--checked {
   opacity: 1;
   visibility: visible;
 }
 
-.card-component__form--wrapper--label-checkbox--checkbox {
+.straumur__card-component__form--wrapper--label-checkbox--checkbox {
   display: none;
 }

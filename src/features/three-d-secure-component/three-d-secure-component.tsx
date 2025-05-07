@@ -13,7 +13,7 @@ function StraumurCheckoutContainer(): h.JSX.Element | null {
     }
   }, []);
 
-  return <div className="three-d-secure" ref={threeDSecureRef}></div>;
+  return <div className="straumur__three-d-secure" ref={threeDSecureRef}></div>;
 }
 
 export default StraumurCheckoutContainer;

@@ -11,7 +11,7 @@ interface PaymentMethodGroupProps {
 function PaymentMethodGroup({ children, initialValue }: PaymentMethodGroupProps): h.JSX.Element | null {
   return (
     <PaymentMethodGroupContext initialValue={initialValue}>
-      <div className="payment-method-group">{children}</div>
+      <div className="straumur__payment-method-group">{children}</div>
     </PaymentMethodGroupContext>
   );
 }

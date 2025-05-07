@@ -1,4 +1,4 @@
-import { h, FunctionalComponent, ComponentChildren, Fragment } from "preact";
+import { h, FunctionalComponent, ComponentChildren } from "preact";
 import "./tooltip.css";
 import { useRef, useState } from "preact/hooks";
 
@@ -24,7 +24,7 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({ children, content }
       <div ref={triggerRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         {children}
       </div>
-      {isVisible && triggerRef && <div className="core-tooltip__content">{content}</div>}
+      {isVisible && triggerRef && <div className="straumur__tooltip__content">{content}</div>}
     </div>
   );
 };

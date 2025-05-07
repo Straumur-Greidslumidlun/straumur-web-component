@@ -1,44 +1,44 @@
-.google-pay-component {
+.straumur__google-pay-component {
   position: relative;
   cursor: pointer;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--straumur__border-radius-lg);
   transition: all 0.3s ease;
-  padding: 16px 24px;
+  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);
 }
 
-.google-pay-component__radio-selector {
+.straumur__google-pay-component__radio-selector {
   position: absolute;
   opacity: 0;
   cursor: pointer;
 }
 
-.google-pay-component__content {
+.straumur__google-pay-component__content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--straumur__space-lg);
   transition: background-color 0.3s ease;
 }
 
-.google-pay-component__radio-selector:checked + .google-pay-component__content {
-  padding-bottom: 16px;
+.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content {
+  padding-bottom: var(--straumur__space-xxlg);
 }
 
-.google-pay-component--circle {
-  width: 24px;
-  height: 24px;
-  border: 1px solid #e6ebef;
-  background: #eef0f2;
+.straumur__google-pay-component--circle {
+  width: var(--straumur__space-5xlg);
+  height: var(--straumur__space-5xlg);
+  border: 1px solid var(--straumur__color-cosmos-blue-gamma);
+  background: var(--straumur__color-secondary-gamma);
   border-radius: 50%;
   position: relative;
   transition: all 0.3s ease;
 }
 
-.google-pay-component__content:hover .google-pay-component--circle {
-  border: 1px solid #cdd8e2;
+.straumur__google-pay-component__content:hover .straumur__google-pay-component--circle {
+  border: 1px solid var(--straumur__color-cosmos-blue-delta);
 }
 
-.google-pay-component--circle::after {
+.straumur__google-pay-component--circle::after {
   content: "";
   position: absolute;
   width: 100%;
@@ -50,25 +50,29 @@
   transition: transform 0.2s ease;
 }
 
-.google-pay-component__radio-selector:checked + .google-pay-component__content .google-pay-component--circle {
-  background: #bce6f3;
-  border-color: transparent;
+.straumur__google-pay-component__radio-selector:checked
+  + .straumur__google-pay-component__content
+  .straumur__google-pay-component--circle {
+  background: var(--straumur__color-blue-beta);
+  border-color: var(--straumur__color-transparent);
 }
 
-.google-pay-component__radio-selector:checked + .google-pay-component__content .google-pay-component--circle::after {
+.straumur__google-pay-component__radio-selector:checked
+  + .straumur__google-pay-component__content
+  .straumur__google-pay-component--circle::after {
   transform: translate(-50%, -50%) scale(1);
-  background: #002649;
-  height: 10px;
-  width: 10px;
+  background: var(--straumur__color-primary);
+  height: var(--straumur__space-md);
+  width: var(--straumur__space-md);
 }
 
-.google-pay-component--text {
+.straumur__google-pay-component--text {
   color: #213547;
   font-size: 1rem;
   user-select: none;
 }
 
-.google-pay-component__expandable {
+.straumur__google-pay-component__expandable {
   background: white;
   max-height: 0;
   overflow: hidden;
@@ -76,12 +80,12 @@
   opacity: 0;
 }
 
-.google-pay-component__radio-selector:checked ~ .google-pay-component__expandable {
+.straumur__google-pay-component__radio-selector:checked ~ .straumur__google-pay-component__expandable {
   max-height: 400px;
   opacity: 1;
 }
 
-.google-pay-component__expandable p {
+.straumur__google-pay-component__expandable p {
   margin: 0;
   color: #213547;
   font-size: 0.9rem;

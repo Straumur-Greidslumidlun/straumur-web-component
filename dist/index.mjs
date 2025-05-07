@@ -25,7 +25,7 @@ function styleInject(css, { insertAt } = {}) {
 }
 
 // src/styles/main.css
-styleInject('* {\n  font-family: "AkzidenzGroteskPro", sans-serif;\n  max-width: 440px;\n}\n.render-brand-icons__overflow {\n  color: #72889d;\n}\n.component {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  height: 300px;\n  background-color: white;\n  border-radius: 16px;\n}\n');
+styleInject(':root {\n  --straumur__color-primary: #002649;\n  --straumur__color-secondary: #72889d;\n  --straumur__color-secondary-gamma: #eef0f2;\n  --straumur__color-blue-beta: #bce6f3;\n  --straumur__color-blue-gamma: #eff8fa;\n  --straumur__color-red-beta: #d96666;\n  --straumur__color-red-gamma: #fff8f5;\n  --straumur__color-gray-epsilon: #e7e7e7;\n  --straumur__color-cosmos-blue-delta: #cdd8e2;\n  --straumur__color-cosmos-blue-gamma: #e6ebef;\n  --straumur__color-white: #ffffff;\n  --straumur__color-transparent: transparent;\n  --straumur__border-radius-xxs: 4px;\n  --straumur__border-radius-xs: 6px;\n  --straumur__border-radius-s: 8px;\n  --straumur__border-radius-md: 10px;\n  --straumur__border-radius-lg: 12px;\n  --straumur__border-radius-xlg: 14px;\n  --straumur__border-radius-xxlg: 16px;\n  --straumur__space-xxs: 4px;\n  --straumur__space-xs: 6px;\n  --straumur__space-s: 8px;\n  --straumur__space-md: 10px;\n  --straumur__space-lg: 12px;\n  --straumur__space-xlg: 14px;\n  --straumur__space-xxlg: 16px;\n  --straumur__space-3xlg: 18px;\n  --straumur__space-4xlg: 20px;\n  --straumur__space-5xlg: 24px;\n}\n.straumur__root-component {\n  font-family: "AkzidenzGroteskPro", sans-serif;\n  max-width: 440px;\n  min-width: 320px;\n}\n.straumur__component * {\n  font-family: inherit;\n}\n.straumur__render-brand-icons__overflow {\n  color: #72889d;\n}\n.straumur__component {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  height: 300px;\n  background-color: var(--straumur__color-white);\n  border-radius: var(--straumur__border-radius-xxlg);\n}\n');
 
 // src/env.ts
 var getEnv = () => {
@@ -122,11 +122,11 @@ async function setupPaymentMethods(environment, sessionId) {
 import { h as h28 } from "preact";
 
 // src/features/card/card-component.tsx
-import { Fragment as Fragment3, h as h16 } from "preact";
+import { Fragment as Fragment2, h as h16 } from "preact";
 import { useRef as useRef3, useState as useState4, useEffect as useEffect2 } from "preact/hooks";
 
 // src/features/card/card-component.css
-styleInject('.card-component {\n  position: relative;\n  cursor: pointer;\n  background: white;\n  border-radius: 12px;\n  transition: all 0.3s ease;\n  padding: 16px 24px;\n}\n.card-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n  cursor: pointer;\n}\n.card-component__content {\n  display: grid;\n  grid-template-columns: 26px 40px auto 1fr;\n  align-items: center;\n  gap: 12px;\n  transition: background-color 0.3s ease;\n}\n.card-component__radio-selector:checked + .card-component__content {\n  padding-bottom: 16px;\n}\n.card-component--circle {\n  width: 24px;\n  height: 24px;\n  border: 1px solid #e6ebef;\n  background: #eef0f2;\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.card-component__content:hover .card-component--circle {\n  border: 1px solid #cdd8e2;\n}\n.card-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.card-component__radio-selector:checked + .card-component__content .card-component--circle {\n  background: #bce6f3;\n  border-color: transparent;\n}\n.card-component__radio-selector:checked + .card-component__content .card-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: #002649;\n  height: 10px;\n  width: 10px;\n}\n.card-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.card-component--brands {\n  display: flex;\n  margin-left: auto;\n  align-items: center;\n  gap: 4px;\n}\n.card-component__expandable {\n  background: white;\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.card-component__loading-text {\n  display: flex;\n  justify-content: center;\n}\n.card-component__radio-selector:checked ~ .card-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.card-component__form {\n  display: flex;\n  padding-top: 16px;\n  flex-direction: column;\n  gap: 24px;\n}\n.card-component__form--wrapper {\n  display: flex;\n  flex-direction: column;\n  justify-items: start;\n  position: relative;\n  width: 100%;\n}\n.card-component__form--wrapper--error {\n  color: #ff4d4f;\n  font-size: 12px;\n}\n.card-component__form--wrapper--label {\n  transform: translateX(10px) translateY(-50%);\n  z-index: 1;\n  background:\n    linear-gradient(\n      to top,\n      #eef0f2 53%,\n      transparent 50%);\n  position: absolute;\n  font-weight: 500;\n  font-size: 14px;\n  padding: 0 4px;\n}\n.card-component__form--wrapper--label--error {\n  color: #ff4d4f;\n  background:\n    linear-gradient(\n      to top,\n      #fff8f5 53%,\n      transparent 50%);\n}\n.card-component__form--wrapper--label--info {\n  position: absolute;\n  top: 33%;\n  right: 10px;\n}\n.card-component__form--wrapper--input {\n  background: #eef0f2;\n  color: #00112c;\n  display: block;\n  font-family: inherit;\n  border: 1px solid transparent;\n  border-radius: 8px;\n  font-size: 1rem;\n  height: 48px;\n  outline: none;\n  padding-left: 12px;\n  transition: border 0.2s ease-out, box-shadow 0.2s ease-out;\n}\n.card-component__form--wrapper--input:hover {\n  border: 1px solid #cdd8e2;\n}\n.card-component__form--wrapper--input--error {\n  background: #fff8f5;\n  border: 1px solid #ff4d4f;\n}\n.card-component__form--wrapper--input--error:hover {\n  border: 1px solid #ff4d4f;\n}\n.card-component__form--field-wrapper {\n  display: flex;\n  width: 100%;\n  gap: 24px;\n}\n.card-component__submit-button {\n  background: #002649;\n  border: none;\n  border-radius: 8px;\n  color: #ffffff;\n  cursor: pointer;\n  font-size: 1rem;\n  height: 40px;\n  outline: none;\n  padding: 0 16px;\n  transition: background 0.2s ease-out;\n  width: 100%;\n}\n.card-component__submit-button:hover {\n  background: #002649;\n  border: 1px solid #dbdee2;\n}\n.card-component__submit-button:disabled {\n  background: #72889d;\n  border: 1px solid #dbdee2;\n  cursor: not-allowed;\n}\n.card-component__form--wrapper--label-checkbox {\n  height: 38px;\n  display: flex;\n  align-items: center;\n  padding: 8px;\n  gap: 8px;\n  border-radius: 8px;\n  cursor: pointer;\n  user-select: none;\n  transition: background-color 0.25s ease-in-out;\n}\n.card-component__form--wrapper--label-checkbox:hover {\n  background-color: #eff8fa;\n}\n.card-component__form--wrapper--label-checkbox:hover .card-component__form--wrapper--label-checkbox--checkmark {\n  border: 1px solid #cdd8e2;\n}\n.card-component__form--wrapper--label-checkbox--checkmark {\n  height: 24px;\n  width: 24px;\n  background-color: #eef0f2;\n  border-radius: 4px;\n  flex-shrink: 0;\n  border: 1px solid transparent;\n  transition: all 0.2s ease-in;\n}\n.card-component__form--wrapper--label-checkbox:hover .card-component__form--wrapper--label-checkbox--checkmark.card-component__form--wrapper--label-checkbox--checkmark--checked {\n  border: 1px solid transparent;\n}\n.card-component__form--wrapper--label-checkbox--checkmark--checked {\n  background-color: #bce6f3;\n}\n.card-component__form--wrapper--label-checkbox--checkmark--icon {\n  height: 100%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 9px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s ease-in;\n}\n.card-component__form--wrapper--label-checkbox--checkmark--icon--checked {\n  opacity: 1;\n  visibility: visible;\n}\n.card-component__form--wrapper--label-checkbox--checkbox {\n  display: none;\n}\n');
+styleInject('.straumur__card-component {\n  position: relative;\n  cursor: pointer;\n  background: var(--straumur__color-white);\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n}\n.straumur__card-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n  cursor: pointer;\n}\n.straumur__card-component__content {\n  display: grid;\n  grid-template-columns: 26px 40px auto 1fr;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__card-component__radio-selector:checked + .straumur__card-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__card-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__card-component__content:hover .straumur__card-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__card-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__card-component__radio-selector:checked + .straumur__card-component__content .straumur__card-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__card-component__radio-selector:checked + .straumur__card-component__content .straumur__card-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__card-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__card-component--brands {\n  display: flex;\n  margin-left: auto;\n  align-items: center;\n  gap: var(--straumur__space-xxs);\n}\n.straumur__card-component__expandable {\n  background: var(--straumur__color-white);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__card-component__loading-text {\n  display: flex;\n  justify-content: center;\n}\n.straumur__card-component__radio-selector:checked ~ .straumur__card-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__card-component__form {\n  display: flex;\n  padding-top: var(--straumur__space-xxlg);\n  flex-direction: column;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__card-component__form--wrapper {\n  display: flex;\n  flex-direction: column;\n  justify-items: start;\n  position: relative;\n  width: 100%;\n}\n.straumur__card-component__form--wrapper--error {\n  color: var(--straumur__color-red-beta);\n  font-size: 12px;\n}\n.straumur__card-component__form--wrapper--label {\n  transform: translateX(var(--straumur__space-md)) translateY(-50%);\n  z-index: 1;\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-secondary-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n  position: absolute;\n  font-weight: 500;\n  font-size: 14px;\n  padding: 0 var(--straumur__space-xxs);\n}\n.straumur__card-component__form--wrapper--label--error {\n  color: var(--straumur__color-red-beta);\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-red-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n}\n.straumur__card-component__form--wrapper--label--info {\n  position: absolute;\n  top: 33%;\n  right: var(--straumur__space-md);\n}\n.straumur__card-component__form--wrapper--input {\n  background: var(--straumur__color-secondary-gamma);\n  color: #00112c;\n  display: block;\n  font-family: inherit;\n  border: 1px solid var(--straumur__color-transparent);\n  border-radius: var(--straumur__border-radius-s);\n  font-size: 1rem;\n  height: 48px;\n  outline: none;\n  padding-left: var(--straumur__space-lg);\n  transition: border 0.2s ease-out, box-shadow 0.2s ease-out;\n}\n.straumur__card-component__form--wrapper--input:hover {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__card-component__form--wrapper--input--error {\n  background: var(--straumur__color-red-gamma);\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__card-component__form--wrapper--input--error:hover {\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__card-component__form--field-wrapper {\n  display: flex;\n  width: 100%;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__card-component__submit-button {\n  background: var(--straumur__color-primary);\n  border: none;\n  border-radius: var(--straumur__border-radius-s);\n  color: var(--straumur__color-white);\n  cursor: pointer;\n  font-size: 1rem;\n  height: 40px;\n  outline: none;\n  padding: 0 var(--straumur__space-xxlg);\n  transition: background 0.2s ease-out;\n  width: 100%;\n}\n.straumur__card-component__submit-button:hover {\n  background: var(--straumur__color-primary);\n  border: 1px solid #dbdee2;\n}\n.straumur__card-component__submit-button:disabled {\n  background: #72889d;\n  border: 1px solid #dbdee2;\n  cursor: not-allowed;\n}\n.straumur__card-component__form--wrapper--label-checkbox {\n  height: 38px;\n  display: flex;\n  align-items: center;\n  padding: 8px;\n  gap: var(--straumur__space-s);\n  border-radius: var(--straumur__border-radius-s);\n  cursor: pointer;\n  user-select: none;\n  transition: background-color 0.25s ease-in-out;\n}\n.straumur__card-component__form--wrapper--label-checkbox:hover {\n  background-color: var(--straumur__color-blue-gamma);\n}\n.straumur__card-component__form--wrapper--label-checkbox:hover .straumur__card-component__form--wrapper--label-checkbox--checkmark {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__card-component__form--wrapper--label-checkbox--checkmark {\n  height: var(--straumur__space-5xlg);\n  width: var(--straumur__space-5xlg);\n  background-color: var(--straumur__color-secondary-gamma);\n  border-radius: var(--straumur__border-radius-xxs);\n  flex-shrink: 0;\n  border: 1px solid var(--straumur__color-transparent);\n  transition: all 0.2s ease-in;\n}\n.straumur__card-component__form--wrapper--label-checkbox:hover .straumur__card-component__form--wrapper--label-checkbox--checkmark.straumur__card-component__form--wrapper--label-checkbox--checkmark--checked {\n  border: 1px solid var(--straumur__color-transparent);\n}\n.straumur__card-component__form--wrapper--label-checkbox--checkmark--checked {\n  background-color: var(--straumur__color-blue-beta);\n}\n.straumur__card-component__form--wrapper--label-checkbox--checkmark--icon {\n  height: 100%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 9px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s ease-in;\n}\n.straumur__card-component__form--wrapper--label-checkbox--checkmark--icon--checked {\n  opacity: 1;\n  visibility: visible;\n}\n.straumur__card-component__form--wrapper--label-checkbox--checkbox {\n  display: none;\n}\n');
 
 // src/components/payment-method-group/payment-method-group-context.tsx
 import { h } from "preact";
@@ -288,7 +288,7 @@ function i18n(language, key) {
 import { h as h2 } from "preact";
 
 // src/components/tooltip/tooltip.css
-styleInject(".core-tooltip__content {\n  position: absolute;\n  z-index: 50;\n  padding: 0.5rem;\n  border-radius: 0.5rem;\n  right: 40%;\n  top: 100%;\n  width: max-content;\n  color: #ffffff;\n  background-color: #002649;\n  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n");
+styleInject(".straumur__tooltip__content {\n  position: absolute;\n  z-index: 50;\n  padding: var(--straumur__space-s);\n  border-radius: var(--straumur__border-radius-s);\n  right: 40%;\n  top: 100%;\n  width: max-content;\n  color: var(--straumur__color-white);\n  background-color: var(--straumur__color-primary);\n  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\n}\n");
 
 // src/components/tooltip/tooltip.tsx
 import { useRef as useRef2, useState as useState2 } from "preact/hooks";
@@ -301,7 +301,7 @@ var Tooltip = ({ children, content }) => {
   const handleMouseLeave = () => {
     setIsVisible(false);
   };
-  return /* @__PURE__ */ h2("div", { style: { position: "relative" } }, /* @__PURE__ */ h2("div", { ref: triggerRef, onMouseEnter: handleMouseEnter, onMouseLeave: handleMouseLeave }, children), isVisible && triggerRef && /* @__PURE__ */ h2("div", { className: "core-tooltip__content" }, content));
+  return /* @__PURE__ */ h2("div", { style: { position: "relative" } }, /* @__PURE__ */ h2("div", { ref: triggerRef, onMouseEnter: handleMouseEnter, onMouseLeave: handleMouseLeave }, children), isVisible && triggerRef && /* @__PURE__ */ h2("div", { className: "straumur__tooltip__content" }, content));
 };
 
 // src/assets/icons/card.tsx
@@ -346,7 +346,7 @@ var InfoIcon = () => /* @__PURE__ */ h4("svg", { width: "21", height: "20", view
 var info_default = InfoIcon;
 
 // src/utils/renderBrandIcons.tsx
-import { Fragment as Fragment2, h as h13 } from "preact";
+import { Fragment, h as h13 } from "preact";
 
 // src/assets/icons/mastercard.tsx
 import { h as h5 } from "preact";
@@ -902,7 +902,7 @@ function RenderBrandIcons({ brands, brandHidden = [], limit = 3 }) {
     const hidden = brandHidden.some((x) => x.brand === brandName);
     return !hidden;
   });
-  return /* @__PURE__ */ h13(Fragment2, null, brandToShow.map(({ brand }, index) => {
+  return /* @__PURE__ */ h13(Fragment, null, brandToShow.map(({ brand }, index) => {
     if (index >= Math.min(limit, widthLimit)) {
       if (index === Math.min(limit, widthLimit)) {
         return /* @__PURE__ */ h13(
@@ -910,7 +910,7 @@ function RenderBrandIcons({ brands, brandHidden = [], limit = 3 }) {
           {
             content: /* @__PURE__ */ h13("span", { style: { display: "flex", gap: "4px", overflow: "visible" } }, brandToShow.slice(Math.min(limit, widthLimit)).map(({ brand: brand2 }) => /* @__PURE__ */ h13(RenderBrandIcon, { key: brand2, brand: brand2 })))
           },
-          /* @__PURE__ */ h13("span", { key: brand, className: "render-brand-icons__overflow" }, "+", brandToShow.length - Math.min(limit, widthLimit))
+          /* @__PURE__ */ h13("span", { key: brand, className: "straumur__render-brand-icons__overflow" }, "+", brandToShow.length - Math.min(limit, widthLimit))
         );
       }
       return null;
@@ -1140,71 +1140,71 @@ function CardComponent({ configuration, paymentMethods }) {
     if (!customCardRef.current) return;
     customCardRef.current.submit();
   }
-  return /* @__PURE__ */ h16("label", { className: "card-component" }, /* @__PURE__ */ h16(
+  return /* @__PURE__ */ h16("label", { className: "straumur__card-component" }, /* @__PURE__ */ h16(
     "input",
     {
       type: "radio",
-      className: "card-component__radio-selector",
+      className: "straumur__card-component__radio-selector",
       checked: activePaymentMethod === "card",
       onChange: handleBoxChange
     }
-  ), /* @__PURE__ */ h16("span", { className: "card-component__content" }, /* @__PURE__ */ h16("span", { className: "card-component--circle" }), /* @__PURE__ */ h16(card_default, null), /* @__PURE__ */ h16("span", { className: "card-component--text" }, i18n(configuration.locale, "cards.title")), /* @__PURE__ */ h16("span", { className: "card-component--brands" }, /* @__PURE__ */ h16(RenderBrandIcons, { brands, brandHidden }))), /* @__PURE__ */ h16("div", { className: "card-component__expandable", ref: cardElementRef }, !isPaymentMethodInitialized.card && /* @__PURE__ */ h16("div", { className: "card-component__loading-text" }, /* @__PURE__ */ h16(loader_default, null)), /* @__PURE__ */ h16(
+  ), /* @__PURE__ */ h16("span", { className: "straumur__card-component__content" }, /* @__PURE__ */ h16("span", { className: "straumur__card-component--circle" }), /* @__PURE__ */ h16(card_default, null), /* @__PURE__ */ h16("span", { className: "straumur__card-component--text" }, i18n(configuration.locale, "cards.title")), /* @__PURE__ */ h16("span", { className: "straumur__card-component--brands" }, /* @__PURE__ */ h16(RenderBrandIcons, { brands, brandHidden }))), /* @__PURE__ */ h16("div", { className: "straumur__card-component__expandable", ref: cardElementRef }, !isPaymentMethodInitialized.card && /* @__PURE__ */ h16("div", { className: "straumur__card-component__loading-text" }, /* @__PURE__ */ h16(loader_default, null)), /* @__PURE__ */ h16(
     "div",
     {
-      className: "card-component__form",
+      className: "straumur__card-component__form",
       style: {
         opacity: isPaymentMethodInitialized.card ? 1 : 0,
         position: isPaymentMethodInitialized.card ? "relative" : "absolute",
         transition: "opacity 0.3s ease-in-out"
       }
     },
-    /* @__PURE__ */ h16("div", { className: "card-component__form--wrapper" }, /* @__PURE__ */ h16(
+    /* @__PURE__ */ h16("div", { className: "straumur__card-component__form--wrapper" }, /* @__PURE__ */ h16(
       "label",
       {
-        className: `${"card-component__form--wrapper--label"} ${formErrors.encryptedCardNumber.visible ? "card-component__form--wrapper--label--error" : ""}`
+        className: `${"straumur__card-component__form--wrapper--label"} ${formErrors.encryptedCardNumber.visible ? "straumur__card-component__form--wrapper--label--error" : ""}`
       },
       i18n(configuration.locale, "cards.cardNumber")
     ), /* @__PURE__ */ h16(
       "span",
       {
-        className: `${"card-component__form--wrapper--input"} ${formErrors.encryptedCardNumber.visible ? "card-component__form--wrapper--input--error" : ""}`,
+        className: `${"straumur__card-component__form--wrapper--input"} ${formErrors.encryptedCardNumber.visible ? "straumur__card-component__form--wrapper--input--error" : ""}`,
         "data-cse": "encryptedCardNumber"
       }
-    ), formErrors.encryptedCardNumber.visible && /* @__PURE__ */ h16("span", { className: "card-component__form--wrapper--error" }, formErrors.encryptedCardNumber.message)),
-    /* @__PURE__ */ h16("div", { className: "card-component__form--field-wrapper" }, /* @__PURE__ */ h16("div", { className: "card-component__form--wrapper" }, /* @__PURE__ */ h16(
+    ), formErrors.encryptedCardNumber.visible && /* @__PURE__ */ h16("span", { className: "straumur__card-component__form--wrapper--error" }, formErrors.encryptedCardNumber.message)),
+    /* @__PURE__ */ h16("div", { className: "straumur__card-component__form--field-wrapper" }, /* @__PURE__ */ h16("div", { className: "straumur__card-component__form--wrapper" }, /* @__PURE__ */ h16(
       "label",
       {
-        className: `${"card-component__form--wrapper--label"} ${formErrors.encryptedExpiryDate.visible ? "card-component__form--wrapper--label--error" : ""}`
+        className: `${"straumur__card-component__form--wrapper--label"} ${formErrors.encryptedExpiryDate.visible ? "card-component__form--wrapper--label--error" : ""}`
       },
       i18n(configuration.locale, "cards.expiryDate")
     ), /* @__PURE__ */ h16(
       "span",
       {
-        className: `${"card-component__form--wrapper--input"} ${formErrors.encryptedExpiryDate.visible ? "card-component__form--wrapper--input--error" : ""}`,
+        className: `${"straumur__card-component__form--wrapper--input"} ${formErrors.encryptedExpiryDate.visible ? "straumur__card-component__form--wrapper--input--error" : ""}`,
         "data-cse": "encryptedExpiryDate"
       }
-    ), formErrors.encryptedExpiryDate.visible && /* @__PURE__ */ h16("span", { className: "card-component__form--wrapper--error" }, formErrors.encryptedExpiryDate.message)), /* @__PURE__ */ h16("div", { className: "card-component__form--wrapper" }, (securityCodePolicy === "optional" || securityCodePolicy === "required") && /* @__PURE__ */ h16(Fragment3, null, /* @__PURE__ */ h16(
+    ), formErrors.encryptedExpiryDate.visible && /* @__PURE__ */ h16("span", { className: "straumur__card-component__form--wrapper--error" }, formErrors.encryptedExpiryDate.message)), /* @__PURE__ */ h16("div", { className: "straumur__card-component__form--wrapper" }, (securityCodePolicy === "optional" || securityCodePolicy === "required") && /* @__PURE__ */ h16(Fragment2, null, /* @__PURE__ */ h16(
       "label",
       {
-        className: `${"card-component__form--wrapper--label"} ${formErrors.encryptedSecurityCode.visible ? "card-component__form--wrapper--label--error" : ""}`
+        className: `${"straumur__card-component__form--wrapper--label"} ${formErrors.encryptedSecurityCode.visible ? "straumur__card-component__form--wrapper--label--error" : ""}`
       },
       securityCodePolicy === "optional" ? i18n(configuration.locale, "cards.securityCode3DigitsOptional") : i18n(configuration.locale, "cards.securityCode3Digits")
     ), /* @__PURE__ */ h16(
       "span",
       {
-        className: `${"card-component__form--wrapper--input"} ${formErrors.encryptedSecurityCode.visible ? "card-component__form--wrapper--input--error" : ""}`,
+        className: `${"straumur__card-component__form--wrapper--input"} ${formErrors.encryptedSecurityCode.visible ? "straumur__card-component__form--wrapper--input--error" : ""}`,
         "data-cse": "encryptedSecurityCode"
       }
-    ), formErrors.encryptedSecurityCode.visible && /* @__PURE__ */ h16("span", { className: "card-component__form--wrapper--error" }, formErrors.encryptedSecurityCode.message), /* @__PURE__ */ h16("div", { className: "card-component__form--wrapper--label--info" }, /* @__PURE__ */ h16(Tooltip, { content: /* @__PURE__ */ h16("span", null, i18n(configuration.locale, "cards.securityCode3DigitsInfo")) }, /* @__PURE__ */ h16(info_default, null)))))),
-    paymentMethods.enableStoreDetails === "AskForConsent" && /* @__PURE__ */ h16("label", { className: "card-component__form--wrapper--label-checkbox" }, /* @__PURE__ */ h16(
+    ), formErrors.encryptedSecurityCode.visible && /* @__PURE__ */ h16("span", { className: "straumur__card-component__form--wrapper--error" }, formErrors.encryptedSecurityCode.message), /* @__PURE__ */ h16("div", { className: "straumur__card-component__form--wrapper--label--info" }, /* @__PURE__ */ h16(Tooltip, { content: /* @__PURE__ */ h16("span", null, i18n(configuration.locale, "cards.securityCode3DigitsInfo")) }, /* @__PURE__ */ h16(info_default, null)))))),
+    paymentMethods.enableStoreDetails === "AskForConsent" && /* @__PURE__ */ h16("label", { className: "straumur__card-component__form--wrapper--label-checkbox" }, /* @__PURE__ */ h16(
       "div",
       {
-        className: `${"card-component__form--wrapper--label-checkbox--checkmark"} ${storePaymentMethod ? "card-component__form--wrapper--label-checkbox--checkmark--checked" : ""}`
+        className: `${"straumur__card-component__form--wrapper--label-checkbox--checkmark"} ${storePaymentMethod ? "straumur__card-component__form--wrapper--label-checkbox--checkmark--checked" : ""}`
       },
       /* @__PURE__ */ h16(
         "div",
         {
-          className: `${"card-component__form--wrapper--label-checkbox--checkmark--icon"} ${storePaymentMethod ? "card-component__form--wrapper--label-checkbox--checkmark--icon--checked" : ""}`
+          className: `${"straumur__card-component__form--wrapper--label-checkbox--checkmark--icon"} ${storePaymentMethod ? "straumur__card-component__form--wrapper--label-checkbox--checkmark--icon--checked" : ""}`
         },
         /* @__PURE__ */ h16(checkmark_default, null)
       )
@@ -1212,12 +1212,20 @@ function CardComponent({ configuration, paymentMethods }) {
       "input",
       {
         type: "checkbox",
-        className: "card-component__form--wrapper--label-checkbox--checkbox",
+        className: "straumur__card-component__form--wrapper--label-checkbox--checkbox",
         checked: storePaymentMethod,
         onChange: handleStorePaymentMethodChange
       }
     ), i18n(configuration.locale, "cards.storePaymentMethod")),
-    /* @__PURE__ */ h16("button", { className: "card-component__submit-button", disabled: payButtonDisabled, onClick: handleSubmitClick }, paymentMethods.formattedAmount)
+    /* @__PURE__ */ h16(
+      "button",
+      {
+        className: "straumur__card-component__submit-button",
+        disabled: payButtonDisabled,
+        onClick: handleSubmitClick
+      },
+      paymentMethods.formattedAmount
+    )
   )));
 }
 var card_component_default = CardComponent;
@@ -1227,7 +1235,7 @@ import { h as h18 } from "preact";
 import { useEffect as useEffect3, useRef as useRef4 } from "preact/hooks";
 
 // src/features/google-pay/google-pay-component.css
-styleInject('.google-pay-component {\n  position: relative;\n  cursor: pointer;\n  background: white;\n  border-radius: 12px;\n  transition: all 0.3s ease;\n  padding: 16px 24px;\n}\n.google-pay-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n  cursor: pointer;\n}\n.google-pay-component__content {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  transition: background-color 0.3s ease;\n}\n.google-pay-component__radio-selector:checked + .google-pay-component__content {\n  padding-bottom: 16px;\n}\n.google-pay-component--circle {\n  width: 24px;\n  height: 24px;\n  border: 1px solid #e6ebef;\n  background: #eef0f2;\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.google-pay-component__content:hover .google-pay-component--circle {\n  border: 1px solid #cdd8e2;\n}\n.google-pay-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.google-pay-component__radio-selector:checked + .google-pay-component__content .google-pay-component--circle {\n  background: #bce6f3;\n  border-color: transparent;\n}\n.google-pay-component__radio-selector:checked + .google-pay-component__content .google-pay-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: #002649;\n  height: 10px;\n  width: 10px;\n}\n.google-pay-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.google-pay-component__expandable {\n  background: white;\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.google-pay-component__radio-selector:checked ~ .google-pay-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.google-pay-component__expandable p {\n  margin: 0;\n  color: #213547;\n  font-size: 0.9rem;\n}\n');
+styleInject('.straumur__google-pay-component {\n  position: relative;\n  cursor: pointer;\n  background: white;\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n}\n.straumur__google-pay-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n  cursor: pointer;\n}\n.straumur__google-pay-component__content {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__google-pay-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__google-pay-component__content:hover .straumur__google-pay-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__google-pay-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content .straumur__google-pay-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content .straumur__google-pay-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__google-pay-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__google-pay-component__expandable {\n  background: white;\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__google-pay-component__radio-selector:checked ~ .straumur__google-pay-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__google-pay-component__expandable p {\n  margin: 0;\n  color: #213547;\n  font-size: 0.9rem;\n}\n');
 
 // src/features/google-pay/google-pay-component.tsx
 import {
@@ -1360,7 +1368,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
   const handleBoxChange = () => {
     setActivePaymentMethod("googlepay");
   };
-  function handleOnError(error, _) {
+  function handleOnError(_, __) {
     handleError("error.unknownError");
   }
   async function handleOnSubmit(state, _, actions) {
@@ -1423,27 +1431,27 @@ function GooglePayComponent({ configuration, paymentMethods }) {
   if (!hasGooglePay) {
     return null;
   }
-  return /* @__PURE__ */ h18("label", { className: "google-pay-component" }, /* @__PURE__ */ h18(
+  return /* @__PURE__ */ h18("label", { className: "straumur__google-pay-component" }, /* @__PURE__ */ h18(
     "input",
     {
       type: "radio",
-      className: "google-pay-component__radio-selector",
+      className: "straumur__google-pay-component__radio-selector",
       checked: activePaymentMethod === "googlepay",
       onChange: handleBoxChange
     }
-  ), /* @__PURE__ */ h18("span", { className: "google-pay-component__content" }, /* @__PURE__ */ h18("span", { className: "google-pay-component--circle" }), /* @__PURE__ */ h18(googlepay_default, null), /* @__PURE__ */ h18("span", { className: "google-pay-component--text" }, i18n(configuration.locale, "googlepay.title"))), /* @__PURE__ */ h18("div", { className: "google-pay-component__expandable" }, /* @__PURE__ */ h18("div", { ref: googlePayElementRef })));
+  ), /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component__content" }, /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component--circle" }), /* @__PURE__ */ h18(googlepay_default, null), /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component--text" }, i18n(configuration.locale, "googlepay.title"))), /* @__PURE__ */ h18("div", { className: "straumur__google-pay-component__expandable" }, /* @__PURE__ */ h18("div", { ref: googlePayElementRef })));
 }
 var google_pay_component_default = GooglePayComponent;
 
 // src/features/stored-card/stored-card-container-component.tsx
-import { Fragment as Fragment5, h as h21 } from "preact";
+import { Fragment as Fragment4, h as h21 } from "preact";
 
 // src/features/stored-card/stored-card-component.tsx
-import { Fragment as Fragment4, h as h20 } from "preact";
+import { Fragment as Fragment3, h as h20 } from "preact";
 import { useEffect as useEffect4, useRef as useRef5, useState as useState5 } from "preact/hooks";
 
 // src/features/stored-card/stored-card-component.css
-styleInject('.stored-card-component {\n  position: relative;\n  background: white;\n  border-radius: 12px;\n  transition: all 0.3s ease;\n  padding: 16px 24px;\n  cursor: pointer;\n}\n.stored-card-component:has(.stored-card-component__radio-selector:checked) {\n  cursor: default;\n}\n.stored-card-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n}\n.stored-card-component__content {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  transition: background-color 0.3s ease;\n}\n.stored-card-component__radio-selector:checked + .stored-card-component__content {\n  padding-bottom: 16px;\n  cursor: default;\n}\n.stored-card-component--circle {\n  width: 24px;\n  height: 24px;\n  border: 1px solid #e6ebef;\n  background: #eef0f2;\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.stored-card-component__content:hover .stored-card-component--circle {\n  border: 1px solid #cdd8e2;\n}\n.stored-card-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.stored-card-component__radio-selector:checked + .stored-card-component__content .stored-card-component--circle {\n  background: #bce6f3;\n  border-color: transparent;\n}\n.stored-card-component__radio-selector:checked + .stored-card-component__content .stored-card-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: #002649;\n  height: 10px;\n  width: 10px;\n}\n.stored-card-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.stored-card-component--brands {\n  display: flex;\n  margin-left: auto;\n  align-items: center;\n  gap: 4px;\n}\n.stored-card-component--brands > svg {\n  transition: all 0.2s ease;\n}\n.stored-card-component__remove-stored-card-button {\n  margin-left: auto;\n}\n.stored-card-component__remove-stored-card-button--text {\n  color: #d03e00;\n  text-decoration: none;\n  background: none;\n  border: none;\n  cursor: pointer;\n  transition: all 0.2s ease;\n}\n.stored-card-component__remove-stored-card-button--text:disabled {\n  cursor: not-allowed;\n  color: #72889d;\n}\n.stored-card-component__confirm-remove-stored-card {\n  background-color: #fff7db;\n  border-radius: 8px;\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.stored-card-component__confirm-remove-stored-card--expanded {\n  padding: 16px;\n  max-height: 400px;\n  opacity: 1;\n}\n.stored-card-component__confirm-remove-stored-card--header {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  color: #262b31;\n  padding-bottom: 16px;\n}\n.stored-card-component__confirm-remove-stored-card--actions {\n  display: flex;\n  gap: 12px;\n  justify-content: end;\n}\n.stored-card-component__confirm-remove-stored-card--actions--button {\n  color: #775d00;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-decoration: none;\n  font-weight: bold;\n}\n.stored-card-component__expandable {\n  background: white;\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.stored-card-component__loading-text {\n  display: flex;\n  justify-content: center;\n}\n.stored-card-component__radio-selector:checked ~ .stored-card-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.stored-card-component__form {\n  display: flex;\n  padding-top: 16px;\n  flex-direction: column;\n  gap: 24px;\n}\n.stored-card-component__form--wrapper {\n  display: flex;\n  flex-direction: column;\n  justify-items: start;\n  position: relative;\n  width: 100%;\n}\n.stored-card-component__form--wrapper--error {\n  color: #ff4d4f;\n  font-size: 12px;\n}\n.stored-card-component__form--wrapper--label {\n  transform: translateX(10px) translateY(-50%);\n  z-index: 1;\n  background:\n    linear-gradient(\n      to top,\n      #eef0f2 53%,\n      transparent 50%);\n  position: absolute;\n  font-weight: 500;\n  font-size: 14px;\n  padding: 0 4px;\n}\n.stored-card-component__form--wrapper--label--readonly {\n  background:\n    linear-gradient(\n      to top,\n      #e7e7e7 53%,\n      transparent 50%);\n}\n.stored-card-component__form--wrapper--label--error {\n  color: #ff4d4f;\n  background:\n    linear-gradient(\n      to top,\n      #fff8f5 53%,\n      transparent 50%);\n  font-size: 13px;\n  font-weight: 500;\n}\n.stored-card-component__form--wrapper--label--info {\n  position: absolute;\n  top: 33%;\n  right: 10px;\n}\n.stored-card-component__form--wrapper--input {\n  background: #eef0f2;\n  color: #00112c;\n  display: flex;\n  align-items: center;\n  border: 1px solid transparent;\n  border-radius: 8px;\n  font-size: 1rem;\n  height: 48px;\n  outline: none;\n  padding-left: 12px;\n  transition: border 0.2s ease-out, box-shadow 0.2s ease-out;\n  position: relative;\n}\n.stored-card-component__form--wrapper--input--readonly {\n  background-color: #e7e7e7;\n}\n.stored-card-component__form--wrapper--input:hover {\n  border: 1px solid #cdd8e2;\n}\n.stored-card-component__form--wrapper--input--readonly:hover {\n  border: 1px solid transparent;\n}\n.stored-card-component__form--wrapper--input--error {\n  background: #fff8f5;\n  border: 1px solid #ff4d4f;\n}\n.stored-card-component__form--wrapper--input--error:hover {\n  border: 1px solid #ff4d4f;\n}\n.stored-card-component__form--field-wrapper {\n  display: flex;\n  width: 100%;\n  gap: 24px;\n}\n.stored-card-component__submit-button {\n  background: #002649;\n  border: none;\n  border-radius: 8px;\n  color: #ffffff;\n  cursor: pointer;\n  font-size: 1rem;\n  height: 40px;\n  outline: none;\n  padding: 0 16px;\n  transition: background 0.2s ease-out;\n  width: 100%;\n}\n.stored-card-component__submit-button:hover {\n  background: #002649;\n  border: 1px solid #dbdee2;\n}\n.stored-card-component__submit-button:disabled {\n  background: #72889d;\n  border: 1px solid #dbdee2;\n  cursor: not-allowed;\n}\n');
+styleInject('.straumur__stored-card-component {\n  position: relative;\n  background: white;\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n  cursor: pointer;\n}\n.straumur__stored-card-component:has(.straumur__stored-card-component__radio-selector:checked) {\n  cursor: default;\n}\n.straumur__stored-card-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n}\n.straumur__stored-card-component__content {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n  cursor: default;\n}\n.straumur__stored-card-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__stored-card-component__content:hover .straumur__stored-card-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__stored-card-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content .straumur__stored-card-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content .straumur__stored-card-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__stored-card-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__stored-card-component--brands {\n  display: flex;\n  margin-left: auto;\n  align-items: center;\n  gap: var(--straumur__space-xxs);\n}\n.straumur__stored-card-component--brands > svg {\n  transition: all 0.2s ease;\n}\n.straumur__stored-card-component__remove-stored-card-button {\n  margin-left: auto;\n}\n.straumur__stored-card-component__remove-stored-card-button--text {\n  color: #d03e00;\n  text-decoration: none;\n  background: none;\n  border: none;\n  cursor: pointer;\n  transition: all 0.2s ease;\n}\n.straumur__stored-card-component__remove-stored-card-button--text:disabled {\n  cursor: not-allowed;\n  color: #72889d;\n}\n.straumur__stored-card-component__confirm-remove-stored-card {\n  background-color: #fff7db;\n  border-radius: var(--straumur__border-radius-s);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--expanded {\n  padding: var(--ta jstraumur__space-xxlg);\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--header {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  color: #262b31;\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__stored-card-component__confirm-remove-stored-card--actions {\n  display: flex;\n  gap: var(--straumur__space-lg);\n  justify-content: end;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--actions--button {\n  color: #775d00;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-decoration: none;\n  font-weight: bold;\n}\n.straumur__stored-card-component__expandable {\n  background: var(--straumur__color-white);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__stored-card-component__loading-text {\n  display: flex;\n  justify-content: center;\n}\n.straumur__stored-card-component__radio-selector:checked ~ .straumur__stored-card-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__stored-card-component__form {\n  display: flex;\n  padding-top: var(--straumur__space-xxlg);\n  flex-direction: column;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__stored-card-component__form--wrapper {\n  display: flex;\n  flex-direction: column;\n  justify-items: start;\n  position: relative;\n  width: 100%;\n}\n.straumur__stored-card-component__form--wrapper--error {\n  color: var(--straumur__color-red-beta);\n  font-size: 12px;\n}\n.straumur__stored-card-component__form--wrapper--label {\n  transform: translateX(10px) translateY(-50%);\n  z-index: 1;\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-secondary-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n  position: absolute;\n  font-weight: 500;\n  font-size: 14px;\n  padding: 0 var(--straumur__space-xxs);\n}\n.straumur__stored-card-component__form--wrapper--label--readonly {\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-gray-epsilon) 53%,\n      var(--straumur__color-transparent) 50%);\n}\n.straumur__stored-card-component__form--wrapper--label--error {\n  color: var(--straumur__color-red-beta);\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-red-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n  font-size: 13px;\n  font-weight: 500;\n}\n.straumur__stored-card-component__form--wrapper--label--info {\n  position: absolute;\n  top: 33%;\n  right: var(--straumur__space-md);\n}\n.straumur__stored-card-component__form--wrapper--input {\n  background: var(--straumur__color-secondary-gamma);\n  color: #00112c;\n  display: flex;\n  align-items: center;\n  border: 1px solid var(--straumur__color-transparent);\n  border-radius: var(--straumur__border-radius-s);\n  font-size: 1rem;\n  height: 48px;\n  outline: none;\n  padding-left: var(--straumur__space-lg);\n  transition: border 0.2s ease-out, box-shadow 0.2s ease-out;\n  position: relative;\n}\n.straumur__stored-card-component__form--wrapper--input--readonly {\n  background-color: var(--straumur__color-gray-epsilon);\n}\n.straumur__stored-card-component__form--wrapper--input:hover {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__stored-card-component__form--wrapper--input--readonly:hover {\n  border: 1px solid var(--straumur__color-transparent);\n}\n.straumur__stored-card-component__form--wrapper--input--error {\n  background: var(--straumur__color-red-gamma);\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__stored-card-component__form--wrapper--input--error:hover {\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__stored-card-component__form--field-wrapper {\n  display: flex;\n  width: 100%;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__stored-card-component__submit-button {\n  background: var(--straumur__color-primary);\n  border: none;\n  border-radius: var(--straumur__border-radius-s);\n  color: var(--straumur__color-white);\n  cursor: pointer;\n  font-size: 1rem;\n  height: 40px;\n  outline: none;\n  padding: 0 var(--straumur__space-xxlg);\n  transition: background 0.2s ease-out;\n  width: 100%;\n}\n.straumur__stored-card-component__submit-button:hover {\n  background: var(--straumur__color-primary);\n  border: 1px solid #dbdee2;\n}\n.straumur__stored-card-component__submit-button:disabled {\n  background: #72889d;\n  border: 1px solid #dbdee2;\n  cursor: not-allowed;\n}\n');
 
 // src/features/stored-card/stored-card-component.tsx
 import {
@@ -1647,15 +1655,15 @@ function StoredCardComponent({
     if (!customCardRef.current) return;
     customCardRef.current.submit();
   }
-  return /* @__PURE__ */ h20("label", { className: "stored-card-component" }, /* @__PURE__ */ h20(
+  return /* @__PURE__ */ h20("label", { className: "straumur__stored-card-component" }, /* @__PURE__ */ h20(
     "input",
     {
       type: "radio",
-      className: "stored-card-component__radio-selector",
+      className: "straumur__stored-card-component__radio-selector",
       checked: activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id,
       onChange: handleBoxChange
     }
-  ), /* @__PURE__ */ h20("span", { className: "stored-card-component__content" }, /* @__PURE__ */ h20("span", { className: "stored-card-component--circle" }), /* @__PURE__ */ h20(
+  ), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__content" }, /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component--circle" }), /* @__PURE__ */ h20(
     RenderBrandIcons,
     {
       brands: [
@@ -1665,64 +1673,63 @@ function StoredCardComponent({
         }
       ]
     }
-  ), /* @__PURE__ */ h20("span", { className: "stored-card-component--text" }, "\u2022\u2022\u2022\u2022 ", storedPaymentMethod.lastFour), activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id && /* @__PURE__ */ h20("div", { className: "stored-card-component__remove-stored-card-button" }, /* @__PURE__ */ h20(
+  ), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component--text" }, "\u2022\u2022\u2022\u2022 ", storedPaymentMethod.lastFour), activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id && isStoredCardInitialized[storedPaymentMethod.id] && /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__remove-stored-card-button" }, /* @__PURE__ */ h20(
     "button",
     {
       onClick: handleAskToConfirmRemoveCard,
-      className: "stored-card-component__remove-stored-card-button--text",
+      className: "straumur__stored-card-component__remove-stored-card-button--text",
       disabled: askConfirmRemoveStoredCard
     },
     i18n(configuration.locale, "stored-cards.removeStoredCard")
   ))), /* @__PURE__ */ h20(
     "div",
     {
-      className: `${"stored-card-component__confirm-remove-stored-card"} ${askConfirmRemoveStoredCard ? "stored-card-component__confirm-remove-stored-card--expanded" : ""}`
+      className: `${"straumur__stored-card-component__confirm-remove-stored-card"} ${askConfirmRemoveStoredCard ? "straumur__stored-card-component__confirm-remove-stored-card--expanded" : ""}`
     },
-    /* @__PURE__ */ h20("div", { className: "stored-card-component__confirm-remove-stored-card--header" }, /* @__PURE__ */ h20(warning_default, null), /* @__PURE__ */ h20("span", { className: "stored-card-component__confirm-remove-stored-card--header--title" }, i18n(configuration.locale, "stored-cards.removeStoredCardQuestion"))),
-    /* @__PURE__ */ h20("div", { className: "stored-card-component__confirm-remove-stored-card--actions" }, /* @__PURE__ */ h20(
+    /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__confirm-remove-stored-card--header" }, /* @__PURE__ */ h20(warning_default, null), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__confirm-remove-stored-card--header--title" }, i18n(configuration.locale, "stored-cards.removeStoredCardQuestion"))),
+    /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__confirm-remove-stored-card--actions" }, /* @__PURE__ */ h20(
       "button",
       {
-        className: "stored-card-component__confirm-remove-stored-card--actions--button",
+        className: "straumur__stored-card-component__confirm-remove-stored-card--actions--button",
         onClick: handleConfirmRemoveStoredCard
       },
       i18n(configuration.locale, "stored-cards.removeStoredCardQuestionYesRemove")
     ), /* @__PURE__ */ h20(
       "button",
       {
-        className: "stored-card-component__confirm-remove-stored-card--actions--button",
+        className: "straumur__stored-card-component__confirm-remove-stored-card--actions--button",
         onClick: handleCancelRemoveStoredCard
       },
       i18n(configuration.locale, "stored-cards.removeStoredCardQuestionCancel")
     ))
-  ), /* @__PURE__ */ h20("div", { className: "stored-card-component__expandable", ref: storedCardElementRef }, !isStoredCardInitialized[storedPaymentMethod.id] && /* @__PURE__ */ h20("div", { className: "stored-card-component__loading-text" }, /* @__PURE__ */ h20(loader_default, null)), /* @__PURE__ */ h20(
+  ), /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__expandable", ref: storedCardElementRef }, !isStoredCardInitialized[storedPaymentMethod.id] && /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__loading-text" }, /* @__PURE__ */ h20(loader_default, null)), /* @__PURE__ */ h20(
     "div",
     {
-      className: "stored-card-component__form",
+      className: "straumur__stored-card-component__form",
       style: {
         opacity: isStoredCardInitialized[storedPaymentMethod.id] ? 1 : 0,
         position: isStoredCardInitialized[storedPaymentMethod.id] ? "relative" : "absolute",
         transition: "opacity 0.3s ease-in-out"
       }
     },
-    /* @__PURE__ */ h20("div", { className: "stored-card-component__form--field-wrapper" }, /* @__PURE__ */ h20("div", { className: "stored-card-component__form--wrapper" }, /* @__PURE__ */ h20("label", { className: "stored-card-component__form--wrapper--label stored-card-component__form--wrapper--label--readonly" }, i18n(configuration.locale, "stored-cards.expiryDate")), /* @__PURE__ */ h20("span", { className: "stored-card-component__form--wrapper--input stored-card-component__form--wrapper--input--readonly" }, storedPaymentMethod.expiryMonth, "/", storedPaymentMethod.expiryYear)), /* @__PURE__ */ h20("div", { className: "stored-card-component__form--wrapper" }, (securityCodePolicy === "optional" || securityCodePolicy === "required") && /* @__PURE__ */ h20(Fragment4, null, /* @__PURE__ */ h20(
+    /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--field-wrapper" }, /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--wrapper" }, /* @__PURE__ */ h20("label", { className: "straumur__stored-card-component__form--wrapper--label straumur__stored-card-component__form--wrapper--label--readonly" }, i18n(configuration.locale, "stored-cards.expiryDate")), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__form--wrapper--input straumur__stored-card-component__form--wrapper--input--readonly" }, storedPaymentMethod.expiryMonth, "/", storedPaymentMethod.expiryYear)), /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--wrapper" }, (securityCodePolicy === "optional" || securityCodePolicy === "required") && /* @__PURE__ */ h20(Fragment3, null, /* @__PURE__ */ h20(
       "label",
       {
-        className: `${"stored-card-component__form--wrapper--label"} ${formErrors.encryptedSecurityCode.visible ? "stored-card-component__form--wrapper--label--error" : ""}`
+        className: `${"straumur__stored-card-component__form--wrapper--label"} ${formErrors.encryptedSecurityCode.visible ? "straumur__stored-card-component__form--wrapper--label--error" : ""}`
       },
       securityCodePolicy === "optional" ? i18n(configuration.locale, "stored-cards.securityCode3DigitsOptional") : i18n(configuration.locale, "stored-cards.securityCode3Digits")
     ), /* @__PURE__ */ h20(
       "span",
       {
-        className: `${"stored-card-component__form--wrapper--input"} ${formErrors.encryptedSecurityCode.visible ? "stored-card-component__form--wrapper--input--error" : ""}`,
+        className: `${"straumur__stored-card-component__form--wrapper--input"} ${formErrors.encryptedSecurityCode.visible ? "straumur__stored-card-component__form--wrapper--input--error" : ""}`,
         "data-cse": "encryptedSecurityCode"
       },
-      /* @__PURE__ */ h20("div", { className: "stored-card-component__form--wrapper--label--info" }, /* @__PURE__ */ h20(Tooltip, { content: i18n(configuration.locale, "stored-cards.securityCode3DigitsInfo") }, /* @__PURE__ */ h20(info_default, null)))
-    )), formErrors.encryptedSecurityCode.visible && /* @__PURE__ */ h20("span", { className: "stored-card-component__form--wrapper--error" }, formErrors.encryptedSecurityCode.message))),
+      /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--wrapper--label--info" }, /* @__PURE__ */ h20(Tooltip, { content: i18n(configuration.locale, "stored-cards.securityCode3DigitsInfo") }, /* @__PURE__ */ h20(info_default, null)))
+    )), formErrors.encryptedSecurityCode.visible && /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__form--wrapper--error" }, formErrors.encryptedSecurityCode.message))),
     /* @__PURE__ */ h20(
       "button",
       {
-        id: "stored-card-component-submit-button",
-        className: "stored-card-component__submit-button",
+        className: "straumur__stored-card-component__submit-button",
         disabled: payButtonDisabled,
         onClick: handleSubmitClick
       },
@@ -1750,7 +1757,7 @@ function StoredCardContainerComponent({
       (prevStoredPaymentMethods) => prevStoredPaymentMethods.filter((storedPaymentMethod) => storedPaymentMethod.id !== storedPaymentMethodId)
     );
   }
-  return /* @__PURE__ */ h21(Fragment5, null, storedPaymentMethods == null ? void 0 : storedPaymentMethods.map((storedPaymentMethod) => /* @__PURE__ */ h21(
+  return /* @__PURE__ */ h21(Fragment4, null, storedPaymentMethods == null ? void 0 : storedPaymentMethods.map((storedPaymentMethod) => /* @__PURE__ */ h21(
     stored_card_component_default,
     {
       key: storedPaymentMethod.id,
@@ -1767,19 +1774,19 @@ var stored_card_container_component_default = StoredCardContainerComponent;
 import { h as h22 } from "preact";
 
 // src/components/payment-method-group/payment-method-group.css
-styleInject(".payment-method-group {\n  display: flex;\n  flex-direction: column;\n  gap: 16px;\n  width: 100%;\n}\n");
+styleInject(".straumur__payment-method-group {\n  display: flex;\n  flex-direction: column;\n  gap: var(--straumur__space-xxlg);\n  width: 100%;\n}\n");
 
 // src/components/payment-method-group/payment-method-group.tsx
 function PaymentMethodGroup({ children, initialValue }) {
-  return /* @__PURE__ */ h22(PaymentMethodGroupContext, { initialValue }, /* @__PURE__ */ h22("div", { className: "payment-method-group" }, children));
+  return /* @__PURE__ */ h22(PaymentMethodGroupContext, { initialValue }, /* @__PURE__ */ h22("div", { className: "straumur__payment-method-group" }, children));
 }
 var payment_method_group_default = PaymentMethodGroup;
 
 // src/features/result-component/result-component.tsx
-import { h as h25 } from "preact";
+import { Fragment as Fragment5, h as h25 } from "preact";
 
 // src/features/result-component/result-component.css
-styleInject(".result-component {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  height: 300px;\n  background-color: white;\n  border-radius: 16px;\n}\n");
+styleInject(".straumur__result-component {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  height: 300px;\n  background-color: white;\n  border-radius: 16px;\n}\n");
 
 // src/assets/icons/success.tsx
 import { h as h23 } from "preact";
@@ -1890,7 +1897,7 @@ function ResultComponent({ configuration }) {
   if (!error && !success) {
     return null;
   }
-  return /* @__PURE__ */ h25("div", { className: "result-component" }, error && /* @__PURE__ */ h25("div", { className: "result-component__error" }, /* @__PURE__ */ h25(failure_default, null), /* @__PURE__ */ h25("p", { className: "result-component__error--message" }, i18n(configuration.locale, error))), success && /* @__PURE__ */ h25("div", { className: "result-component__success" }, /* @__PURE__ */ h25(success_default, null), /* @__PURE__ */ h25("p", { className: "result-component__success--message" }, i18n(configuration.locale, success))));
+  return /* @__PURE__ */ h25("div", { className: "straumur__result-component" }, error && /* @__PURE__ */ h25(Fragment5, null, /* @__PURE__ */ h25(failure_default, null), /* @__PURE__ */ h25("p", { className: "straumur__result-component__error--message" }, i18n(configuration.locale, error))), success && /* @__PURE__ */ h25(Fragment5, null, /* @__PURE__ */ h25(success_default, null), /* @__PURE__ */ h25("p", { className: "straumur__result-component__success--message" }, i18n(configuration.locale, success))));
 }
 var result_component_default = ResultComponent;
 
@@ -1899,7 +1906,7 @@ import { h as h26 } from "preact";
 import { useEffect as useEffect5, useRef as useRef6 } from "preact/hooks";
 
 // src/features/three-d-secure-component/three-d-secure-component.css
-styleInject(".three-d-secure {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  background-color: white;\n  border-radius: 16px;\n}\n");
+styleInject(".straumur__three-d-secure {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  background-color: white;\n  border-radius: var(--straumur__border-radius-xxlg);\n}\n");
 
 // src/features/three-d-secure-component/three-d-secure-component.tsx
 function StraumurCheckoutContainer() {
@@ -1910,7 +1917,7 @@ function StraumurCheckoutContainer() {
       setThreeDSecureRef(threeDSecureRef.current);
     }
   }, []);
-  return /* @__PURE__ */ h26("div", { className: "three-d-secure", ref: threeDSecureRef });
+  return /* @__PURE__ */ h26("div", { className: "straumur__three-d-secure", ref: threeDSecureRef });
 }
 var three_d_secure_component_default = StraumurCheckoutContainer;
 
@@ -1946,7 +1953,7 @@ var StraumurCheckout = class {
         return;
       }
       render(
-        /* @__PURE__ */ h29("div", { className: "component" }, /* @__PURE__ */ h29(loader_default, null)),
+        /* @__PURE__ */ h29(RootComponent, null, /* @__PURE__ */ h29("div", { className: "straumur__component" }, /* @__PURE__ */ h29(loader_default, null))),
         this.mountElement
       );
       const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
@@ -1963,7 +1970,7 @@ var StraumurCheckout = class {
   renderComponent() {
     if (!this.mountElement) return;
     render(
-      /* @__PURE__ */ h29(straumur_checkout_container_default, { configuration: this.configuration, paymentMethods: this.paymentMethods }),
+      /* @__PURE__ */ h29(RootComponent, null, /* @__PURE__ */ h29(straumur_checkout_container_default, { configuration: this.configuration, paymentMethods: this.paymentMethods })),
       this.mountElement
     );
   }
@@ -1989,12 +1996,15 @@ var StraumurCheckout = class {
   }
   handleError(message) {
     render(
-      /* @__PURE__ */ h29("div", { className: "component" }, /* @__PURE__ */ h29(failure_default, null), /* @__PURE__ */ h29("p", null, i18n(this.configuration.locale, message))),
+      /* @__PURE__ */ h29(RootComponent, null, /* @__PURE__ */ h29("div", { className: "straumur__component" }, /* @__PURE__ */ h29(failure_default, null), /* @__PURE__ */ h29("p", null, i18n(this.configuration.locale, message)))),
       this.mountElement
     );
   }
 };
 var straumur_checkout_default = StraumurCheckout;
+function RootComponent({ children }) {
+  return /* @__PURE__ */ h29("div", { className: "straumur__root-component" }, children);
+}
 export {
   straumur_checkout_default as StraumurCheckout
 };

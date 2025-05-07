@@ -260,15 +260,15 @@ function StoredCardComponent({
   }
 
   return (
-    <label className="stored-card-component">
+    <label className="straumur__stored-card-component">
       <input
         type="radio"
-        className="stored-card-component__radio-selector"
+        className="straumur__stored-card-component__radio-selector"
         checked={activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id}
         onChange={handleBoxChange}
       />
-      <span className="stored-card-component__content">
-        <span className="stored-card-component--circle"></span>
+      <span className="straumur__stored-card-component__content">
+        <span className="straumur__stored-card-component--circle"></span>
         <RenderBrandIcons
           brands={[
             {
@@ -277,77 +277,79 @@ function StoredCardComponent({
             },
           ]}
         />
-        <span className="stored-card-component--text">•••• {storedPaymentMethod.lastFour}</span>
-        {activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id && (
-          <div className="stored-card-component__remove-stored-card-button">
-            <button
-              onClick={handleAskToConfirmRemoveCard}
-              className="stored-card-component__remove-stored-card-button--text"
-              disabled={askConfirmRemoveStoredCard}
-            >
-              {i18n(configuration.locale, "stored-cards.removeStoredCard")}
-            </button>
-          </div>
-        )}
+        <span className="straumur__stored-card-component--text">•••• {storedPaymentMethod.lastFour}</span>
+        {activePaymentMethod === "storedcard" &&
+          activeStoredPaymentMethodId === storedPaymentMethod.id &&
+          isStoredCardInitialized[storedPaymentMethod.id] && (
+            <div className="straumur__stored-card-component__remove-stored-card-button">
+              <button
+                onClick={handleAskToConfirmRemoveCard}
+                className="straumur__stored-card-component__remove-stored-card-button--text"
+                disabled={askConfirmRemoveStoredCard}
+              >
+                {i18n(configuration.locale, "stored-cards.removeStoredCard")}
+              </button>
+            </div>
+          )}
       </span>
       <div
-        className={`${"stored-card-component__confirm-remove-stored-card"} ${
-          askConfirmRemoveStoredCard ? "stored-card-component__confirm-remove-stored-card--expanded" : ""
+        className={`${"straumur__stored-card-component__confirm-remove-stored-card"} ${
+          askConfirmRemoveStoredCard ? "straumur__stored-card-component__confirm-remove-stored-card--expanded" : ""
         }`}
       >
-        <div className="stored-card-component__confirm-remove-stored-card--header">
+        <div className="straumur__stored-card-component__confirm-remove-stored-card--header">
           <WarningIcon />
-          <span className="stored-card-component__confirm-remove-stored-card--header--title">
+          <span className="straumur__stored-card-component__confirm-remove-stored-card--header--title">
             {i18n(configuration.locale, "stored-cards.removeStoredCardQuestion")}
           </span>
         </div>
-        <div className="stored-card-component__confirm-remove-stored-card--actions">
+        <div className="straumur__stored-card-component__confirm-remove-stored-card--actions">
           <button
-            className="stored-card-component__confirm-remove-stored-card--actions--button"
+            className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
             onClick={handleConfirmRemoveStoredCard}
           >
             {i18n(configuration.locale, "stored-cards.removeStoredCardQuestionYesRemove")}
           </button>
           <button
-            className="stored-card-component__confirm-remove-stored-card--actions--button"
+            className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
             onClick={handleCancelRemoveStoredCard}
           >
             {i18n(configuration.locale, "stored-cards.removeStoredCardQuestionCancel")}
           </button>
         </div>
       </div>
-      <div className="stored-card-component__expandable" ref={storedCardElementRef}>
+      <div className="straumur__stored-card-component__expandable" ref={storedCardElementRef}>
         {!isStoredCardInitialized[storedPaymentMethod.id] && (
-          <div className="stored-card-component__loading-text">
+          <div className="straumur__stored-card-component__loading-text">
             <LoaderIcon />
           </div>
         )}
 
         <div
-          className="stored-card-component__form"
+          className="straumur__stored-card-component__form"
           style={{
             opacity: isStoredCardInitialized[storedPaymentMethod.id] ? 1 : 0,
             position: isStoredCardInitialized[storedPaymentMethod.id] ? "relative" : "absolute",
             transition: "opacity 0.3s ease-in-out",
           }}
         >
-          <div className="stored-card-component__form--field-wrapper">
-            <div className="stored-card-component__form--wrapper">
-              <label className="stored-card-component__form--wrapper--label stored-card-component__form--wrapper--label--readonly">
+          <div className="straumur__stored-card-component__form--field-wrapper">
+            <div className="straumur__stored-card-component__form--wrapper">
+              <label className="straumur__stored-card-component__form--wrapper--label straumur__stored-card-component__form--wrapper--label--readonly">
                 {i18n(configuration.locale, "stored-cards.expiryDate")}
               </label>
-              <span className="stored-card-component__form--wrapper--input stored-card-component__form--wrapper--input--readonly">
+              <span className="straumur__stored-card-component__form--wrapper--input straumur__stored-card-component__form--wrapper--input--readonly">
                 {storedPaymentMethod.expiryMonth}/{storedPaymentMethod.expiryYear}
               </span>
             </div>
 
-            <div className="stored-card-component__form--wrapper">
+            <div className="straumur__stored-card-component__form--wrapper">
               {(securityCodePolicy === "optional" || securityCodePolicy === "required") && (
                 <Fragment>
                   <label
-                    className={`${"stored-card-component__form--wrapper--label"} ${
+                    className={`${"straumur__stored-card-component__form--wrapper--label"} ${
                       formErrors.encryptedSecurityCode.visible
-                        ? "stored-card-component__form--wrapper--label--error"
+                        ? "straumur__stored-card-component__form--wrapper--label--error"
                         : ""
                     }`}
                   >
@@ -356,14 +358,14 @@ function StoredCardComponent({
                       : i18n(configuration.locale, "stored-cards.securityCode3Digits")}
                   </label>
                   <span
-                    className={`${"stored-card-component__form--wrapper--input"} ${
+                    className={`${"straumur__stored-card-component__form--wrapper--input"} ${
                       formErrors.encryptedSecurityCode.visible
-                        ? "stored-card-component__form--wrapper--input--error"
+                        ? "straumur__stored-card-component__form--wrapper--input--error"
                         : ""
                     }`}
                     data-cse="encryptedSecurityCode"
                   >
-                    <div className="stored-card-component__form--wrapper--label--info">
+                    <div className="straumur__stored-card-component__form--wrapper--label--info">
                       <Tooltip content={i18n(configuration.locale, "stored-cards.securityCode3DigitsInfo")}>
                         <InfoIcon />
                       </Tooltip>
@@ -372,7 +374,7 @@ function StoredCardComponent({
                 </Fragment>
               )}
               {formErrors.encryptedSecurityCode.visible && (
-                <span className="stored-card-component__form--wrapper--error">
+                <span className="straumur__stored-card-component__form--wrapper--error">
                   {formErrors.encryptedSecurityCode.message}
                 </span>
               )}
@@ -380,8 +382,7 @@ function StoredCardComponent({
           </div>
 
           <button
-            id="stored-card-component-submit-button"
-            className="stored-card-component__submit-button"
+            className="straumur__stored-card-component__submit-button"
             disabled={payButtonDisabled}
             onClick={handleSubmitClick}
           >

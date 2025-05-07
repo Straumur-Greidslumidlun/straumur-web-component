@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { Fragment, h } from "preact";
 import "./result-component.css";
 import SuccessIcon from "../../assets/icons/success";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
@@ -18,19 +18,19 @@ function ResultComponent({ configuration }: ResultComponentProps): h.JSX.Element
   }
 
   return (
-    <div className="result-component">
+    <div className="straumur__result-component">
       {error && (
-        <div className="result-component__error">
+        <Fragment>
           <FailureIcon />
-          <p className="result-component__error--message">{i18n(configuration.locale, error)}</p>
-        </div>
+          <p className="straumur__result-component__error--message">{i18n(configuration.locale, error)}</p>
+        </Fragment>
       )}
 
       {success && (
-        <div className="result-component__success">
+        <Fragment>
           <SuccessIcon />
-          <p className="result-component__success--message">{i18n(configuration.locale, success)}</p>
-        </div>
+          <p className="straumur__result-component__success--message">{i18n(configuration.locale, success)}</p>
+        </Fragment>
       )}
     </div>
   );

@@ -1,19 +1,63 @@
-* {
-  font-family: "AkzidenzGroteskPro", sans-serif;
-  max-width: 440px;
+:root {
+  --straumur__color-primary: #002649;
+  --straumur__color-secondary: #72889d;
+  --straumur__color-secondary-gamma: #eef0f2;
+
+  --straumur__color-blue-beta: #bce6f3;
+  --straumur__color-blue-gamma: #eff8fa;
+
+  --straumur__color-red-beta: #d96666;
+  --straumur__color-red-gamma: #fff8f5;
+
+  --straumur__color-gray-epsilon: #e7e7e7;
+
+  --straumur__color-cosmos-blue-delta: #cdd8e2;
+  --straumur__color-cosmos-blue-gamma: #e6ebef;
+
+  --straumur__color-white: #ffffff;
+  --straumur__color-transparent: transparent;
+
+  --straumur__border-radius-xxs: 4px;
+  --straumur__border-radius-xs: 6px;
+  --straumur__border-radius-s: 8px;
+  --straumur__border-radius-md: 10px;
+  --straumur__border-radius-lg: 12px;
+  --straumur__border-radius-xlg: 14px;
+  --straumur__border-radius-xxlg: 16px;
+
+  --straumur__space-xxs: 4px;
+  --straumur__space-xs: 6px;
+  --straumur__space-s: 8px;
+  --straumur__space-md: 10px;
+  --straumur__space-lg: 12px;
+  --straumur__space-xlg: 14px;
+  --straumur__space-xxlg: 16px;
+  --straumur__space-3xlg: 18px;
+  --straumur__space-4xlg: 20px;
+  --straumur__space-5xlg: 24px;
 }
 
-.render-brand-icons__overflow {
+.straumur__root-component {
+  font-family: "AkzidenzGroteskPro", sans-serif;
+  max-width: 440px;
+  min-width: 320px;
+}
+
+.straumur__component * {
+  font-family: inherit;
+}
+
+.straumur__render-brand-icons__overflow {
   color: #72889d;
 }
 
-.component {
+.straumur__component {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 300px;
-  background-color: white;
-  border-radius: 16px;
+  background-color: var(--straumur__color-white);
+  border-radius: var(--straumur__border-radius-xxlg);
 }
