@@ -1,4 +1,4 @@
-.straumur__google-pay-component {
+.straumur__apple-pay-component {
   position: relative;
   cursor: pointer;
   background: var(--straumur__color-white);
@@ -7,24 +7,24 @@
   padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);
 }
 
-.straumur__google-pay-component__radio-selector {
+.straumur__apple-pay-component__radio-selector {
   position: absolute;
   opacity: 0;
   cursor: pointer;
 }
 
-.straumur__google-pay-component__content {
+.straumur__apple-pay-component__content {
   display: flex;
   align-items: center;
   gap: var(--straumur__space-lg);
   transition: background-color 0.3s ease;
 }
 
-.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content {
+.straumur__apple-pay-component__radio-selector:checked + .straumur__apple-pay-component__content {
   padding-bottom: var(--straumur__space-xxlg);
 }
 
-.straumur__google-pay-component--circle {
+.straumur__apple-pay-component--circle {
   width: var(--straumur__space-5xlg);
   height: var(--straumur__space-5xlg);
   border: 1px solid var(--straumur__color-cosmos-blue-gamma);
@@ -34,11 +34,11 @@
   transition: all 0.3s ease;
 }
 
-.straumur__google-pay-component__content:hover .straumur__google-pay-component--circle {
+.straumur__apple-pay-component__content:hover .straumur__apple-pay-component--circle {
   border: 1px solid var(--straumur__color-cosmos-blue-delta);
 }
 
-.straumur__google-pay-component--circle::after {
+.straumur__apple-pay-component--circle::after {
   content: "";
   position: absolute;
   width: 100%;
@@ -50,29 +50,29 @@
   transition: transform 0.2s ease;
 }
 
-.straumur__google-pay-component__radio-selector:checked
-  + .straumur__google-pay-component__content
-  .straumur__google-pay-component--circle {
+.straumur__apple-pay-component__radio-selector:checked
+  + .straumur__apple-pay-component__content
+  .straumur__apple-pay-component--circle {
   background: var(--straumur__color-blue-beta);
   border-color: var(--straumur__color-transparent);
 }
 
-.straumur__google-pay-component__radio-selector:checked
-  + .straumur__google-pay-component__content
-  .straumur__google-pay-component--circle::after {
+.straumur__apple-pay-component__radio-selector:checked
+  + .straumur__apple-pay-component__content
+  .straumur__apple-pay-component--circle::after {
   transform: translate(-50%, -50%) scale(1);
   background: var(--straumur__color-primary);
   height: var(--straumur__space-md);
   width: var(--straumur__space-md);
 }
 
-.straumur__google-pay-component--text {
+.straumur__apple-pay-component--text {
   color: #213547;
   font-size: 1rem;
   user-select: none;
 }
 
-.straumur__google-pay-component__expandable {
+.straumur__apple-pay-component__expandable {
   background: var(--straumur__color-white);
   max-height: 0;
   overflow: hidden;
@@ -80,12 +80,12 @@
   opacity: 0;
 }
 
-.straumur__google-pay-component__radio-selector:checked ~ .straumur__google-pay-component__expandable {
+.straumur__apple-pay-component__radio-selector:checked ~ .straumur__apple-pay-component__expandable {
   max-height: 400px;
   opacity: 1;
 }
 
-.straumur__google-pay-component__expandable p {
+.straumur__apple-pay-component__expandable p {
   margin: 0;
   color: #213547;
   font-size: 0.9rem;

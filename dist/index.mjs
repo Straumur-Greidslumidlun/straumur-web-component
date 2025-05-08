@@ -1,5 +1,5 @@
 // src/straumur-checkout.tsx
-import { h as h29, render } from "preact";
+import { h as h31, render } from "preact";
 import "@adyen/adyen-web/styles/adyen.css";
 
 // #style-inject:#style-inject
@@ -119,7 +119,7 @@ async function setupPaymentMethods(environment, sessionId) {
 }
 
 // src/features/straumur-checkout-container.tsx
-import { h as h28 } from "preact";
+import { h as h30 } from "preact";
 
 // src/features/card/card-component.tsx
 import { Fragment as Fragment2, h as h16 } from "preact";
@@ -222,7 +222,8 @@ var translations = {
     "cards.securityCode3DigitsInfo": "3-digit on the back of the card",
     "cards.securityCode4DigitsInfo": "4-digit on the back of the card",
     "cards.storePaymentMethod": "Store payment information",
-    "googlepay.title": "Google Pay",
+    "googlePay.title": "Google Pay",
+    "applePay.title": "Apple Pay",
     "stored-cards.expiryDate": "Expiry date",
     "stored-cards.securityCode3Digits": "Security code",
     "stored-cards.securityCode3DigitsOptional": "Security code (optional)",
@@ -242,6 +243,7 @@ var translations = {
     "error.failedToSubmitPaymentDetails": "Failed to submit payment details",
     "error.paymentDetailsFailed": "Payment details failed",
     "error.googlePayNotAvailable": "Google Pay not available",
+    "error.applePayNotAvailable": "Apple Pay not available",
     "error.failedToSubmitRemoveStoredPaymentCard": "Failed to remove stored payment card",
     "error.failedToRemoveStoredPaymentCard": "Stored payment card was not removed"
   },
@@ -254,7 +256,8 @@ var translations = {
     "cards.securityCode3DigitsInfo": "3 t\xF6lustafir aftan \xE1 kortinu",
     "cards.securityCode4DigitsInfo": "4 t\xF6lustafir aftan \xE1 kortinu",
     "cards.storePaymentMethod": "Vista grei\xF0sluuppl\xFDsingar",
-    "googlepay.title": "Google Pay",
+    "googlePay.title": "Google Pay",
+    "applePay.title": "Apple Pay",
     "stored-cards.expiryDate": "Gildisdagur",
     "stored-cards.securityCode3Digits": "\xD6ryggisk\xF3\xF0i",
     "stored-cards.securityCode3DigitsOptional": "\xD6ryggisk\xF3\xF0i (valkv\xE6tt)",
@@ -274,6 +277,7 @@ var translations = {
     "error.failedToSubmitPaymentDetails": "Mist\xF3kst a\xF0 senda grei\xF0sluuppl\xFDsingar",
     "error.paymentDetailsFailed": "Mist\xF3kst a\xF0 s\xE6kja grei\xF0sluuppl\xFDsingar",
     "error.googlePayNotAvailable": "Google Pay ekki \xED bo\xF0i",
+    "error.applePayNotAvailable": "Apple Pay ekki \xED bo\xF0i",
     "error.failedToSubmitRemoveStoredPaymentCard": "Mist\xF3kst a\xF0 fjarl\xE6gja geymdan grei\xF0slum\xE1ta",
     "error.failedToRemoveStoredPaymentCard": "Geymdur grei\xF0slum\xE1ti var ekki fjarl\xE6g\xF0ur"
   }
@@ -1234,7 +1238,7 @@ import { h as h18 } from "preact";
 import { useEffect as useEffect3, useRef as useRef4 } from "preact/hooks";
 
 // src/features/google-pay/google-pay-component.css
-styleInject('.straumur__google-pay-component {\n  position: relative;\n  cursor: pointer;\n  background: white;\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n}\n.straumur__google-pay-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n  cursor: pointer;\n}\n.straumur__google-pay-component__content {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__google-pay-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__google-pay-component__content:hover .straumur__google-pay-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__google-pay-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content .straumur__google-pay-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content .straumur__google-pay-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__google-pay-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__google-pay-component__expandable {\n  background: white;\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__google-pay-component__radio-selector:checked ~ .straumur__google-pay-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__google-pay-component__expandable p {\n  margin: 0;\n  color: #213547;\n  font-size: 0.9rem;\n}\n');
+styleInject('.straumur__google-pay-component {\n  position: relative;\n  cursor: pointer;\n  background: var(--straumur__color-white);\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n}\n.straumur__google-pay-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n  cursor: pointer;\n}\n.straumur__google-pay-component__content {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__google-pay-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__google-pay-component__content:hover .straumur__google-pay-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__google-pay-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content .straumur__google-pay-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__google-pay-component__radio-selector:checked + .straumur__google-pay-component__content .straumur__google-pay-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__google-pay-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__google-pay-component__expandable {\n  background: var(--straumur__color-white);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__google-pay-component__radio-selector:checked ~ .straumur__google-pay-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__google-pay-component__expandable p {\n  margin: 0;\n  color: #213547;\n  font-size: 0.9rem;\n}\n');
 
 // src/features/google-pay/google-pay-component.tsx
 import {
@@ -1437,42 +1441,214 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       checked: activePaymentMethod === "googlepay",
       onChange: handleBoxChange
     }
-  ), /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component__content" }, /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component--circle" }), /* @__PURE__ */ h18(googlepay_default, null), /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component--text" }, i18n(configuration.locale, "googlepay.title"))), /* @__PURE__ */ h18("div", { className: "straumur__google-pay-component__expandable" }, /* @__PURE__ */ h18("div", { ref: googlePayElementRef })));
+  ), /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component__content" }, /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component--circle" }), /* @__PURE__ */ h18(googlepay_default, null), /* @__PURE__ */ h18("span", { className: "straumur__google-pay-component--text" }, i18n(configuration.locale, "googlePay.title"))), /* @__PURE__ */ h18("div", { className: "straumur__google-pay-component__expandable" }, /* @__PURE__ */ h18("div", { ref: googlePayElementRef })));
 }
 var google_pay_component_default = GooglePayComponent;
 
+// src/features/apple-pay/apple-pay-component.tsx
+import { h as h20 } from "preact";
+import { useEffect as useEffect4, useRef as useRef5 } from "preact/hooks";
+
+// src/features/apple-pay/apple-pay-component.css
+styleInject('.straumur__apple-pay-component {\n  position: relative;\n  cursor: pointer;\n  background: var(--straumur__color-white);\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n}\n.straumur__apple-pay-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n  cursor: pointer;\n}\n.straumur__apple-pay-component__content {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__apple-pay-component__radio-selector:checked + .straumur__apple-pay-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__apple-pay-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__apple-pay-component__content:hover .straumur__apple-pay-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__apple-pay-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__apple-pay-component__radio-selector:checked + .straumur__apple-pay-component__content .straumur__apple-pay-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__apple-pay-component__radio-selector:checked + .straumur__apple-pay-component__content .straumur__apple-pay-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__apple-pay-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__apple-pay-component__expandable {\n  background: var(--straumur__color-white);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__apple-pay-component__radio-selector:checked ~ .straumur__apple-pay-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__apple-pay-component__expandable p {\n  margin: 0;\n  color: #213547;\n  font-size: 0.9rem;\n}\n');
+
+// src/features/apple-pay/apple-pay-component.tsx
+import {
+  AdyenCheckout as AdyenCheckout3,
+  ApplePay
+} from "@adyen/adyen-web";
+
+// src/assets/icons/applepay.tsx
+import { h as h19 } from "preact";
+var ApplePayIcon = () => /* @__PURE__ */ h19("svg", { xmlns: "http://www.w3.org/2000/svg", width: "40", height: "26", fill: "none", viewBox: "0 0 40 26" }, /* @__PURE__ */ h19(
+  "path",
+  {
+    fill: "#000",
+    d: "M36.42 0H3.58a69.25 69.25 0 0 0-.75 0c-.25.01-.5.03-.76.07a2.51 2.51 0 0 0-1.32.7A2.43 2.43 0 0 0 .07 2.1 5.14 5.14 0 0 0 0 3.22v19.91c.01.25.03.51.07.76a2.6 2.6 0 0 0 .68 1.35 2.39 2.39 0 0 0 1.32.69 4.98 4.98 0 0 0 1.1.07h34a5 5 0 0 0 .76-.07 2.5 2.5 0 0 0 1.32-.7 2.44 2.44 0 0 0 .68-1.34 5.13 5.13 0 0 0 .07-1.11V2.87a6.5 6.5 0 0 0-.07-.76 2.58 2.58 0 0 0-.68-1.35 2.4 2.4 0 0 0-1.32-.69 4.96 4.96 0 0 0-1.1-.07h-.41Z"
+  }
+), /* @__PURE__ */ h19(
+  "path",
+  {
+    fill: "#fff",
+    d: "M36.42.87h.73c.2 0 .42.02.62.06a1.67 1.67 0 0 1 .88.44 1.58 1.58 0 0 1 .44.89 4.38 4.38 0 0 1 .06.97v19.55a14.67 14.67 0 0 1-.06.96 1.7 1.7 0 0 1-.44.89 1.54 1.54 0 0 1-.87.44 4.27 4.27 0 0 1-.96.06H2.85a3.7 3.7 0 0 1-.63-.06 1.66 1.66 0 0 1-.87-.45 1.56 1.56 0 0 1-.44-.88 4.35 4.35 0 0 1-.06-.97V2.9c.01-.2.02-.42.06-.63.03-.18.08-.34.16-.49A1.56 1.56 0 0 1 2.22.93a4.2 4.2 0 0 1 .96-.06h33.24"
+  }
+), /* @__PURE__ */ h19(
+  "path",
+  {
+    fill: "#000",
+    d: "M10.92 8.61c.34-.43.57-1 .51-1.59a2.21 2.21 0 0 0-1.99 2.3c.56.04 1.12-.3 1.48-.7Zm.51.81c-.82-.05-1.52.46-1.9.46-.4 0-1-.43-1.64-.42-.84 0-1.62.48-2.05 1.24-.88 1.52-.23 3.76.62 5 .42.6.92 1.27 1.58 1.25.62-.02.86-.4 1.62-.4.75 0 .97.4 1.63.39.69-.01 1.11-.61 1.53-1.22.47-.7.67-1.37.68-1.4-.01-.02-1.32-.52-1.33-2.02-.01-1.26 1.03-1.85 1.07-1.9a2.34 2.34 0 0 0-1.81-.98Zm7.11-1.7a2.87 2.87 0 0 1 3.02 3c0 1.8-1.27 3.03-3.06 3.03h-1.97v3.12h-1.42V7.72h3.43Zm-2 4.83h1.62c1.24 0 1.94-.66 1.94-1.82 0-1.15-.7-1.81-1.93-1.81h-1.64v3.63Zm5.39 2.43c0-1.17.9-1.89 2.48-1.98l1.83-.1v-.52c0-.74-.5-1.18-1.34-1.18-.8 0-1.3.38-1.41.97h-1.3c.08-1.2 1.1-2.09 2.76-2.09 1.62 0 2.65.86 2.65 2.2v4.6h-1.31v-1.1h-.04a2.38 2.38 0 0 1-2.1 1.2c-1.3 0-2.22-.8-2.22-2Zm4.3-.6v-.53l-1.64.1c-.82.06-1.28.42-1.28.99 0 .58.48.96 1.22.96.96 0 1.7-.66 1.7-1.52Zm2.61 4.95v-1.11c.1.03.33.03.44.03.64 0 .98-.27 1.19-.96l.12-.4-2.41-6.69h1.48l1.7 5.43h.02l1.69-5.43h1.44l-2.5 7.02c-.57 1.62-1.23 2.14-2.61 2.14a5.3 5.3 0 0 1-.56-.03Z"
+  }
+));
+var applepay_default = ApplePayIcon;
+
+// src/features/apple-pay/apple-pay-component.tsx
+function ApplePayComponent({ configuration, paymentMethods }) {
+  const applePayElementRef = useRef5(null);
+  const adyenCardRef = useRef5();
+  const applePayRef = useRef5();
+  const {
+    activePaymentMethod,
+    setActivePaymentMethod,
+    isPaymentMethodInitialized,
+    updatePaymentMethodInitialization,
+    threeDSecureRef,
+    handleSuccess,
+    handleError,
+    setThreeDSecureActive
+  } = usePaymentMethodGroup();
+  const initializeAdyenComponent = async () => {
+    adyenCardRef.current = await AdyenCheckout3({
+      clientKey: paymentMethods.clientKey,
+      locale: paymentMethods.locale,
+      environment: configuration.environment,
+      countryCode: "IS",
+      onError: handleOnError,
+      onSubmit: handleOnSubmit,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
+      onPaymentCompleted: configuration.onPaymentCompleted,
+      onPaymentFailed: configuration.onPaymentFailed
+    });
+    const gpayConfig = paymentMethods.paymentMethods.paymentMethods.find((x) => x.type === "applepay").configuration;
+    const applePayConfiguration = {
+      amount: {
+        value: paymentMethods.minorUnitsAmount,
+        currency: paymentMethods.currency
+      },
+      environment: configuration.environment,
+      configuration: {
+        ...gpayConfig,
+        merchantName: paymentMethods.merchantName
+      }
+    };
+    applePayRef.current = new ApplePay(adyenCardRef.current, applePayConfiguration);
+    applePayRef.current.isAvailable().then(() => {
+      applePayRef.current.mount(applePayElementRef.current);
+      updatePaymentMethodInitialization("applepay", true);
+    }).catch((e) => {
+      console.log(e);
+      handleError("error.applePayNotAvailable");
+    });
+  };
+  useEffect4(() => {
+    if (activePaymentMethod === "applepay" && !isPaymentMethodInitialized.applepay) {
+      initializeAdyenComponent();
+    }
+  }, [configuration, activePaymentMethod]);
+  useEffect4(() => {
+    if (applePayRef.current && isPaymentMethodInitialized.applepay) {
+      initializeAdyenComponent();
+    }
+  }, [configuration]);
+  const handleBoxChange = () => {
+    setActivePaymentMethod("applepay");
+  };
+  function handleOnError(_, __) {
+    handleError("error.unknownError");
+  }
+  async function handleOnSubmit(state, _, actions) {
+    const data = {
+      ...state.data,
+      origin: window.location.origin,
+      sessionId: configuration.sessionId
+    };
+    const fetchResponse = await createPaymentRequest(configuration.environment, data);
+    if (!fetchResponse.ok) {
+      actions.reject();
+      handleError("error.failedToSubmitPayment");
+      return;
+    }
+    const response = await fetchResponse.json();
+    if (!response.resultCode) {
+      actions.reject();
+      handleError("error.paymentFailed");
+      return;
+    }
+    const { resultCode, action } = response;
+    if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
+      setThreeDSecureActive(true);
+      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
+      return;
+    }
+    actions.resolve({ resultCode, action });
+    if (resultCode === "Authorised") {
+      handleSuccess("success.paymentAuthorized");
+    } else {
+      handleError("error.paymentUnsuccessful");
+    }
+  }
+  async function handleOnSubmitAdditionalData(state, _, actions) {
+    const data = {
+      ...state.data,
+      sessionId: configuration.sessionId
+    };
+    const fetchResponse = await createDetailsRequest(configuration.environment, data);
+    if (!fetchResponse.ok) {
+      actions.reject();
+      handleError("error.failedToSubmitPaymentDetails");
+      return;
+    }
+    const response = await fetchResponse.json();
+    if (!response.resultCode) {
+      actions.reject();
+      handleError("error.paymentDetailsFailed");
+      return;
+    }
+    const { resultCode, action } = response;
+    actions.resolve({ resultCode, action });
+    if (resultCode === "Authorised") {
+      handleSuccess("success.paymentAuthorized");
+    } else {
+      handleError("error.paymentUnsuccessful");
+    }
+  }
+  const hasApplePay = paymentMethods.paymentMethods.paymentMethods?.some((x) => x.type === "applepay");
+  if (!hasApplePay) {
+    return null;
+  }
+  return /* @__PURE__ */ h20("label", { className: "straumur__apple-pay-component" }, /* @__PURE__ */ h20(
+    "input",
+    {
+      type: "radio",
+      className: "straumur__apple-pay-component__radio-selector",
+      checked: activePaymentMethod === "applepay",
+      onChange: handleBoxChange
+    }
+  ), /* @__PURE__ */ h20("span", { className: "straumur__apple-pay-component__content" }, /* @__PURE__ */ h20("span", { className: "straumur__apple-pay-component--circle" }), /* @__PURE__ */ h20(applepay_default, null), /* @__PURE__ */ h20("span", { className: "straumur__apple-pay-component--text" }, i18n(configuration.locale, "applePay.title"))), /* @__PURE__ */ h20("div", { className: "straumur__apple-pay-component__expandable" }, /* @__PURE__ */ h20("div", { ref: applePayElementRef })));
+}
+var apple_pay_component_default = ApplePayComponent;
+
 // src/features/stored-card/stored-card-container-component.tsx
-import { Fragment as Fragment4, h as h21 } from "preact";
+import { Fragment as Fragment4, h as h23 } from "preact";
 
 // src/features/stored-card/stored-card-component.tsx
-import { Fragment as Fragment3, h as h20 } from "preact";
-import { useEffect as useEffect4, useRef as useRef5, useState as useState5 } from "preact/hooks";
+import { Fragment as Fragment3, h as h22 } from "preact";
+import { useEffect as useEffect5, useRef as useRef6, useState as useState5 } from "preact/hooks";
 
 // src/features/stored-card/stored-card-component.css
-styleInject('.straumur__stored-card-component {\n  position: relative;\n  background: white;\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n  cursor: pointer;\n}\n.straumur__stored-card-component:has(.straumur__stored-card-component__radio-selector:checked) {\n  cursor: default;\n}\n.straumur__stored-card-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n}\n.straumur__stored-card-component__content {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n  cursor: default;\n}\n.straumur__stored-card-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__stored-card-component__content:hover .straumur__stored-card-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__stored-card-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content .straumur__stored-card-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content .straumur__stored-card-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__stored-card-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__stored-card-component--brands {\n  display: flex;\n  margin-left: auto;\n  align-items: center;\n  gap: var(--straumur__space-xxs);\n}\n.straumur__stored-card-component--brands > svg {\n  transition: all 0.2s ease;\n}\n.straumur__stored-card-component__remove-stored-card-button {\n  margin-left: auto;\n}\n.straumur__stored-card-component__remove-stored-card-button--text {\n  color: #d03e00;\n  text-decoration: none;\n  background: none;\n  border: none;\n  cursor: pointer;\n  transition: all 0.2s ease;\n}\n.straumur__stored-card-component__remove-stored-card-button--text:disabled {\n  cursor: not-allowed;\n  color: #72889d;\n}\n.straumur__stored-card-component__confirm-remove-stored-card {\n  background-color: #fff7db;\n  border-radius: var(--straumur__border-radius-s);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--expanded {\n  padding: var(--straumur__space-xxlg);\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--header {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  color: #262b31;\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__stored-card-component__confirm-remove-stored-card--actions {\n  display: flex;\n  gap: var(--straumur__space-lg);\n  justify-content: end;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--actions--button {\n  color: #775d00;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-decoration: none;\n  font-weight: bold;\n}\n.straumur__stored-card-component__expandable {\n  background: var(--straumur__color-white);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__stored-card-component__loading-text {\n  display: flex;\n  justify-content: center;\n}\n.straumur__stored-card-component__radio-selector:checked ~ .straumur__stored-card-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__stored-card-component__form {\n  display: flex;\n  padding-top: var(--straumur__space-xxlg);\n  flex-direction: column;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__stored-card-component__form--wrapper {\n  display: flex;\n  flex-direction: column;\n  justify-items: start;\n  position: relative;\n  width: 100%;\n}\n.straumur__stored-card-component__form--wrapper--error {\n  color: var(--straumur__color-red-beta);\n  font-size: 12px;\n}\n.straumur__stored-card-component__form--wrapper--label {\n  transform: translateX(10px) translateY(-50%);\n  z-index: 1;\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-secondary-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n  position: absolute;\n  font-weight: 500;\n  font-size: 14px;\n  padding: 0 var(--straumur__space-xxs);\n}\n.straumur__stored-card-component__form--wrapper--label--readonly {\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-gray-epsilon) 53%,\n      var(--straumur__color-transparent) 50%);\n}\n.straumur__stored-card-component__form--wrapper--label--error {\n  color: var(--straumur__color-red-beta);\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-red-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n  font-size: 13px;\n  font-weight: 500;\n}\n.straumur__stored-card-component__form--wrapper--label--info {\n  position: absolute;\n  top: 33%;\n  right: var(--straumur__space-md);\n}\n.straumur__stored-card-component__form--wrapper--input {\n  background: var(--straumur__color-secondary-gamma);\n  color: #00112c;\n  display: flex;\n  align-items: center;\n  border: 1px solid var(--straumur__color-transparent);\n  border-radius: var(--straumur__border-radius-s);\n  font-size: 1rem;\n  height: 48px;\n  outline: none;\n  padding-left: var(--straumur__space-lg);\n  transition: border 0.2s ease-out, box-shadow 0.2s ease-out;\n  position: relative;\n}\n.straumur__stored-card-component__form--wrapper--input--readonly {\n  background-color: var(--straumur__color-gray-epsilon);\n}\n.straumur__stored-card-component__form--wrapper--input:hover {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__stored-card-component__form--wrapper--input--readonly:hover {\n  border: 1px solid var(--straumur__color-transparent);\n}\n.straumur__stored-card-component__form--wrapper--input--error {\n  background: var(--straumur__color-red-gamma);\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__stored-card-component__form--wrapper--input--error:hover {\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__stored-card-component__form--field-wrapper {\n  display: flex;\n  width: 100%;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__stored-card-component__submit-button {\n  background: var(--straumur__color-primary);\n  border: none;\n  border-radius: var(--straumur__border-radius-s);\n  color: var(--straumur__color-white);\n  cursor: pointer;\n  font-size: 1rem;\n  height: 40px;\n  outline: none;\n  padding: 0 var(--straumur__space-xxlg);\n  transition: background 0.2s ease-out;\n  width: 100%;\n}\n.straumur__stored-card-component__submit-button:hover {\n  background: var(--straumur__color-primary);\n  border: 1px solid #dbdee2;\n}\n.straumur__stored-card-component__submit-button:disabled {\n  background: #72889d;\n  border: 1px solid #dbdee2;\n  cursor: not-allowed;\n}\n');
+styleInject('.straumur__stored-card-component {\n  position: relative;\n  background: var(--straumur__color-white);\n  border-radius: var(--straumur__border-radius-lg);\n  transition: all 0.3s ease;\n  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);\n  cursor: pointer;\n}\n.straumur__stored-card-component:has(.straumur__stored-card-component__radio-selector:checked) {\n  cursor: default;\n}\n.straumur__stored-card-component__radio-selector {\n  position: absolute;\n  opacity: 0;\n}\n.straumur__stored-card-component__content {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  transition: background-color 0.3s ease;\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content {\n  padding-bottom: var(--straumur__space-xxlg);\n  cursor: default;\n}\n.straumur__stored-card-component--circle {\n  width: var(--straumur__space-5xlg);\n  height: var(--straumur__space-5xlg);\n  border: 1px solid var(--straumur__color-cosmos-blue-gamma);\n  background: var(--straumur__color-secondary-gamma);\n  border-radius: 50%;\n  position: relative;\n  transition: all 0.3s ease;\n}\n.straumur__stored-card-component__content:hover .straumur__stored-card-component--circle {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__stored-card-component--circle::after {\n  content: "";\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  transition: transform 0.2s ease;\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content .straumur__stored-card-component--circle {\n  background: var(--straumur__color-blue-beta);\n  border-color: var(--straumur__color-transparent);\n}\n.straumur__stored-card-component__radio-selector:checked + .straumur__stored-card-component__content .straumur__stored-card-component--circle::after {\n  transform: translate(-50%, -50%) scale(1);\n  background: var(--straumur__color-primary);\n  height: var(--straumur__space-md);\n  width: var(--straumur__space-md);\n}\n.straumur__stored-card-component--text {\n  color: #213547;\n  font-size: 1rem;\n  user-select: none;\n}\n.straumur__stored-card-component--brands {\n  display: flex;\n  margin-left: auto;\n  align-items: center;\n  gap: var(--straumur__space-xxs);\n}\n.straumur__stored-card-component--brands > svg {\n  transition: all 0.2s ease;\n}\n.straumur__stored-card-component__remove-stored-card-button {\n  margin-left: auto;\n}\n.straumur__stored-card-component__remove-stored-card-button--text {\n  color: #d03e00;\n  text-decoration: none;\n  background: none;\n  border: none;\n  cursor: pointer;\n  transition: all 0.2s ease;\n}\n.straumur__stored-card-component__remove-stored-card-button--text:disabled {\n  cursor: not-allowed;\n  color: #72889d;\n}\n.straumur__stored-card-component__confirm-remove-stored-card {\n  background-color: #fff7db;\n  border-radius: var(--straumur__border-radius-s);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--expanded {\n  padding: var(--straumur__space-xxlg);\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--header {\n  display: flex;\n  align-items: center;\n  gap: var(--straumur__space-lg);\n  color: #262b31;\n  padding-bottom: var(--straumur__space-xxlg);\n}\n.straumur__stored-card-component__confirm-remove-stored-card--actions {\n  display: flex;\n  gap: var(--straumur__space-lg);\n  justify-content: end;\n}\n.straumur__stored-card-component__confirm-remove-stored-card--actions--button {\n  color: #775d00;\n  background: none;\n  border: none;\n  cursor: pointer;\n  text-decoration: none;\n  font-weight: bold;\n}\n.straumur__stored-card-component__expandable {\n  background: var(--straumur__color-white);\n  max-height: 0;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  opacity: 0;\n}\n.straumur__stored-card-component__loading-text {\n  display: flex;\n  justify-content: center;\n}\n.straumur__stored-card-component__radio-selector:checked ~ .straumur__stored-card-component__expandable {\n  max-height: 400px;\n  opacity: 1;\n}\n.straumur__stored-card-component__form {\n  display: flex;\n  padding-top: var(--straumur__space-xxlg);\n  flex-direction: column;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__stored-card-component__form--wrapper {\n  display: flex;\n  flex-direction: column;\n  justify-items: start;\n  position: relative;\n  width: 100%;\n}\n.straumur__stored-card-component__form--wrapper--error {\n  color: var(--straumur__color-red-beta);\n  font-size: 12px;\n}\n.straumur__stored-card-component__form--wrapper--label {\n  transform: translateX(10px) translateY(-50%);\n  z-index: 1;\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-secondary-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n  position: absolute;\n  font-weight: 500;\n  font-size: 14px;\n  padding: 0 var(--straumur__space-xxs);\n}\n.straumur__stored-card-component__form--wrapper--label--readonly {\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-gray-epsilon) 53%,\n      var(--straumur__color-transparent) 50%);\n}\n.straumur__stored-card-component__form--wrapper--label--error {\n  color: var(--straumur__color-red-beta);\n  background:\n    linear-gradient(\n      to top,\n      var(--straumur__color-red-gamma) 53%,\n      var(--straumur__color-transparent) 50%);\n  font-size: 13px;\n  font-weight: 500;\n}\n.straumur__stored-card-component__form--wrapper--label--info {\n  position: absolute;\n  top: 33%;\n  right: var(--straumur__space-md);\n}\n.straumur__stored-card-component__form--wrapper--input {\n  background: var(--straumur__color-secondary-gamma);\n  color: #00112c;\n  display: flex;\n  align-items: center;\n  border: 1px solid var(--straumur__color-transparent);\n  border-radius: var(--straumur__border-radius-s);\n  font-size: 1rem;\n  height: 48px;\n  outline: none;\n  padding-left: var(--straumur__space-lg);\n  transition: border 0.2s ease-out, box-shadow 0.2s ease-out;\n  position: relative;\n}\n.straumur__stored-card-component__form--wrapper--input--readonly {\n  background-color: var(--straumur__color-gray-epsilon);\n}\n.straumur__stored-card-component__form--wrapper--input:hover {\n  border: 1px solid var(--straumur__color-cosmos-blue-delta);\n}\n.straumur__stored-card-component__form--wrapper--input--readonly:hover {\n  border: 1px solid var(--straumur__color-transparent);\n}\n.straumur__stored-card-component__form--wrapper--input--error {\n  background: var(--straumur__color-red-gamma);\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__stored-card-component__form--wrapper--input--error:hover {\n  border: 1px solid var(--straumur__color-red-beta);\n}\n.straumur__stored-card-component__form--field-wrapper {\n  display: flex;\n  width: 100%;\n  gap: var(--straumur__space-5xlg);\n}\n.straumur__stored-card-component__submit-button {\n  background: var(--straumur__color-primary);\n  border: none;\n  border-radius: var(--straumur__border-radius-s);\n  color: var(--straumur__color-white);\n  cursor: pointer;\n  font-size: 1rem;\n  height: 40px;\n  outline: none;\n  padding: 0 var(--straumur__space-xxlg);\n  transition: background 0.2s ease-out;\n  width: 100%;\n}\n.straumur__stored-card-component__submit-button:hover {\n  background: var(--straumur__color-primary);\n  border: 1px solid #dbdee2;\n}\n.straumur__stored-card-component__submit-button:disabled {\n  background: #72889d;\n  border: 1px solid #dbdee2;\n  cursor: not-allowed;\n}\n');
 
 // src/features/stored-card/stored-card-component.tsx
 import {
-  AdyenCheckout as AdyenCheckout3,
+  AdyenCheckout as AdyenCheckout4,
   CustomCard as CustomCard2
 } from "@adyen/adyen-web";
 
 // src/assets/icons/warning.tsx
-import { h as h19 } from "preact";
-var WarningIcon = () => /* @__PURE__ */ h19("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg" }, /* @__PURE__ */ h19("g", { "clip-path": "url(#clip0_10650_34968)" }, /* @__PURE__ */ h19(
+import { h as h21 } from "preact";
+var WarningIcon = () => /* @__PURE__ */ h21("svg", { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg" }, /* @__PURE__ */ h21("g", { "clip-path": "url(#clip0_10650_34968)" }, /* @__PURE__ */ h21(
   "path",
   {
     d: "M12.0011 15C12.6245 15 13.1261 14.4984 13.1261 13.875V7.875C13.1261 7.25391 12.6222 6.75 12.0433 6.75C11.4644 6.75 10.8761 7.25625 10.8761 7.875V13.875C10.8761 14.4984 11.3823 15 12.0011 15ZM12.0011 16.5516C11.1873 16.5516 10.5273 17.2116 10.5273 18.0253C10.5292 18.8391 11.1855 19.5 12.0011 19.5C12.8167 19.5 13.4748 18.84 13.4748 18.0262C13.473 17.2125 12.8167 16.5516 12.0011 16.5516Z",
     fill: "#DFAE00"
   }
-), /* @__PURE__ */ h19(
+), /* @__PURE__ */ h21(
   "path",
   {
     opacity: "0.4",
     d: "M23.7312 19.5469L13.7328 2.48438C12.9673 1.17188 11.0356 1.17188 10.2649 2.48438L0.271188 19.5469C-0.49803 20.8547 0.460048 22.5 2.00181 22.5H21.9987C23.5343 22.5 24.4953 20.8594 23.7312 19.5469ZM10.8734 7.875C10.8734 7.25391 11.3773 6.75 11.9984 6.75C12.6195 6.75 13.1234 7.25625 13.1234 7.875V13.875C13.1234 14.4961 12.6195 15 12.0406 15C11.4617 15 10.8734 14.4984 10.8734 13.875V7.875ZM11.9984 19.5C11.1846 19.5 10.5246 18.84 10.5246 18.0262C10.5246 17.2125 11.1842 16.5525 11.9984 16.5525C12.8126 16.5525 13.4721 17.2125 13.4721 18.0262C13.4703 18.8391 12.814 19.5 11.9984 19.5Z",
     fill: "#DFAE00"
   }
-)), /* @__PURE__ */ h19("defs", null, /* @__PURE__ */ h19("clipPath", { id: "clip0_10650_34968" }, /* @__PURE__ */ h19("rect", { width: "24", height: "24", fill: "white" }))));
+)), /* @__PURE__ */ h21("defs", null, /* @__PURE__ */ h21("clipPath", { id: "clip0_10650_34968" }, /* @__PURE__ */ h21("rect", { width: "24", height: "24", fill: "white" }))));
 var warning_default = WarningIcon;
 
 // src/features/stored-card/stored-card-component.tsx
@@ -1482,9 +1658,9 @@ function StoredCardComponent({
   storedPaymentMethod,
   onStoredCardRemoved
 }) {
-  const storedCardElementRef = useRef5(null);
-  const adyenCardRef = useRef5();
-  const customCardRef = useRef5();
+  const storedCardElementRef = useRef6(null);
+  const adyenCardRef = useRef6();
+  const customCardRef = useRef6();
   const [payButtonDisabled, setPayButtonDisabled] = useState5(true);
   const [securityCodePolicy, setSecurityCodePolicy] = useState5("required");
   const [askConfirmRemoveStoredCard, setAskConfirmRemoveStoredCard] = useState5(false);
@@ -1504,7 +1680,7 @@ function StoredCardComponent({
     setThreeDSecureActive
   } = usePaymentMethodGroup();
   const initializeAdyenComponent = async () => {
-    adyenCardRef.current = await AdyenCheckout3({
+    adyenCardRef.current = await AdyenCheckout4({
       clientKey: paymentMethods.clientKey,
       locale: configuration.locale,
       environment: configuration.environment,
@@ -1545,18 +1721,18 @@ function StoredCardComponent({
       customCardRef.current.mount(storedCardElementRef.current);
     }
   };
-  useEffect4(() => {
+  useEffect5(() => {
     if (activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id && !isStoredCardInitialized[activeStoredPaymentMethodId]) {
       initializeAdyenComponent();
     }
   }, [configuration, activePaymentMethod, activeStoredPaymentMethodId]);
-  useEffect4(() => {
+  useEffect5(() => {
     if (customCardRef.current && isStoredCardInitialized[activeStoredPaymentMethodId]) {
       initializeAdyenComponent();
       setFormErrors({ encryptedSecurityCode: { visible: false, message: void 0 } });
     }
   }, [configuration]);
-  useEffect4(() => {
+  useEffect5(() => {
     setAskConfirmRemoveStoredCard(false);
   }, [activePaymentMethod, activeStoredPaymentMethodId]);
   function handleBoxChange() {
@@ -1653,7 +1829,7 @@ function StoredCardComponent({
     if (!customCardRef.current) return;
     customCardRef.current.submit();
   }
-  return /* @__PURE__ */ h20("label", { className: "straumur__stored-card-component" }, /* @__PURE__ */ h20(
+  return /* @__PURE__ */ h22("label", { className: "straumur__stored-card-component" }, /* @__PURE__ */ h22(
     "input",
     {
       type: "radio",
@@ -1661,7 +1837,7 @@ function StoredCardComponent({
       checked: activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id,
       onChange: handleBoxChange
     }
-  ), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__content" }, /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component--circle" }), /* @__PURE__ */ h20(
+  ), /* @__PURE__ */ h22("span", { className: "straumur__stored-card-component__content" }, /* @__PURE__ */ h22("span", { className: "straumur__stored-card-component--circle" }), /* @__PURE__ */ h22(
     RenderBrandIcons,
     {
       brands: [
@@ -1671,7 +1847,7 @@ function StoredCardComponent({
         }
       ]
     }
-  ), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component--text" }, "\u2022\u2022\u2022\u2022 ", storedPaymentMethod.lastFour), activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id && isStoredCardInitialized[storedPaymentMethod.id] && /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__remove-stored-card-button" }, /* @__PURE__ */ h20(
+  ), /* @__PURE__ */ h22("span", { className: "straumur__stored-card-component--text" }, "\u2022\u2022\u2022\u2022 ", storedPaymentMethod.lastFour), activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id && isStoredCardInitialized[storedPaymentMethod.id] && /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__remove-stored-card-button" }, /* @__PURE__ */ h22(
     "button",
     {
       onClick: handleAskToConfirmRemoveCard,
@@ -1679,20 +1855,20 @@ function StoredCardComponent({
       disabled: askConfirmRemoveStoredCard
     },
     i18n(configuration.locale, "stored-cards.removeStoredCard")
-  ))), /* @__PURE__ */ h20(
+  ))), /* @__PURE__ */ h22(
     "div",
     {
       className: `${"straumur__stored-card-component__confirm-remove-stored-card"} ${askConfirmRemoveStoredCard ? "straumur__stored-card-component__confirm-remove-stored-card--expanded" : ""}`
     },
-    /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__confirm-remove-stored-card--header" }, /* @__PURE__ */ h20(warning_default, null), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__confirm-remove-stored-card--header--title" }, i18n(configuration.locale, "stored-cards.removeStoredCardQuestion"))),
-    /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__confirm-remove-stored-card--actions" }, /* @__PURE__ */ h20(
+    /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__confirm-remove-stored-card--header" }, /* @__PURE__ */ h22(warning_default, null), /* @__PURE__ */ h22("span", { className: "straumur__stored-card-component__confirm-remove-stored-card--header--title" }, i18n(configuration.locale, "stored-cards.removeStoredCardQuestion"))),
+    /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__confirm-remove-stored-card--actions" }, /* @__PURE__ */ h22(
       "button",
       {
         className: "straumur__stored-card-component__confirm-remove-stored-card--actions--button",
         onClick: handleConfirmRemoveStoredCard
       },
       i18n(configuration.locale, "stored-cards.removeStoredCardQuestionYesRemove")
-    ), /* @__PURE__ */ h20(
+    ), /* @__PURE__ */ h22(
       "button",
       {
         className: "straumur__stored-card-component__confirm-remove-stored-card--actions--button",
@@ -1700,7 +1876,7 @@ function StoredCardComponent({
       },
       i18n(configuration.locale, "stored-cards.removeStoredCardQuestionCancel")
     ))
-  ), /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__expandable", ref: storedCardElementRef }, !isStoredCardInitialized[storedPaymentMethod.id] && /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__loading-text" }, /* @__PURE__ */ h20(loader_default, null)), /* @__PURE__ */ h20(
+  ), /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__expandable", ref: storedCardElementRef }, !isStoredCardInitialized[storedPaymentMethod.id] && /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__loading-text" }, /* @__PURE__ */ h22(loader_default, null)), /* @__PURE__ */ h22(
     "div",
     {
       className: "straumur__stored-card-component__form",
@@ -1710,21 +1886,21 @@ function StoredCardComponent({
         transition: "opacity 0.3s ease-in-out"
       }
     },
-    /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--field-wrapper" }, /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--wrapper" }, /* @__PURE__ */ h20("label", { className: "straumur__stored-card-component__form--wrapper--label straumur__stored-card-component__form--wrapper--label--readonly" }, i18n(configuration.locale, "stored-cards.expiryDate")), /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__form--wrapper--input straumur__stored-card-component__form--wrapper--input--readonly" }, storedPaymentMethod.expiryMonth, "/", storedPaymentMethod.expiryYear)), /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--wrapper" }, (securityCodePolicy === "optional" || securityCodePolicy === "required") && /* @__PURE__ */ h20(Fragment3, null, /* @__PURE__ */ h20(
+    /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__form--field-wrapper" }, /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__form--wrapper" }, /* @__PURE__ */ h22("label", { className: "straumur__stored-card-component__form--wrapper--label straumur__stored-card-component__form--wrapper--label--readonly" }, i18n(configuration.locale, "stored-cards.expiryDate")), /* @__PURE__ */ h22("span", { className: "straumur__stored-card-component__form--wrapper--input straumur__stored-card-component__form--wrapper--input--readonly" }, storedPaymentMethod.expiryMonth, "/", storedPaymentMethod.expiryYear)), /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__form--wrapper" }, (securityCodePolicy === "optional" || securityCodePolicy === "required") && /* @__PURE__ */ h22(Fragment3, null, /* @__PURE__ */ h22(
       "label",
       {
         className: `${"straumur__stored-card-component__form--wrapper--label"} ${formErrors.encryptedSecurityCode.visible ? "straumur__stored-card-component__form--wrapper--label--error" : ""}`
       },
       securityCodePolicy === "optional" ? i18n(configuration.locale, "stored-cards.securityCode3DigitsOptional") : i18n(configuration.locale, "stored-cards.securityCode3Digits")
-    ), /* @__PURE__ */ h20(
+    ), /* @__PURE__ */ h22(
       "span",
       {
         className: `${"straumur__stored-card-component__form--wrapper--input"} ${formErrors.encryptedSecurityCode.visible ? "straumur__stored-card-component__form--wrapper--input--error" : ""}`,
         "data-cse": "encryptedSecurityCode"
       },
-      /* @__PURE__ */ h20("div", { className: "straumur__stored-card-component__form--wrapper--label--info" }, /* @__PURE__ */ h20(Tooltip, { content: i18n(configuration.locale, "stored-cards.securityCode3DigitsInfo") }, /* @__PURE__ */ h20(info_default, null)))
-    )), formErrors.encryptedSecurityCode.visible && /* @__PURE__ */ h20("span", { className: "straumur__stored-card-component__form--wrapper--error" }, formErrors.encryptedSecurityCode.message))),
-    /* @__PURE__ */ h20(
+      /* @__PURE__ */ h22("div", { className: "straumur__stored-card-component__form--wrapper--label--info" }, /* @__PURE__ */ h22(Tooltip, { content: i18n(configuration.locale, "stored-cards.securityCode3DigitsInfo") }, /* @__PURE__ */ h22(info_default, null)))
+    )), formErrors.encryptedSecurityCode.visible && /* @__PURE__ */ h22("span", { className: "straumur__stored-card-component__form--wrapper--error" }, formErrors.encryptedSecurityCode.message))),
+    /* @__PURE__ */ h22(
       "button",
       {
         className: "straumur__stored-card-component__submit-button",
@@ -1754,7 +1930,7 @@ function StoredCardContainerComponent({
       (prevStoredPaymentMethods) => prevStoredPaymentMethods.filter((storedPaymentMethod) => storedPaymentMethod.id !== storedPaymentMethodId)
     );
   }
-  return /* @__PURE__ */ h21(Fragment4, null, storedPaymentMethods?.map((storedPaymentMethod) => /* @__PURE__ */ h21(
+  return /* @__PURE__ */ h23(Fragment4, null, storedPaymentMethods?.map((storedPaymentMethod) => /* @__PURE__ */ h23(
     stored_card_component_default,
     {
       key: storedPaymentMethod.id,
@@ -1768,26 +1944,26 @@ function StoredCardContainerComponent({
 var stored_card_container_component_default = StoredCardContainerComponent;
 
 // src/components/payment-method-group/payment-method-group.tsx
-import { h as h22 } from "preact";
+import { h as h24 } from "preact";
 
 // src/components/payment-method-group/payment-method-group.css
 styleInject(".straumur__payment-method-group {\n  display: flex;\n  flex-direction: column;\n  gap: var(--straumur__space-xxlg);\n  width: 100%;\n}\n");
 
 // src/components/payment-method-group/payment-method-group.tsx
 function PaymentMethodGroup({ children, initialValue }) {
-  return /* @__PURE__ */ h22(PaymentMethodGroupContext, { initialValue }, /* @__PURE__ */ h22("div", { className: "straumur__payment-method-group" }, children));
+  return /* @__PURE__ */ h24(PaymentMethodGroupContext, { initialValue }, /* @__PURE__ */ h24("div", { className: "straumur__payment-method-group" }, children));
 }
 var payment_method_group_default = PaymentMethodGroup;
 
 // src/features/result-component/result-component.tsx
-import { Fragment as Fragment5, h as h25 } from "preact";
+import { Fragment as Fragment5, h as h27 } from "preact";
 
 // src/features/result-component/result-component.css
-styleInject(".straumur__result-component {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  height: 300px;\n  background-color: white;\n  border-radius: 16px;\n}\n");
+styleInject(".straumur__result-component {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  height: 300px;\n  background-color: var(--straumur__color-white);\n  border-radius: 16px;\n}\n");
 
 // src/assets/icons/success.tsx
-import { h as h23 } from "preact";
-var SuccessIcon = () => /* @__PURE__ */ h23("svg", { xmlns: "http://www.w3.org/2000/svg", width: "120", height: "120", viewBox: "0 0 120 120" }, /* @__PURE__ */ h23(
+import { h as h25 } from "preact";
+var SuccessIcon = () => /* @__PURE__ */ h25("svg", { xmlns: "http://www.w3.org/2000/svg", width: "120", height: "120", viewBox: "0 0 120 120" }, /* @__PURE__ */ h25(
   "circle",
   {
     cx: "60",
@@ -1799,8 +1975,8 @@ var SuccessIcon = () => /* @__PURE__ */ h23("svg", { xmlns: "http://www.w3.org/2
     "stroke-dasharray": "314",
     "stroke-dashoffset": "314"
   },
-  /* @__PURE__ */ h23("animate", { attributeName: "stroke-dashoffset", from: "314", to: "0", dur: "1s", fill: "freeze" })
-), /* @__PURE__ */ h23("g", { transform: "translate(60,60)" }, /* @__PURE__ */ h23(
+  /* @__PURE__ */ h25("animate", { attributeName: "stroke-dashoffset", from: "314", to: "0", dur: "1s", fill: "freeze" })
+), /* @__PURE__ */ h25("g", { transform: "translate(60,60)" }, /* @__PURE__ */ h25(
   "path",
   {
     d: "M-25 5 L-5 25 L25 -15",
@@ -1812,8 +1988,8 @@ var SuccessIcon = () => /* @__PURE__ */ h23("svg", { xmlns: "http://www.w3.org/2
     "stroke-dasharray": "100",
     "stroke-dashoffset": "100"
   },
-  /* @__PURE__ */ h23("animate", { attributeName: "stroke-dashoffset", from: "100", to: "0", dur: "0.5s", begin: "1s", fill: "freeze" }),
-  /* @__PURE__ */ h23(
+  /* @__PURE__ */ h25("animate", { attributeName: "stroke-dashoffset", from: "100", to: "0", dur: "0.5s", begin: "1s", fill: "freeze" }),
+  /* @__PURE__ */ h25(
     "animateTransform",
     {
       attributeName: "transform",
@@ -1826,7 +2002,7 @@ var SuccessIcon = () => /* @__PURE__ */ h23("svg", { xmlns: "http://www.w3.org/2
       additive: "sum"
     }
   ),
-  /* @__PURE__ */ h23(
+  /* @__PURE__ */ h25(
     "animateTransform",
     {
       attributeName: "transform",
@@ -1843,8 +2019,8 @@ var SuccessIcon = () => /* @__PURE__ */ h23("svg", { xmlns: "http://www.w3.org/2
 var success_default = SuccessIcon;
 
 // src/assets/icons/failure.tsx
-import { h as h24 } from "preact";
-var FailureIcon = () => /* @__PURE__ */ h24("svg", { xmlns: "http://www.w3.org/2000/svg", width: "120", height: "120", viewBox: "0 0 120 120" }, /* @__PURE__ */ h24(
+import { h as h26 } from "preact";
+var FailureIcon = () => /* @__PURE__ */ h26("svg", { xmlns: "http://www.w3.org/2000/svg", width: "120", height: "120", viewBox: "0 0 120 120" }, /* @__PURE__ */ h26(
   "circle",
   {
     cx: "60",
@@ -1856,8 +2032,8 @@ var FailureIcon = () => /* @__PURE__ */ h24("svg", { xmlns: "http://www.w3.org/2
     "stroke-dasharray": "314",
     "stroke-dashoffset": "314"
   },
-  /* @__PURE__ */ h24("animate", { attributeName: "stroke-dashoffset", from: "314", to: "0", dur: "1s", fill: "freeze" })
-), /* @__PURE__ */ h24("g", { transform: "translate(60,60)" }, /* @__PURE__ */ h24("g", { id: "crossGroup" }, /* @__PURE__ */ h24(
+  /* @__PURE__ */ h26("animate", { attributeName: "stroke-dashoffset", from: "314", to: "0", dur: "1s", fill: "freeze" })
+), /* @__PURE__ */ h26("g", { transform: "translate(60,60)" }, /* @__PURE__ */ h26("g", { id: "crossGroup" }, /* @__PURE__ */ h26(
   "line",
   {
     x1: "-20",
@@ -1870,8 +2046,8 @@ var FailureIcon = () => /* @__PURE__ */ h24("svg", { xmlns: "http://www.w3.org/2
     "stroke-dasharray": "57",
     "stroke-dashoffset": "57"
   },
-  /* @__PURE__ */ h24("animate", { attributeName: "stroke-dashoffset", from: "57", to: "0", dur: "0.3s", begin: "1s", fill: "freeze" })
-), /* @__PURE__ */ h24(
+  /* @__PURE__ */ h26("animate", { attributeName: "stroke-dashoffset", from: "57", to: "0", dur: "0.3s", begin: "1s", fill: "freeze" })
+), /* @__PURE__ */ h26(
   "line",
   {
     x1: "20",
@@ -1884,7 +2060,7 @@ var FailureIcon = () => /* @__PURE__ */ h24("svg", { xmlns: "http://www.w3.org/2
     "stroke-dasharray": "57",
     "stroke-dashoffset": "57"
   },
-  /* @__PURE__ */ h24("animate", { attributeName: "stroke-dashoffset", from: "57", to: "0", dur: "0.3s", begin: "1.3s", fill: "freeze" })
+  /* @__PURE__ */ h26("animate", { attributeName: "stroke-dashoffset", from: "57", to: "0", dur: "0.3s", begin: "1.3s", fill: "freeze" })
 ))));
 var failure_default = FailureIcon;
 
@@ -1894,44 +2070,44 @@ function ResultComponent({ configuration }) {
   if (!error && !success) {
     return null;
   }
-  return /* @__PURE__ */ h25("div", { className: "straumur__result-component" }, error && /* @__PURE__ */ h25(Fragment5, null, /* @__PURE__ */ h25(failure_default, null), /* @__PURE__ */ h25("p", { className: "straumur__result-component__error--message" }, i18n(configuration.locale, error))), success && /* @__PURE__ */ h25(Fragment5, null, /* @__PURE__ */ h25(success_default, null), /* @__PURE__ */ h25("p", { className: "straumur__result-component__success--message" }, i18n(configuration.locale, success))));
+  return /* @__PURE__ */ h27("div", { className: "straumur__result-component" }, error && /* @__PURE__ */ h27(Fragment5, null, /* @__PURE__ */ h27(failure_default, null), /* @__PURE__ */ h27("p", { className: "straumur__result-component__error--message" }, i18n(configuration.locale, error))), success && /* @__PURE__ */ h27(Fragment5, null, /* @__PURE__ */ h27(success_default, null), /* @__PURE__ */ h27("p", { className: "straumur__result-component__success--message" }, i18n(configuration.locale, success))));
 }
 var result_component_default = ResultComponent;
 
 // src/features/three-d-secure-component/three-d-secure-component.tsx
-import { h as h26 } from "preact";
-import { useEffect as useEffect5, useRef as useRef6 } from "preact/hooks";
+import { h as h28 } from "preact";
+import { useEffect as useEffect6, useRef as useRef7 } from "preact/hooks";
 
 // src/features/three-d-secure-component/three-d-secure-component.css
-styleInject(".straumur__three-d-secure {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  background-color: white;\n  border-radius: var(--straumur__border-radius-xxlg);\n}\n");
+styleInject(".straumur__three-d-secure {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  background-color: var(--straumur__color-white);\n  border-radius: var(--straumur__border-radius-xxlg);\n}\n");
 
 // src/features/three-d-secure-component/three-d-secure-component.tsx
 function StraumurCheckoutContainer() {
-  const threeDSecureRef = useRef6(null);
+  const threeDSecureRef = useRef7(null);
   const { setThreeDSecureRef } = usePaymentMethodGroup();
-  useEffect5(() => {
+  useEffect6(() => {
     if (threeDSecureRef.current) {
       setThreeDSecureRef(threeDSecureRef.current);
     }
   }, []);
-  return /* @__PURE__ */ h26("div", { className: "straumur__three-d-secure", ref: threeDSecureRef });
+  return /* @__PURE__ */ h28("div", { className: "straumur__three-d-secure", ref: threeDSecureRef });
 }
 var three_d_secure_component_default = StraumurCheckoutContainer;
 
 // src/features/payment-methods-wrapper/payment-methods-wrapper.tsx
-import { Fragment as Fragment6, h as h27 } from "preact";
+import { Fragment as Fragment6, h as h29 } from "preact";
 function PaymentMethodsWrapper({ children }) {
   const { error, success, threeDSecureActive } = usePaymentMethodGroup();
   if (error || success || threeDSecureActive) {
     return null;
   }
-  return /* @__PURE__ */ h27(Fragment6, null, children);
+  return /* @__PURE__ */ h29(Fragment6, null, children);
 }
 var payment_methods_wrapper_default = PaymentMethodsWrapper;
 
 // src/features/straumur-checkout-container.tsx
 function StraumurCheckoutContainer2({ configuration, paymentMethods }) {
-  return /* @__PURE__ */ h28(payment_method_group_default, { initialValue: null }, /* @__PURE__ */ h28(payment_methods_wrapper_default, null, /* @__PURE__ */ h28(stored_card_container_component_default, { configuration, paymentMethods }), /* @__PURE__ */ h28(card_component_default, { configuration, paymentMethods }), /* @__PURE__ */ h28(google_pay_component_default, { configuration, paymentMethods })), /* @__PURE__ */ h28(three_d_secure_component_default, null), /* @__PURE__ */ h28(result_component_default, { configuration }));
+  return /* @__PURE__ */ h30(payment_method_group_default, { initialValue: null }, /* @__PURE__ */ h30(payment_methods_wrapper_default, null, /* @__PURE__ */ h30(stored_card_container_component_default, { configuration, paymentMethods }), /* @__PURE__ */ h30(card_component_default, { configuration, paymentMethods }), /* @__PURE__ */ h30(google_pay_component_default, { configuration, paymentMethods }), /* @__PURE__ */ h30(apple_pay_component_default, { configuration, paymentMethods })), /* @__PURE__ */ h30(three_d_secure_component_default, null), /* @__PURE__ */ h30(result_component_default, { configuration }));
 }
 var straumur_checkout_container_default = StraumurCheckoutContainer2;
 
@@ -1951,7 +2127,7 @@ var StraumurCheckout = class {
         return;
       }
       render(
-        /* @__PURE__ */ h29(RootComponent, null, /* @__PURE__ */ h29("div", { className: "straumur__component" }, /* @__PURE__ */ h29(loader_default, null))),
+        /* @__PURE__ */ h31(RootComponent, null, /* @__PURE__ */ h31("div", { className: "straumur__component" }, /* @__PURE__ */ h31(loader_default, null))),
         this.mountElement
       );
       const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
@@ -1968,7 +2144,7 @@ var StraumurCheckout = class {
   renderComponent() {
     if (!this.mountElement) return;
     render(
-      /* @__PURE__ */ h29(RootComponent, null, /* @__PURE__ */ h29(straumur_checkout_container_default, { configuration: this.configuration, paymentMethods: this.paymentMethods })),
+      /* @__PURE__ */ h31(RootComponent, null, /* @__PURE__ */ h31(straumur_checkout_container_default, { configuration: this.configuration, paymentMethods: this.paymentMethods })),
       this.mountElement
     );
   }
@@ -1994,14 +2170,14 @@ var StraumurCheckout = class {
   }
   handleError(message) {
     render(
-      /* @__PURE__ */ h29(RootComponent, null, /* @__PURE__ */ h29("div", { className: "straumur__component" }, /* @__PURE__ */ h29(failure_default, null), /* @__PURE__ */ h29("p", null, i18n(this.configuration.locale, message)))),
+      /* @__PURE__ */ h31(RootComponent, null, /* @__PURE__ */ h31("div", { className: "straumur__component" }, /* @__PURE__ */ h31(failure_default, null), /* @__PURE__ */ h31("p", null, i18n(this.configuration.locale, message)))),
       this.mountElement
     );
   }
 };
 var straumur_checkout_default = StraumurCheckout;
 function RootComponent({ children }) {
-  return /* @__PURE__ */ h29("div", { className: "straumur__root-component" }, children);
+  return /* @__PURE__ */ h31("div", { className: "straumur__root-component" }, children);
 }
 export {
   straumur_checkout_default as StraumurCheckout

@@ -8,7 +8,8 @@ declare const translations: {
         "cards.securityCode3DigitsInfo": string;
         "cards.securityCode4DigitsInfo": string;
         "cards.storePaymentMethod": string;
-        "googlepay.title": string;
+        "googlePay.title": string;
+        "applePay.title": string;
         "stored-cards.expiryDate": string;
         "stored-cards.securityCode3Digits": string;
         "stored-cards.securityCode3DigitsOptional": string;
@@ -28,6 +29,7 @@ declare const translations: {
         "error.failedToSubmitPaymentDetails": string;
         "error.paymentDetailsFailed": string;
         "error.googlePayNotAvailable": string;
+        "error.applePayNotAvailable": string;
         "error.failedToSubmitRemoveStoredPaymentCard": string;
         "error.failedToRemoveStoredPaymentCard": string;
     };
@@ -40,7 +42,8 @@ declare const translations: {
         "cards.securityCode3DigitsInfo": string;
         "cards.securityCode4DigitsInfo": string;
         "cards.storePaymentMethod": string;
-        "googlepay.title": string;
+        "googlePay.title": string;
+        "applePay.title": string;
         "stored-cards.expiryDate": string;
         "stored-cards.securityCode3Digits": string;
         "stored-cards.securityCode3DigitsOptional": string;
@@ -60,6 +63,7 @@ declare const translations: {
         "error.failedToSubmitPaymentDetails": string;
         "error.paymentDetailsFailed": string;
         "error.googlePayNotAvailable": string;
+        "error.applePayNotAvailable": string;
         "error.failedToSubmitRemoveStoredPaymentCard": string;
         "error.failedToRemoveStoredPaymentCard": string;
     };
