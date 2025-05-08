@@ -115,7 +115,7 @@
   opacity: 0;
 }
 .straumur__stored-card-component__confirm-remove-stored-card--expanded {
-  padding: var(--ta jstraumur__space-xxlg);
+  padding: var(--straumur__space-xxlg);
   max-height: 400px;
   opacity: 1;
 }

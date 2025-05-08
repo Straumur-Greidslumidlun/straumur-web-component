@@ -310,7 +310,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
             <div className="straumur__card-component__form--wrapper">
               <label
                 className={`${"straumur__card-component__form--wrapper--label"} ${
-                  formErrors.encryptedExpiryDate.visible ? "card-component__form--wrapper--label--error" : ""
+                  formErrors.encryptedExpiryDate.visible ? "straumur__card-component__form--wrapper--label--error" : ""
                 }`}
               >
                 {i18n(configuration.locale, "cards.expiryDate")}
