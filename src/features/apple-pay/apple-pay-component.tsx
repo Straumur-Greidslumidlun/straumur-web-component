@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { useEffect, useRef } from "preact/hooks";
-import "./google-pay-component.css";
+import "./apple-pay-component.css";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 import { StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
@@ -9,27 +9,27 @@ import {
   AdditionalDetailsData,
   AdyenCheckout,
   AdyenCheckoutError,
-  GooglePay,
-  GooglePayConfiguration,
+  ApplePay,
+  ApplePayConfiguration,
   SubmitActions,
   SubmitData,
   UIElement,
   UIElementProps,
 } from "@adyen/adyen-web";
 import i18n from "../../localizations/i18n";
-import GooglePayIcon from "../../assets/icons/googlepay";
+import ApplePayIcon from "../../assets/icons/applepay";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../../adapter/models";
 import { createDetailsRequest, createPaymentRequest } from "../../adapter/straumur-adapter";
 
-interface GooglePayComponentProps {
+interface ApplePayComponentProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
 }
 
-function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponentProps): h.JSX.Element | null {
-  const googlePayElementRef = useRef<HTMLDivElement>(null);
+function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentProps): h.JSX.Element | null {
+  const applePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCardRef = useRef<any>();
-  const googlePayRef = useRef<GooglePay>();
+  const applePayRef = useRef<ApplePay>();
   const {
     activePaymentMethod,
     setActivePaymentMethod,
@@ -54,16 +54,15 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       onPaymentFailed: configuration.onPaymentFailed,
     });
 
-    const gpayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "googlepay")!
+    const gpayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "applepay")!
       .configuration! as { gatewayMerchantId: string; merchantId: string };
 
-    const googlePayConfiguration: GooglePayConfiguration = {
+    const applePayConfiguration: ApplePayConfiguration = {
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
       },
 
-      countryCode: "IS",
       environment: configuration.environment,
       configuration: {
         ...gpayConfig,
@@ -71,27 +70,28 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       },
     };
 
-    googlePayRef.current = new GooglePay(adyenCardRef.current, googlePayConfiguration);
+    applePayRef.current = new ApplePay(adyenCardRef.current, applePayConfiguration);
 
-    googlePayRef.current
+    applePayRef.current
       .isAvailable()
       .then(() => {
-        googlePayRef.current!.mount(googlePayElementRef.current!);
-        updatePaymentMethodInitialization("googlepay", true);
+        applePayRef.current!.mount(applePayElementRef.current!);
+        updatePaymentMethodInitialization("applepay", true);
       })
       .catch((e) => {
-        handleError("error.googlePayNotAvailable");
+        console.log(e);
+        handleError("error.applePayNotAvailable");
       });
   };
 
   useEffect(() => {
-    if (activePaymentMethod === "googlepay" && !isPaymentMethodInitialized.googlepay) {
+    if (activePaymentMethod === "applepay" && !isPaymentMethodInitialized.applepay) {
       initializeAdyenComponent();
     }
   }, [configuration, activePaymentMethod]);
 
   useEffect(() => {
-    if (googlePayRef.current && isPaymentMethodInitialized.googlepay) {
+    if (applePayRef.current && isPaymentMethodInitialized.applepay) {
       // Most of the time we will change configuration only to update locale, and that's not possible through .update() -> https://github.com/Adyen/adyen-web/issues/2407
       // So we need to reinitialize the component.
       initializeAdyenComponent();
@@ -99,7 +99,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
   }, [configuration]);
 
   const handleBoxChange = () => {
-    setActivePaymentMethod("googlepay");
+    setActivePaymentMethod("applepay");
   };
 
   function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
@@ -196,30 +196,30 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     }
   }
 
-  const hasGooglePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "googlepay");
+  const hasApplePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "applepay");
 
-  if (!hasGooglePay) {
+  if (!hasApplePay) {
     return null;
   }
 
   return (
-    <label className="straumur__google-pay-component">
+    <label className="straumur__apple-pay-component">
       <input
         type="radio"
-        className="straumur__google-pay-component__radio-selector"
-        checked={activePaymentMethod === "googlepay"}
+        className="straumur__apple-pay-component__radio-selector"
+        checked={activePaymentMethod === "applepay"}
         onChange={handleBoxChange}
       />
-      <span className="straumur__google-pay-component__content">
-        <span className="straumur__google-pay-component--circle"></span>
-        <GooglePayIcon />
-        <span className="straumur__google-pay-component--text">{i18n(configuration.locale, "googlePay.title")}</span>
+      <span className="straumur__apple-pay-component__content">
+        <span className="straumur__apple-pay-component--circle"></span>
+        <ApplePayIcon />
+        <span className="straumur__apple-pay-component--text">{i18n(configuration.locale, "applePay.title")}</span>
       </span>
-      <div className="straumur__google-pay-component__expandable">
-        <div ref={googlePayElementRef}></div>
+      <div className="straumur__apple-pay-component__expandable">
+        <div ref={applePayElementRef}></div>
       </div>
     </label>
   );
 }
 
-export default GooglePayComponent;
+export default ApplePayComponent;

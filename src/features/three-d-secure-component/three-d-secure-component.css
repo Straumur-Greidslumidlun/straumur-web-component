@@ -4,6 +4,6 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  background-color: white;
+  background-color: var(--straumur__color-white);
   border-radius: var(--straumur__border-radius-xxlg);
 }

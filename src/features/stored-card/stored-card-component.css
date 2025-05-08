@@ -1,6 +1,6 @@
 .straumur__stored-card-component {
   position: relative;
-  background: white;
+  background: var(--straumur__color-white);
   border-radius: var(--straumur__border-radius-lg);
   transition: all 0.3s ease;
   padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);

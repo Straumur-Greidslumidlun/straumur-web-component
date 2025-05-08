@@ -3,6 +3,7 @@ import { StraumurCheckoutConfiguration } from "../models/models";
 import { SuccessResponse } from "../services/models";
 import CardComponent from "./card/card-component";
 import GooglePayComponent from "./google-pay/google-pay-component";
+import ApplePayComponent from "./apple-pay/apple-pay-component";
 import StoredCardContainerComponent from "./stored-card/stored-card-container-component";
 import PaymentMethodGroup from "../components/payment-method-group/payment-method-group";
 import ResultComponent from "./result-component/result-component";
@@ -21,6 +22,7 @@ function StraumurCheckoutContainer({ configuration, paymentMethods }: StraumurCh
         <StoredCardContainerComponent configuration={configuration} paymentMethods={paymentMethods} />
         <CardComponent configuration={configuration} paymentMethods={paymentMethods} />
         <GooglePayComponent configuration={configuration} paymentMethods={paymentMethods} />
+        <ApplePayComponent configuration={configuration} paymentMethods={paymentMethods} />
       </PaymentMethodsWrapper>
 
       <ThreeDSecureComponent />
