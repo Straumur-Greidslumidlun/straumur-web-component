@@ -11,6 +11,7 @@ import {
   AdyenCheckout,
   AdyenCheckoutError,
   CustomCard,
+  ICore,
   SubmitActions,
   SubmitData,
   UIElement,
@@ -30,7 +31,7 @@ function StoredCardComponent({
   onStoredCardRemoved,
 }: StoredCardComponentProps): h.JSX.Element {
   const storedCardElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<any>();
+  const adyenCardRef = useRef<ICore>();
   const customCardRef = useRef<CustomCard>();
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
   const [securityCodePolicy, setSecurityCodePolicy] = useState<"hidden" | "optional" | "required">("required");
@@ -197,7 +198,7 @@ function StoredCardComponent({
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
 
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current!);
+      adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
       return;
     }
 

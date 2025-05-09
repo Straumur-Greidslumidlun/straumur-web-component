@@ -11,6 +11,7 @@ import {
   AdyenCheckoutError,
   GooglePay,
   GooglePayConfiguration,
+  ICore,
   SubmitActions,
   SubmitData,
   UIElement,
@@ -20,6 +21,7 @@ import i18n from "../../localizations/i18n";
 import GooglePayIcon from "../../assets/icons/googlepay";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../../adapter/models";
 import { createDetailsRequest, createPaymentRequest } from "../../adapter/straumur-adapter";
+import { CANCEL } from "../../models/constants";
 
 interface GooglePayComponentProps {
   configuration: StraumurCheckoutConfiguration;
@@ -28,7 +30,7 @@ interface GooglePayComponentProps {
 
 function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponentProps): h.JSX.Element | null {
   const googlePayElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<any>();
+  const adyenCardRef = useRef<ICore>();
   const googlePayRef = useRef<GooglePay>();
   const {
     activePaymentMethod,
@@ -79,7 +81,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
         googlePayRef.current!.mount(googlePayElementRef.current!);
         updatePaymentMethodInitialization("googlepay", true);
       })
-      .catch((e) => {
+      .catch(() => {
         handleError("error.googlePayNotAvailable");
       });
   };
@@ -102,8 +104,10 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     setActivePaymentMethod("googlepay");
   };
 
-  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
-    handleError("error.unknownError");
+  function handleOnError(data: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
+    if (data.name !== CANCEL) {
+      handleError("error.unknownError");
+    }
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {

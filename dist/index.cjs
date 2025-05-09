@@ -1329,6 +1329,9 @@ var GooglePayIcon = () => /* @__PURE__ */ (0, import_preact18.h)(
 );
 var googlepay_default = GooglePayIcon;
 
+// src/models/constants.ts
+var CANCEL = "CANCEL";
+
 // src/features/google-pay/google-pay-component.tsx
 function GooglePayComponent({ configuration, paymentMethods }) {
   const googlePayElementRef = (0, import_hooks5.useRef)(null);
@@ -1373,7 +1376,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
     googlePayRef.current.isAvailable().then(() => {
       googlePayRef.current.mount(googlePayElementRef.current);
       updatePaymentMethodInitialization("googlepay", true);
-    }).catch((e) => {
+    }).catch(() => {
       handleError("error.googlePayNotAvailable");
     });
   };
@@ -1390,8 +1393,10 @@ function GooglePayComponent({ configuration, paymentMethods }) {
   const handleBoxChange = () => {
     setActivePaymentMethod("googlepay");
   };
-  function handleOnError(_, __) {
-    handleError("error.unknownError");
+  function handleOnError(data, __) {
+    if (data.name !== CANCEL) {
+      handleError("error.unknownError");
+    }
   }
   async function handleOnSubmit(state, _, actions) {
     const data = {
@@ -1525,7 +1530,7 @@ function ApplePayComponent({ configuration, paymentMethods }) {
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed
     });
-    const gpayConfig = paymentMethods.paymentMethods.paymentMethods.find((x) => x.type === "applepay").configuration;
+    const apayConfig = paymentMethods.paymentMethods.paymentMethods.find((x) => x.type === "applepay").configuration;
     const applePayConfiguration = {
       amount: {
         value: paymentMethods.minorUnitsAmount,
@@ -1533,7 +1538,7 @@ function ApplePayComponent({ configuration, paymentMethods }) {
       },
       environment: configuration.environment,
       configuration: {
-        ...gpayConfig,
+        ...apayConfig,
         merchantName: paymentMethods.merchantName
       }
     };
@@ -1541,8 +1546,7 @@ function ApplePayComponent({ configuration, paymentMethods }) {
     applePayRef.current.isAvailable().then(() => {
       applePayRef.current.mount(applePayElementRef.current);
       updatePaymentMethodInitialization("applepay", true);
-    }).catch((e) => {
-      console.log(e);
+    }).catch(() => {
       handleError("error.applePayNotAvailable");
     });
   };
@@ -1559,8 +1563,10 @@ function ApplePayComponent({ configuration, paymentMethods }) {
   const handleBoxChange = () => {
     setActivePaymentMethod("applepay");
   };
-  function handleOnError(_, __) {
-    handleError("error.unknownError");
+  function handleOnError(data, _) {
+    if (data.name !== CANCEL) {
+      handleError("error.unknownError");
+    }
   }
   async function handleOnSubmit(state, _, actions) {
     const data = {

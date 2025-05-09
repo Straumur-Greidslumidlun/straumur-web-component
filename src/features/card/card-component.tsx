@@ -8,6 +8,7 @@ import {
   AdyenCheckout,
   AdyenCheckoutError,
   CustomCard,
+  ICore,
   SubmitActions,
   SubmitData,
   UIElement,
@@ -26,7 +27,7 @@ import { createDetailsRequest, createPaymentRequest } from "../../adapter/straum
 
 function CardComponent({ configuration, paymentMethods }: CardComponentProps): h.JSX.Element | null {
   const cardElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<any>();
+  const adyenCardRef = useRef<ICore>();
   const customCardRef = useRef<CustomCard>();
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
   const [securityCodePolicy, setSecurityCodePolicy] = useState<"hidden" | "optional" | "required">("required");
@@ -194,7 +195,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
 
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current!);
+      adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
       return;
     }
 
