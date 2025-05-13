@@ -11,6 +11,7 @@ import {
   AdyenCheckoutError,
   ApplePay,
   ApplePayConfiguration,
+  ICore,
   SubmitActions,
   SubmitData,
   UIElement,
@@ -20,6 +21,7 @@ import i18n from "../../localizations/i18n";
 import ApplePayIcon from "../../assets/icons/applepay";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../../adapter/models";
 import { createDetailsRequest, createPaymentRequest } from "../../adapter/straumur-adapter";
+import { CANCEL } from "../../models/constants";
 
 interface ApplePayComponentProps {
   configuration: StraumurCheckoutConfiguration;
@@ -28,7 +30,7 @@ interface ApplePayComponentProps {
 
 function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentProps): h.JSX.Element | null {
   const applePayElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<any>();
+  const adyenCardRef = useRef<ICore>();
   const applePayRef = useRef<ApplePay>();
   const {
     activePaymentMethod,
@@ -54,7 +56,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       onPaymentFailed: configuration.onPaymentFailed,
     });
 
-    const gpayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "applepay")!
+    const apayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "applepay")!
       .configuration! as { gatewayMerchantId: string; merchantId: string };
 
     const applePayConfiguration: ApplePayConfiguration = {
@@ -65,7 +67,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
 
       environment: configuration.environment,
       configuration: {
-        ...gpayConfig,
+        ...apayConfig,
         merchantName: paymentMethods.merchantName,
       },
     };
@@ -78,8 +80,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
         applePayRef.current!.mount(applePayElementRef.current!);
         updatePaymentMethodInitialization("applepay", true);
       })
-      .catch((e) => {
-        console.log(e);
+      .catch(() => {
         handleError("error.applePayNotAvailable");
       });
   };
@@ -102,8 +103,10 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     setActivePaymentMethod("applepay");
   };
 
-  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
-    handleError("error.unknownError");
+  function handleOnError(data: AdyenCheckoutError, _?: UIElement<UIElementProps> | undefined): void {
+    if (data.name !== CANCEL) {
+      handleError("error.unknownError");
+    }
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
@@ -138,7 +141,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
 
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current!);
+      adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
       return;
     }
 
