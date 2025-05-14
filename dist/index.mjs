@@ -2141,7 +2141,17 @@ var StraumurCheckout = class {
   paymentMethods = null;
   mountElement = null;
   constructor(config) {
-    this.configuration = { ...config, locale: config.locale || "en-US" };
+    this.configuration = { ...config, locale: determineLocale(config.locale) };
+    function determineLocale(locale) {
+      switch (locale) {
+        case "is":
+          return "is-IS";
+        case "en":
+          return "en-US";
+        default:
+          return "is-IS";
+      }
+    }
   }
   async mount(selector) {
     try {
