@@ -997,8 +997,12 @@ function CardComponent({ configuration, paymentMethods }) {
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
-      locale: configuration.locale,
       environment: configuration.environment,
+      amount: {
+        value: paymentMethods.minorUnitsAmount,
+        currency: paymentMethods.currency
+      },
+      locale: configuration.locale,
       countryCode: "IS",
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
@@ -1330,9 +1334,13 @@ function GooglePayComponent({ configuration, paymentMethods }) {
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout2({
       clientKey: paymentMethods.clientKey,
-      locale: paymentMethods.locale,
       environment: configuration.environment,
+      locale: paymentMethods.locale,
       countryCode: "IS",
+      amount: {
+        value: paymentMethods.minorUnitsAmount,
+        currency: paymentMethods.currency
+      },
       onError: handleOnError,
       onSubmit: handleOnSubmit,
       onAdditionalDetails: handleOnSubmitAdditionalData,
@@ -1400,6 +1408,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
       adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
+      actions.resolve({});
       return;
     }
     actions.resolve({ resultCode, action });
@@ -1504,9 +1513,13 @@ function ApplePayComponent({ configuration, paymentMethods }) {
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout3({
       clientKey: paymentMethods.clientKey,
-      locale: paymentMethods.locale,
       environment: configuration.environment,
+      locale: paymentMethods.locale,
       countryCode: "IS",
+      amount: {
+        value: paymentMethods.minorUnitsAmount,
+        currency: paymentMethods.currency
+      },
       onError: handleOnError,
       onSubmit: handleOnSubmit,
       onAdditionalDetails: handleOnSubmitAdditionalData,
@@ -1573,6 +1586,7 @@ function ApplePayComponent({ configuration, paymentMethods }) {
     if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
       adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
+      actions.resolve({});
       return;
     }
     actions.resolve({ resultCode, action });
@@ -1688,9 +1702,13 @@ function StoredCardComponent({
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout4({
       clientKey: paymentMethods.clientKey,
-      locale: configuration.locale,
       environment: configuration.environment,
+      locale: configuration.locale,
       countryCode: "IS",
+      amount: {
+        value: paymentMethods.minorUnitsAmount,
+        currency: paymentMethods.currency
+      },
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
       onSubmit: handleOnSubmit,

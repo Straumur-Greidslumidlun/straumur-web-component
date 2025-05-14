@@ -55,9 +55,13 @@ function StoredCardComponent({
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
-      locale: configuration.locale,
       environment: configuration.environment,
+      locale: configuration.locale,
       countryCode: "IS",
+      amount: {
+        value: paymentMethods.minorUnitsAmount,
+        currency: paymentMethods.currency,
+      },
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
       onSubmit: handleOnSubmit,
