@@ -14,7 +14,6 @@ import {
   ICore,
   SubmitActions,
   SubmitData,
-  ThreeDS2Challenge,
   UIElement,
   UIElementProps,
 } from "@adyen/adyen-web";
