@@ -16,7 +16,18 @@ class StraumurCheckout {
   private mountElement: HTMLElement | null = null;
 
   constructor(config: StraumurWebConfiguration) {
-    this.configuration = { ...config, locale: config.locale || "en-US" }; // Default to en-US if locale is not provided. Later we can use the locale from the payment methods response.
+    this.configuration = { ...config, locale: determineLocale(config.locale) };
+
+    function determineLocale(locale: "is" | "en" | undefined): "en-US" | "is-IS" {
+      switch (locale) {
+        case "is":
+          return "is-IS";
+        case "en":
+          return "en-US";
+        default:
+          return "en-US"; // Default to en-US if the locale is not recognized or not provided. Later we can use the locale from the payment methods response.
+      }
+    }
   }
 
   async mount(selector: HTMLElement | string): Promise<void> {
