@@ -18,7 +18,7 @@ class StraumurCheckout {
   constructor(config: StraumurWebConfiguration) {
     this.configuration = { ...config, locale: determineLocale(config.locale) };
 
-    function determineLocale(locale: "is" | "en" | undefined): "en-US" | "is-IS" {
+    function determineLocale(locale: "is" | "en" | undefined): Language {
       switch (locale) {
         case "is":
           return "is-IS";
