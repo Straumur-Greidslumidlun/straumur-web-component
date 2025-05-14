@@ -7,7 +7,7 @@ export type StraumurWebConfiguration = {
   onPaymentCompleted?: () => void;
   onPaymentFailed?: () => void;
   placeholders?: Placeholders;
-  locale?: Language;
+  locale?: "is" | "en";
 };
 
 // this will be used for internal configuration of the checkout component
