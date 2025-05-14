@@ -25,7 +25,7 @@ class StraumurCheckout {
         case "en":
           return "en-US";
         default:
-          return "en-US"; // Default to en-US if the locale is not recognized or not provided. Later we can use the locale from the payment methods response.
+          return "is-IS";
       }
     }
   }

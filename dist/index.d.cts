@@ -77,7 +77,7 @@ type StraumurWebConfiguration = {
     onPaymentCompleted?: () => void;
     onPaymentFailed?: () => void;
     placeholders?: Placeholders;
-    locale?: Language;
+    locale?: "is" | "en";
 };
 type StraumurCheckoutConfiguration = {
     sessionId: string;
