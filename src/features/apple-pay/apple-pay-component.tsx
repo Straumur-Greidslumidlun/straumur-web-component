@@ -149,6 +149,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
 
       // @ts-ignore
       actions.resolve({});
+      return;
     }
 
     // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.

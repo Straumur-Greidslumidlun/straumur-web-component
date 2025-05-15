@@ -1587,6 +1587,7 @@ function ApplePayComponent({ configuration, paymentMethods }) {
       setThreeDSecureActive(true);
       adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
       actions.resolve({});
+      return;
     }
     actions.resolve({ resultCode, action });
     if (resultCode === "Authorised") {
