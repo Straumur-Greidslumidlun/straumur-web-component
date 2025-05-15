@@ -1341,9 +1341,8 @@ function GooglePayComponent({ configuration, paymentMethods }) {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency
       },
-      onError: handleOnError,
-      onSubmit: handleOnSubmit,
       onAdditionalDetails: handleOnSubmitAdditionalData,
+      onError: handleOnError,
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed
     });
@@ -1355,6 +1354,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       },
       countryCode: "IS",
       environment: configuration.environment,
+      onSubmit: handleOnSubmit,
       configuration: {
         ...gpayConfig,
         merchantName: paymentMethods.merchantName
@@ -1520,9 +1520,8 @@ function ApplePayComponent({ configuration, paymentMethods }) {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency
       },
-      onError: handleOnError,
-      onSubmit: handleOnSubmit,
       onAdditionalDetails: handleOnSubmitAdditionalData,
+      onError: handleOnError,
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed
     });
@@ -1536,7 +1535,8 @@ function ApplePayComponent({ configuration, paymentMethods }) {
       configuration: {
         ...apayConfig,
         merchantName: paymentMethods.merchantName
-      }
+      },
+      onSubmit: handleOnSubmit
     };
     applePayRef.current = new ApplePay(adyenCardRef.current, applePayConfiguration);
     applePayRef.current.isAvailable().then(() => {
