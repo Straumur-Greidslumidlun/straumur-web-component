@@ -46,9 +46,13 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
-      locale: paymentMethods.locale,
       environment: configuration.environment,
+      locale: paymentMethods.locale,
       countryCode: "IS",
+      amount: {
+        value: paymentMethods.minorUnitsAmount,
+        currency: paymentMethods.currency,
+      },
       onError: handleOnError,
       onSubmit: handleOnSubmit,
       onAdditionalDetails: handleOnSubmitAdditionalData,
@@ -142,6 +146,9 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       setThreeDSecureActive(true);
 
       adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
+
+      // @ts-ignore
+      actions.resolve({});
       return;
     }
 
