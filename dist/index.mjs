@@ -1341,10 +1341,15 @@ function GooglePayComponent({ configuration, paymentMethods }) {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency
       },
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onError: handleOnError,
-      onPaymentCompleted: configuration.onPaymentCompleted,
-      onPaymentFailed: configuration.onPaymentFailed
+      onPaymentCompleted: (data, _) => {
+        console.log("Adyen Payment completed", data);
+        configuration.onPaymentCompleted?.();
+      },
+      onPaymentFailed: (data, _) => {
+        console.log("Adyen Payment failed", data);
+        configuration.onPaymentFailed?.();
+      }
     });
     const gpayConfig = paymentMethods.paymentMethods.paymentMethods.find((x) => x.type === "googlepay").configuration;
     const googlePayConfiguration = {
@@ -1355,6 +1360,15 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       countryCode: "IS",
       environment: configuration.environment,
       onSubmit: handleOnSubmit,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
+      onPaymentCompleted: (data, _) => {
+        console.log("GooglePay Payment completed", data);
+        configuration.onPaymentCompleted?.();
+      },
+      onPaymentFailed: (data, _) => {
+        console.log("GooglePay Payment failed", data);
+        configuration.onPaymentFailed?.();
+      },
       configuration: {
         ...gpayConfig,
         merchantName: paymentMethods.merchantName
