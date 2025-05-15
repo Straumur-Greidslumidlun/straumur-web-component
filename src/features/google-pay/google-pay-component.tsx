@@ -53,9 +53,8 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
       },
-      onError: handleOnError,
-      onSubmit: handleOnSubmit,
       onAdditionalDetails: handleOnSubmitAdditionalData,
+      onError: handleOnError,
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed,
     });
@@ -71,6 +70,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
 
       countryCode: "IS",
       environment: configuration.environment,
+      onSubmit: handleOnSubmit,
       configuration: {
         ...gpayConfig,
         merchantName: paymentMethods.merchantName,
@@ -148,7 +148,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
 
       adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
 
-      //@ts-ignore
+      // @ts-ignore
       actions.resolve({});
       return;
     }
@@ -196,8 +196,8 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
 
     const { resultCode, action } = response;
 
-    // If the /payments/details request from
-    // You must call this, even if the result
+    // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
+    // You must call this, even if the result of the payment is unsuccessful.
     actions.resolve({ resultCode, action });
 
     if (resultCode === "Authorised") {
