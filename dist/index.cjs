@@ -1362,6 +1362,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
         currency: paymentMethods.currency
       },
       onError: handleOnError,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: (data, _) => {
         console.log("Adyen Payment completed", data);
         configuration.onPaymentCompleted?.();
@@ -1380,7 +1381,6 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       countryCode: "IS",
       environment: configuration.environment,
       onSubmit: handleOnSubmit,
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: (data, _) => {
         console.log("GooglePay Payment completed", data);
         configuration.onPaymentCompleted?.();
