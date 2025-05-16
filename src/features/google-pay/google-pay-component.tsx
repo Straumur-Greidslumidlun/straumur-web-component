@@ -55,14 +55,8 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       },
       onError: handleOnError,
       onAdditionalDetails: handleOnSubmitAdditionalData,
-      onPaymentCompleted: (data, _) => {
-        console.log("Adyen Payment completed", data);
-        configuration.onPaymentCompleted?.();
-      },
-      onPaymentFailed: (data, _) => {
-        console.log("Adyen Payment failed", data);
-        configuration.onPaymentFailed?.();
-      },
+      onPaymentCompleted: configuration.onPaymentCompleted,
+      onPaymentFailed: configuration.onPaymentFailed,
     });
 
     const gpayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "googlepay")!
@@ -77,14 +71,6 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       countryCode: "IS",
       environment: configuration.environment,
       onSubmit: handleOnSubmit,
-      onPaymentCompleted: (data, _) => {
-        console.log("GooglePay Payment completed", data);
-        configuration.onPaymentCompleted?.();
-      },
-      onPaymentFailed: (data, _) => {
-        console.log("GooglePay Payment failed", data);
-        configuration.onPaymentFailed?.();
-      },
       configuration: {
         ...gpayConfig,
         merchantName: paymentMethods.merchantName,
@@ -141,7 +127,6 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
     if (!fetchResponse.ok) {
       actions.reject();
-      // const errorResponse = await fetchResponse.json();
       handleError("error.failedToSubmitPayment");
       return;
     }
@@ -194,7 +179,6 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
     if (!fetchResponse.ok) {
       actions.reject();
-      // const errorResponse = await fetchResponse.json();
       handleError("error.failedToSubmitPaymentDetails");
       return;
     }

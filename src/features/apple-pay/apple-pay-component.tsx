@@ -53,8 +53,8 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
       },
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onError: handleOnError,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed,
     });
@@ -69,11 +69,11 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       },
 
       environment: configuration.environment,
+      onSubmit: handleOnSubmit,
       configuration: {
         ...apayConfig,
         merchantName: paymentMethods.merchantName,
       },
-      onSubmit: handleOnSubmit,
     };
 
     applePayRef.current = new ApplePay(adyenCardRef.current, applePayConfiguration);
@@ -126,7 +126,6 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
     if (!fetchResponse.ok) {
       actions.reject();
-      // const errorResponse = await fetchResponse.json();
       handleError("error.failedToSubmitPayment");
       return;
     }
@@ -179,7 +178,6 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
     if (!fetchResponse.ok) {
       actions.reject();
-      // const errorResponse = await fetchResponse.json();
       handleError("error.failedToSubmitPaymentDetails");
       return;
     }

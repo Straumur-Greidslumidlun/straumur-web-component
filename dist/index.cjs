@@ -1363,14 +1363,8 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       },
       onError: handleOnError,
       onAdditionalDetails: handleOnSubmitAdditionalData,
-      onPaymentCompleted: (data, _) => {
-        console.log("Adyen Payment completed", data);
-        configuration.onPaymentCompleted?.();
-      },
-      onPaymentFailed: (data, _) => {
-        console.log("Adyen Payment failed", data);
-        configuration.onPaymentFailed?.();
-      }
+      onPaymentCompleted: configuration.onPaymentCompleted,
+      onPaymentFailed: configuration.onPaymentFailed
     });
     const gpayConfig = paymentMethods.paymentMethods.paymentMethods.find((x) => x.type === "googlepay").configuration;
     const googlePayConfiguration = {
@@ -1381,14 +1375,6 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       countryCode: "IS",
       environment: configuration.environment,
       onSubmit: handleOnSubmit,
-      onPaymentCompleted: (data, _) => {
-        console.log("GooglePay Payment completed", data);
-        configuration.onPaymentCompleted?.();
-      },
-      onPaymentFailed: (data, _) => {
-        console.log("GooglePay Payment failed", data);
-        configuration.onPaymentFailed?.();
-      },
       configuration: {
         ...gpayConfig,
         merchantName: paymentMethods.merchantName
@@ -1551,8 +1537,8 @@ function ApplePayComponent({ configuration, paymentMethods }) {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency
       },
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onError: handleOnError,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed
     });
@@ -1563,11 +1549,11 @@ function ApplePayComponent({ configuration, paymentMethods }) {
         currency: paymentMethods.currency
       },
       environment: configuration.environment,
+      onSubmit: handleOnSubmit,
       configuration: {
         ...apayConfig,
         merchantName: paymentMethods.merchantName
-      },
-      onSubmit: handleOnSubmit
+      }
     };
     applePayRef.current = new import_adyen_web3.ApplePay(adyenCardRef.current, applePayConfiguration);
     applePayRef.current.isAvailable().then(() => {
