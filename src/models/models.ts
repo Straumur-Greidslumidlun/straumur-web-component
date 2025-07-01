@@ -6,6 +6,7 @@ export type StraumurWebConfiguration = {
   environment: "test" | "live";
   onPaymentCompleted?: () => void;
   onPaymentFailed?: () => void;
+  submitDetails?: (details: any) => void;
   placeholders?: Placeholders;
   locale?: "is" | "en";
 };

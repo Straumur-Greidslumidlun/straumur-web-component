@@ -199,10 +199,17 @@ function StoredCardComponent({
 
     const { resultCode, action } = response;
 
-    if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
+    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
 
       adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
+      return;
+    }
+
+    if (resultCode === "RedirectShopper") {
+      // redirect will always be a GET request.
+      window.location.href = action.url;
+
       return;
     }
 
