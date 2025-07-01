@@ -142,7 +142,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
 
     const { resultCode, action } = response;
 
-    if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
+    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
 
       adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
