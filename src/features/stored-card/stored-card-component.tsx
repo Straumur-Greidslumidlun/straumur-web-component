@@ -64,14 +64,15 @@ function StoredCardComponent({
       },
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
-      onSubmit: handleOnSubmit,
-      onAdditionalDetails: handleOnSubmitAdditionalData,
+
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed,
     });
 
     customCardRef.current = new CustomCard(adyenCardRef.current, {
       brands: [storedPaymentMethod.brand!],
+      onSubmit: handleOnSubmit,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onConfigSuccess() {
         updateStoredCardInitialization(storedPaymentMethod.id, true);
       },

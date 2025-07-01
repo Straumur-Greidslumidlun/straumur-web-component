@@ -68,8 +68,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
       countryCode: "IS",
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
-      onSubmit: handleOnSubmit,
-      onAdditionalDetails: handleOnSubmitAdditionalData,
+
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed,
     });
@@ -78,6 +77,8 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
       placeholders: configuration.placeholders,
       challengeWindowSize: "05", // looks like not working
       brands: schemeBrands,
+      onSubmit: handleOnSubmit,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onBrand: (event) => {
         setSecurityCodePolicy(event.cvcPolicy);
         if (event.brand === "card") {
