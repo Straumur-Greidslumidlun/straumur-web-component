@@ -196,19 +196,19 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
 
     const { resultCode, action } = response;
 
-    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
-      setThreeDSecureActive(true);
+    // if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
+    //   setThreeDSecureActive(true);
 
-      adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
-      return;
-    }
+    //   adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
+    //   return;
+    // }
 
-    if (resultCode === "RedirectShopper") {
-      // redirect will always be a GET request.
-      window.location.href = action.url;
+    // if (resultCode === "RedirectShopper") {
+    //   // redirect will always be a GET request.
+    //   window.location.href = action.url;
 
-      return;
-    }
+    //   return;
+    // }
 
     // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
     // You must call this, even if the result of the payment is unsuccessful.
