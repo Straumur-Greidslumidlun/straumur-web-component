@@ -174,7 +174,6 @@ var PaymentMethodGroupContext = ({
   const [threeDSecureActive, setThreeDSecureActive] = (0, import_hooks.useState)(false);
   const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = (0, import_hooks.useState)(defaultIsInitialized);
   const [isStoredCardInitialized, setIsStoredCardInitialized] = (0, import_hooks.useState)({});
-  const threeDSecureRef = (0, import_hooks.useRef)(null);
   const [success, setSuccess] = (0, import_hooks.useState)(null);
   const [error, setError] = (0, import_hooks.useState)(null);
   const updatePaymentMethodInitialization = (paymentMethod, isInitialized) => {
@@ -195,9 +194,6 @@ var PaymentMethodGroupContext = ({
   const handleSuccess = (success2) => {
     setSuccess(success2);
   };
-  const setThreeDSecureRef = (ref) => {
-    threeDSecureRef.current = ref;
-  };
   return /* @__PURE__ */ (0, import_preact.h)(
     PaymentMethodContext.Provider,
     {
@@ -214,8 +210,6 @@ var PaymentMethodGroupContext = ({
         success,
         handleError,
         error,
-        threeDSecureRef,
-        setThreeDSecureRef,
         threeDSecureActive,
         setThreeDSecureActive
       }

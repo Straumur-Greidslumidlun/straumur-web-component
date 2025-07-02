@@ -1,6 +1,6 @@
-import { h, RefObject } from "preact";
+import { h } from "preact";
 import { createContext } from "preact";
-import { useState, useContext, useRef } from "preact/hooks";
+import { useState, useContext } from "preact/hooks";
 import { ComponentChildren } from "preact";
 import { PaymentMethod } from "../../models/constants";
 import { TranslationKey } from "../../localizations/translations";
@@ -18,8 +18,6 @@ type PaymentMethodContextType = {
   success: TranslationKey | null;
   handleError: (error: TranslationKey) => void;
   error: TranslationKey | null;
-  threeDSecureRef: RefObject<HTMLDivElement> | null;
-  setThreeDSecureRef: (ref: HTMLDivElement) => void;
   threeDSecureActive: boolean;
   setThreeDSecureActive: (value: boolean) => void;
 };
@@ -45,7 +43,6 @@ export const PaymentMethodGroupContext = ({
   const [threeDSecureActive, setThreeDSecureActive] = useState<boolean>(false);
   const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = useState(defaultIsInitialized);
   const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<Record<string, boolean>>({});
-  const threeDSecureRef = useRef<HTMLDivElement>(null);
 
   const [success, setSuccess] = useState<TranslationKey | null>(null);
   const [error, setError] = useState<TranslationKey | null>(null);
@@ -72,10 +69,6 @@ export const PaymentMethodGroupContext = ({
     setSuccess(success);
   };
 
-  const setThreeDSecureRef = (ref: HTMLDivElement) => {
-    threeDSecureRef.current = ref;
-  };
-
   return (
     <PaymentMethodContext.Provider
       value={{
@@ -91,8 +84,6 @@ export const PaymentMethodGroupContext = ({
         success,
         handleError,
         error,
-        threeDSecureRef,
-        setThreeDSecureRef,
         threeDSecureActive,
         setThreeDSecureActive,
       }}
