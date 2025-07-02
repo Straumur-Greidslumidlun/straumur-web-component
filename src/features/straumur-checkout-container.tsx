@@ -9,6 +9,7 @@ import PaymentMethodGroup from "../components/payment-method-group/payment-metho
 import ResultComponent from "./result-component/result-component";
 // import ThreeDSecureComponent from "./three-d-secure-component/three-d-secure-component";
 import PaymentMethodsWrapper from "./payment-methods-wrapper/payment-methods-wrapper";
+import ThreeDSecureComponent from "./three-d-secure-component/three-d-secure-component";
 
 interface StraumurCheckoutContainerProps {
   configuration: StraumurCheckoutConfiguration;
@@ -25,7 +26,7 @@ function StraumurCheckoutContainer({ configuration, paymentMethods }: StraumurCh
         <ApplePayComponent configuration={configuration} paymentMethods={paymentMethods} />
       </PaymentMethodsWrapper>
 
-      {/* <ThreeDSecureComponent /> */}
+      <ThreeDSecureComponent />
       <ResultComponent configuration={configuration} />
     </PaymentMethodGroup>
   );

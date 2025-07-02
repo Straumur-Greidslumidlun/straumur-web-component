@@ -9,6 +9,8 @@ import {
   AdyenCheckoutError,
   CustomCard,
   ICore,
+  PaymentCompletedData,
+  PaymentFailedData,
   SubmitActions,
   SubmitData,
   UIElement,
@@ -67,18 +69,17 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
       locale: configuration.locale,
       countryCode: "IS",
       paymentMethodsResponse: paymentMethods.paymentMethods,
+      onSubmit: handleOnSubmit,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onError: handleOnError,
-
-      onPaymentCompleted: configuration.onPaymentCompleted,
-      onPaymentFailed: configuration.onPaymentFailed,
+      onPaymentCompleted: handlePaymentCompleted,
+      onPaymentFailed: handlePaymentFailed,
     });
 
     customCardRef.current = new CustomCard(adyenCardRef.current, {
       placeholders: configuration.placeholders,
       challengeWindowSize: "05", // looks like not working
       brands: schemeBrands,
-      onSubmit: handleOnSubmit,
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onBrand: (event) => {
         setSecurityCodePolicy(event.cvcPolicy);
         if (event.brand === "card") {
@@ -197,29 +198,23 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
 
     const { resultCode, action } = response;
 
-    // if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
-    //   setThreeDSecureActive(true);
+    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
+      setThreeDSecureActive(true);
 
-    //   adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
-    //   return;
-    // }
+      adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
+      return;
+    }
 
-    // if (resultCode === "RedirectShopper") {
-    //   // redirect will always be a GET request.
-    //   window.location.href = action.url;
+    if (resultCode === "RedirectShopper") {
+      // redirect will always be a GET request.
+      window.location.href = action.url;
 
-    //   return;
-    // }
+      return;
+    }
 
     // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
     // You must call this, even if the result of the payment is unsuccessful.
     actions.resolve({ resultCode, action });
-
-    if (resultCode === "Authorised") {
-      handleSuccess("success.paymentAuthorized");
-    } else {
-      handleError("error.paymentUnsuccessful");
-    }
   }
 
   async function handleOnSubmitAdditionalData(
@@ -254,12 +249,26 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
     const { resultCode, action } = response;
 
     actions.resolve({ resultCode, action });
+  }
 
-    if (resultCode === "Authorised") {
+  function handlePaymentCompleted(data: PaymentCompletedData, _?: UIElement<UIElementProps> | undefined): void {
+    if (data.resultCode === "Authorised") {
       handleSuccess("success.paymentAuthorized");
     } else {
       handleError("error.paymentUnsuccessful");
     }
+    configuration.onPaymentCompleted?.();
+  }
+
+  function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
+    if (data) {
+      if (data.resultCode === "Authorised") {
+        handleSuccess("success.paymentAuthorized");
+      } else {
+        handleError("error.paymentUnsuccessful");
+      }
+    }
+    configuration.onPaymentFailed?.();
   }
 
   function handleSubmitClick() {
