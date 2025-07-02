@@ -12,6 +12,8 @@ import {
   GooglePay,
   GooglePayConfiguration,
   ICore,
+  PaymentCompletedData,
+  PaymentFailedData,
   SubmitActions,
   SubmitData,
   UIElement,
@@ -41,6 +43,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     handleSuccess,
     handleError,
     setThreeDSecureActive,
+    threeDSecureActive,
   } = usePaymentMethodGroup();
 
   const initializeAdyenComponent = async () => {
@@ -55,8 +58,8 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       },
       onError: handleOnError,
       onAdditionalDetails: handleOnSubmitAdditionalData,
-      onPaymentCompleted: configuration.onPaymentCompleted,
-      onPaymentFailed: configuration.onPaymentFailed,
+      onPaymentCompleted: handlePaymentCompleted,
+      onPaymentFailed: handlePaymentFailed,
     });
 
     const gpayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "googlepay")!
@@ -144,23 +147,11 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
 
     if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
-
-      adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
-
-      // @ts-ignore
-      actions.resolve({});
-      return;
     }
 
     // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
     // You must call this, even if the result of the payment is unsuccessful.
     actions.resolve({ resultCode, action });
-
-    if (resultCode === "Authorised") {
-      handleSuccess("success.paymentAuthorized");
-    } else {
-      handleError("error.paymentUnsuccessful");
-    }
   }
 
   async function handleOnSubmitAdditionalData(
@@ -197,17 +188,36 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
     // You must call this, even if the result of the payment is unsuccessful.
     actions.resolve({ resultCode, action });
+  }
 
-    if (resultCode === "Authorised") {
+  function handlePaymentCompleted(data: PaymentCompletedData, _?: UIElement<UIElementProps> | undefined): void {
+    if (data.resultCode === "Authorised") {
       handleSuccess("success.paymentAuthorized");
     } else {
       handleError("error.paymentUnsuccessful");
     }
+    configuration.onPaymentCompleted?.();
+  }
+
+  function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
+    if (data) {
+      if (data.resultCode === "Authorised") {
+        handleSuccess("success.paymentAuthorized");
+      } else {
+        handleError("error.paymentUnsuccessful");
+      }
+    }
+    configuration.onPaymentFailed?.();
   }
 
   const hasGooglePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "googlepay");
 
   if (!hasGooglePay) {
+    return null;
+  }
+
+  if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
+    // if threeDSecureActive for some other payment method, do not show google pay
     return null;
   }
 
@@ -225,7 +235,13 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
         <span className="straumur__google-pay-component--text">{i18n(configuration.locale, "googlePay.title")}</span>
       </span>
       <div className="straumur__google-pay-component__expandable">
-        <div ref={googlePayElementRef}></div>
+        <div
+          ref={googlePayElementRef}
+          style={{
+            height: threeDSecureActive ? "600px" : "auto",
+            minWidth: threeDSecureActive ? "350px" : "auto",
+          }}
+        ></div>
       </div>
     </label>
   );

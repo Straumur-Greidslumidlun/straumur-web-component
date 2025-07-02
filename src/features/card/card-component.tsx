@@ -42,21 +42,25 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
     encryptedSecurityCode: { visible: false },
   });
 
-  if (!paymentMethods.paymentMethods.paymentMethods?.some((x) => x.type === "scheme")) {
-    return null;
-  }
+  const hasCardPaymentMethod = paymentMethods.paymentMethods.paymentMethods?.some((x) => x.type === "scheme");
 
   const {
     activePaymentMethod,
     setActivePaymentMethod,
     isPaymentMethodInitialized,
     updatePaymentMethodInitialization,
-    threeDSecureRef,
     handleSuccess,
     handleError,
     setThreeDSecureActive,
+    threeDSecureActive,
   } = usePaymentMethodGroup();
-  const schemeBrands = paymentMethods.paymentMethods.paymentMethods.find((x) => x.type === "scheme")!.brands!;
+
+  if (!hasCardPaymentMethod || (activePaymentMethod !== "card" && threeDSecureActive)) {
+    // if threeDSecureActive for some other payment method, do not show card form
+    return null;
+  }
+
+  const schemeBrands = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "scheme")!.brands!;
 
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout({
@@ -200,16 +204,6 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
 
     if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
-
-      adyenCardRef.current!.createFromAction(action).mount(threeDSecureRef?.current!);
-      return;
-    }
-
-    if (resultCode === "RedirectShopper") {
-      // redirect will always be a GET request.
-      window.location.href = action.url;
-
-      return;
     }
 
     // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
@@ -293,7 +287,14 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
           <RenderBrandIcons brands={brands} brandHidden={brandHidden} />
         </span>
       </span>
-      <div className="straumur__card-component__expandable" ref={cardElementRef}>
+      <div
+        className="straumur__card-component__expandable"
+        ref={cardElementRef}
+        style={{
+          height: threeDSecureActive ? "600px" : "auto",
+          minWidth: threeDSecureActive ? "350px" : "auto",
+        }}
+      >
         {!isPaymentMethodInitialized.card && (
           <div className="straumur__card-component__loading-text">
             <LoaderIcon />
@@ -303,8 +304,8 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
         <div
           className="straumur__card-component__form"
           style={{
-            opacity: isPaymentMethodInitialized.card ? 1 : 0,
-            position: isPaymentMethodInitialized.card ? "relative" : "absolute",
+            opacity: isPaymentMethodInitialized.card && !threeDSecureActive ? 1 : 0,
+            position: isPaymentMethodInitialized.card && !threeDSecureActive ? "relative" : "absolute",
             transition: "opacity 0.3s ease-in-out",
           }}
         >

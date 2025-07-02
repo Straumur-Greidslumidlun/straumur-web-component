@@ -6,9 +6,9 @@ interface PaymentMethodsWrapperProps {
 }
 
 function PaymentMethodsWrapper({ children }: PaymentMethodsWrapperProps): h.JSX.Element | null {
-  const { error, success, threeDSecureActive } = usePaymentMethodGroup();
+  const { error, success } = usePaymentMethodGroup();
 
-  if (error || success || threeDSecureActive) {
+  if (error || success) {
     return null;
   }
 
