@@ -3,6 +3,7 @@ import { StraumurCheckoutConfiguration } from "../../models/models";
 import { StoredPaymentMethod, SuccessResponse } from "../../services/models";
 import StoredCardComponent from "./stored-card-component";
 import { useState } from "preact/hooks";
+import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 
 interface StoredCardContainerComponentProps {
   configuration: StraumurCheckoutConfiguration;
@@ -16,8 +17,13 @@ function StoredCardContainerComponent({
   const [storedPaymentMethods, setStoredPaymentMethods] = useState<StoredPaymentMethod[]>(
     paymentMethods.paymentMethods.storedPaymentMethods ?? []
   );
+  const { activePaymentMethod, threeDSecureActive } = usePaymentMethodGroup();
 
-  if (!storedPaymentMethods || storedPaymentMethods?.length === 0) {
+  if (
+    !storedPaymentMethods ||
+    storedPaymentMethods?.length === 0 ||
+    (activePaymentMethod !== "storedcard" && threeDSecureActive) // if threeDSecureActive for some other payment method, do not show stored cards
+  ) {
     return null;
   }
 
