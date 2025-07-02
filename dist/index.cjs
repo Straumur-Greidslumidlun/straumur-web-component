@@ -25,7 +25,7 @@ __export(index_exports, {
 module.exports = __toCommonJS(index_exports);
 
 // src/straumur-checkout.tsx
-var import_preact32 = require("preact");
+var import_preact31 = require("preact");
 var import_adyen = require("@adyen/adyen-web/styles/adyen.css");
 
 // #style-inject:#style-inject
@@ -145,7 +145,7 @@ async function setupPaymentMethods(environment, sessionId) {
 }
 
 // src/features/straumur-checkout-container.tsx
-var import_preact31 = require("preact");
+var import_preact30 = require("preact");
 
 // src/features/card/card-component.tsx
 var import_preact17 = require("preact");
@@ -1029,8 +1029,6 @@ function CardComponent({ configuration, paymentMethods }) {
       countryCode: "IS",
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
-      onSubmit: handleOnSubmit,
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed
     });
@@ -1039,6 +1037,8 @@ function CardComponent({ configuration, paymentMethods }) {
       challengeWindowSize: "05",
       // looks like not working
       brands: schemeBrands,
+      onSubmit: handleOnSubmit,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onBrand: (event) => {
         setSecurityCodePolicy(event.cvcPolicy);
         if (event.brand === "card") {
@@ -1129,11 +1129,6 @@ function CardComponent({ configuration, paymentMethods }) {
       return;
     }
     const { resultCode, action } = response;
-    if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
-      setThreeDSecureActive(true);
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
-      return;
-    }
     actions.resolve({ resultCode, action });
     if (resultCode === "Authorised") {
       handleSuccess("success.paymentAuthorized");
@@ -1425,7 +1420,7 @@ function GooglePayComponent({ configuration, paymentMethods }) {
       return;
     }
     const { resultCode, action } = response;
-    if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
+    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
       adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
       actions.resolve({});
@@ -1600,7 +1595,7 @@ function ApplePayComponent({ configuration, paymentMethods }) {
       return;
     }
     const { resultCode, action } = response;
-    if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
+    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
       setThreeDSecureActive(true);
       adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
       actions.resolve({});
@@ -1725,13 +1720,13 @@ function StoredCardComponent({
       },
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
-      onSubmit: handleOnSubmit,
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: configuration.onPaymentCompleted,
       onPaymentFailed: configuration.onPaymentFailed
     });
     customCardRef.current = new import_adyen_web4.CustomCard(adyenCardRef.current, {
       brands: [storedPaymentMethod.brand],
+      onSubmit: handleOnSubmit,
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onConfigSuccess() {
         updateStoredCardInitialization(storedPaymentMethod.id, true);
       },
@@ -1826,11 +1821,6 @@ function StoredCardComponent({
       return;
     }
     const { resultCode, action } = response;
-    if (resultCode === "RedirectShopper" || resultCode === "IdentifyShopper") {
-      setThreeDSecureActive(true);
-      adyenCardRef.current.createFromAction(action).mount(threeDSecureRef?.current);
-      return;
-    }
     actions.resolve({ resultCode, action });
     if (resultCode === "Authorised") {
       handleSuccess("success.paymentAuthorized");
@@ -2112,44 +2102,25 @@ function ResultComponent({ configuration }) {
 }
 var result_component_default = ResultComponent;
 
-// src/features/three-d-secure-component/three-d-secure-component.tsx
-var import_preact29 = require("preact");
-var import_hooks9 = require("preact/hooks");
-
-// src/features/three-d-secure-component/three-d-secure-component.css
-styleInject(".straumur__three-d-secure {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  width: 100%;\n  background-color: var(--straumur__color-white);\n  border-radius: var(--straumur__border-radius-xxlg);\n}\n");
-
-// src/features/three-d-secure-component/three-d-secure-component.tsx
-function StraumurCheckoutContainer() {
-  const threeDSecureRef = (0, import_hooks9.useRef)(null);
-  const { setThreeDSecureRef } = usePaymentMethodGroup();
-  (0, import_hooks9.useEffect)(() => {
-    if (threeDSecureRef.current) {
-      setThreeDSecureRef(threeDSecureRef.current);
-    }
-  }, []);
-  return /* @__PURE__ */ (0, import_preact29.h)("div", { className: "straumur__three-d-secure", ref: threeDSecureRef });
-}
-var three_d_secure_component_default = StraumurCheckoutContainer;
-
 // src/features/payment-methods-wrapper/payment-methods-wrapper.tsx
-var import_preact30 = require("preact");
+var import_preact29 = require("preact");
 function PaymentMethodsWrapper({ children }) {
   const { error, success, threeDSecureActive } = usePaymentMethodGroup();
   if (error || success || threeDSecureActive) {
     return null;
   }
-  return /* @__PURE__ */ (0, import_preact30.h)(import_preact30.Fragment, null, children);
+  return /* @__PURE__ */ (0, import_preact29.h)(import_preact29.Fragment, null, children);
 }
 var payment_methods_wrapper_default = PaymentMethodsWrapper;
 
 // src/features/straumur-checkout-container.tsx
-function StraumurCheckoutContainer2({ configuration, paymentMethods }) {
-  return /* @__PURE__ */ (0, import_preact31.h)(payment_method_group_default, { initialValue: null }, /* @__PURE__ */ (0, import_preact31.h)(payment_methods_wrapper_default, null, /* @__PURE__ */ (0, import_preact31.h)(stored_card_container_component_default, { configuration, paymentMethods }), /* @__PURE__ */ (0, import_preact31.h)(card_component_default, { configuration, paymentMethods }), /* @__PURE__ */ (0, import_preact31.h)(google_pay_component_default, { configuration, paymentMethods }), /* @__PURE__ */ (0, import_preact31.h)(apple_pay_component_default, { configuration, paymentMethods })), /* @__PURE__ */ (0, import_preact31.h)(three_d_secure_component_default, null), /* @__PURE__ */ (0, import_preact31.h)(result_component_default, { configuration }));
+function StraumurCheckoutContainer({ configuration, paymentMethods }) {
+  return /* @__PURE__ */ (0, import_preact30.h)(payment_method_group_default, { initialValue: null }, /* @__PURE__ */ (0, import_preact30.h)(payment_methods_wrapper_default, null, /* @__PURE__ */ (0, import_preact30.h)(stored_card_container_component_default, { configuration, paymentMethods }), /* @__PURE__ */ (0, import_preact30.h)(card_component_default, { configuration, paymentMethods }), /* @__PURE__ */ (0, import_preact30.h)(google_pay_component_default, { configuration, paymentMethods }), /* @__PURE__ */ (0, import_preact30.h)(apple_pay_component_default, { configuration, paymentMethods })), /* @__PURE__ */ (0, import_preact30.h)(result_component_default, { configuration }));
 }
-var straumur_checkout_container_default = StraumurCheckoutContainer2;
+var straumur_checkout_container_default = StraumurCheckoutContainer;
 
 // src/straumur-checkout.tsx
+var import_adyen_web5 = require("@adyen/adyen-web");
 var StraumurCheckout = class {
   configuration;
   paymentMethods = null;
@@ -2174,8 +2145,8 @@ var StraumurCheckout = class {
         this.handleError("error.failedToInitializeStraumurWebComponent");
         return;
       }
-      (0, import_preact32.render)(
-        /* @__PURE__ */ (0, import_preact32.h)(RootComponent, null, /* @__PURE__ */ (0, import_preact32.h)("div", { className: "straumur__component" }, /* @__PURE__ */ (0, import_preact32.h)(loader_default, null))),
+      (0, import_preact31.render)(
+        /* @__PURE__ */ (0, import_preact31.h)(RootComponent, null, /* @__PURE__ */ (0, import_preact31.h)("div", { className: "straumur__component" }, /* @__PURE__ */ (0, import_preact31.h)(loader_default, null))),
         this.mountElement
       );
       const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
@@ -2191,8 +2162,8 @@ var StraumurCheckout = class {
   }
   renderComponent() {
     if (!this.mountElement) return;
-    (0, import_preact32.render)(
-      /* @__PURE__ */ (0, import_preact32.h)(RootComponent, null, /* @__PURE__ */ (0, import_preact32.h)(straumur_checkout_container_default, { configuration: this.configuration, paymentMethods: this.paymentMethods })),
+    (0, import_preact31.render)(
+      /* @__PURE__ */ (0, import_preact31.h)(RootComponent, null, /* @__PURE__ */ (0, import_preact31.h)(straumur_checkout_container_default, { configuration: this.configuration, paymentMethods: this.paymentMethods })),
       this.mountElement
     );
   }
@@ -2205,6 +2176,56 @@ var StraumurCheckout = class {
       this.renderComponent();
     }
   }
+  handleSuccess(message) {
+    (0, import_preact31.render)(
+      /* @__PURE__ */ (0, import_preact31.h)(RootComponent, null, /* @__PURE__ */ (0, import_preact31.h)("div", { className: "straumur__component" }, /* @__PURE__ */ (0, import_preact31.h)(success_default, null), /* @__PURE__ */ (0, import_preact31.h)("p", null, i18n(this.configuration.locale, message)))),
+      this.mountElement
+    );
+  }
+  async submitDetails(redirectResult) {
+    const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
+    if (response.resultCode === "Error") {
+      this.handleError(response.error);
+      return;
+    }
+    const checkout = await (0, import_adyen_web5.AdyenCheckout)({
+      environment: this.configuration.environment,
+      clientKey: response.clientKey,
+      paymentMethodsResponse: response.paymentMethods,
+      countryCode: "IS",
+      onAdditionalDetails: this.handleOnSubmitAdditionalData
+    });
+    checkout.submitDetails({
+      details: {
+        redirectResult
+      }
+    });
+  }
+  async handleOnSubmitAdditionalData(state, _, actions) {
+    const data = {
+      ...state.data,
+      sessionId: this.configuration.sessionId
+    };
+    const fetchResponse = await createDetailsRequest(this.configuration.environment, data);
+    if (!fetchResponse.ok) {
+      actions.reject();
+      this.handleError("error.failedToSubmitPaymentDetails");
+      return;
+    }
+    const response = await fetchResponse.json();
+    if (!response.resultCode) {
+      actions.reject();
+      this.handleError("error.paymentDetailsFailed");
+      return;
+    }
+    const { resultCode, action } = response;
+    actions.resolve({ resultCode, action });
+    if (resultCode === "Authorised") {
+      this.handleSuccess("success.paymentAuthorized");
+    } else {
+      this.handleError("error.paymentUnsuccessful");
+    }
+  }
   setLanguage(locale) {
     this.updateConfig({
       locale
@@ -2212,20 +2233,20 @@ var StraumurCheckout = class {
   }
   destroy() {
     if (this.mountElement) {
-      (0, import_preact32.render)(null, this.mountElement);
+      (0, import_preact31.render)(null, this.mountElement);
       this.mountElement = null;
     }
   }
   handleError(message) {
-    (0, import_preact32.render)(
-      /* @__PURE__ */ (0, import_preact32.h)(RootComponent, null, /* @__PURE__ */ (0, import_preact32.h)("div", { className: "straumur__component" }, /* @__PURE__ */ (0, import_preact32.h)(failure_default, null), /* @__PURE__ */ (0, import_preact32.h)("p", null, i18n(this.configuration.locale, message)))),
+    (0, import_preact31.render)(
+      /* @__PURE__ */ (0, import_preact31.h)(RootComponent, null, /* @__PURE__ */ (0, import_preact31.h)("div", { className: "straumur__component" }, /* @__PURE__ */ (0, import_preact31.h)(failure_default, null), /* @__PURE__ */ (0, import_preact31.h)("p", null, i18n(this.configuration.locale, message)))),
       this.mountElement
     );
   }
 };
 var straumur_checkout_default = StraumurCheckout;
 function RootComponent({ children }) {
-  return /* @__PURE__ */ (0, import_preact32.h)("div", { className: "straumur__root-component" }, children);
+  return /* @__PURE__ */ (0, import_preact31.h)("div", { className: "straumur__root-component" }, children);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
