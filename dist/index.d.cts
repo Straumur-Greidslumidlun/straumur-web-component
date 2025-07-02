@@ -76,6 +76,7 @@ type StraumurWebConfiguration = {
     environment: "test" | "live";
     onPaymentCompleted?: () => void;
     onPaymentFailed?: () => void;
+    submitDetails?: (details: any) => void;
     placeholders?: Placeholders;
     locale?: "is" | "en";
 };
@@ -98,6 +99,9 @@ declare class StraumurCheckout {
     mount(selector: HTMLElement | string): Promise<void>;
     private renderComponent;
     updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void;
+    handleSuccess(message: TranslationKey): void;
+    submitDetails(redirectResult: string): Promise<void>;
+    private handleOnSubmitAdditionalData;
     setLanguage(locale: Language): void;
     destroy(): void;
     handleError(message: TranslationKey): void;
