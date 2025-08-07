@@ -6,3 +6,5 @@ on:
 jobs:
   publish-to-npmjs:
     uses: ./.github/workflows/publish-to-npmjs.yml
+    with:
+      prerelease: ${{ github.event.release.prerelease }}
