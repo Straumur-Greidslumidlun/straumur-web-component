@@ -29,17 +29,12 @@ jobs:
 
       - run: npm ci
 
-      - name: Check npm authentication
-        run: npm whoami
-
       - name: Publishing pre-release
         if: ${{ inputs.prerelease }}
         run: |
-          echo "Publishing pre-release to npm with tag 'next'"
           npm publish --tag next --provenance --access public
 
       - name: Publishing stable release
         if: ${{ !inputs.prerelease }}
         run: |
-          echo "Publishing stable release to npm with tag 'latest'"
           npm publish --provenance --access public
