@@ -1,0 +1,7 @@
+name: Manual pre-release publish to NPM
+
+on: workflow_dispatch
+
+jobs:
+  publish-to-npmjs:
+    uses: ./.github/workflows/publish-to-npmjs.yml
