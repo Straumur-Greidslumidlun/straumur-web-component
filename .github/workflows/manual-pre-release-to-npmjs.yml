@@ -7,3 +7,5 @@ jobs:
     uses: ./.github/workflows/publish-to-npmjs.yml
     with:
       prerelease: true
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
