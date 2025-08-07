@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: ["src/index.ts"],
   format: ["esm", "iife"], // ESM for modern browsers, IIFE for immediate execution
-  globalName: "StraumurCheckout", // for IIFE: window.StraumurCheckout
+  globalName: "StraumurWeb", // for IIFE: window.StraumurWeb
   dts: true, // this allows other TypeScript projects (like merchant apps) to get type safety and autocompletion when they import your package
   injectStyle: true, // this option allows you to inject CSS styles directly into the output bundle, which is useful for web components that need styles
   clean: true, // is an option in tsup that tells it to delete the output directory (like dist/) before each new build.

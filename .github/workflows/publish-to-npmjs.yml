@@ -7,6 +7,10 @@ on:
       prerelease:
         required: true
         type: boolean
+
+    secrets:
+      NPM_TOKEN:
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,11 +32,9 @@ jobs:
       - name: Publishing pre-release
         if: ${{ inputs.prerelease }}
         run: |
-          echo "Publishing pre-release to npm with tag 'next'"
           npm publish --tag next --provenance --access public
 
       - name: Publishing stable release
         if: ${{ !inputs.prerelease }}
         run: |
-          echo "Publishing stable release to npm with tag 'latest'"
           npm publish --provenance --access public
