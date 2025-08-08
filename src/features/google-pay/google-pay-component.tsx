@@ -39,7 +39,6 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     setActivePaymentMethod,
     isPaymentMethodInitialized,
     updatePaymentMethodInitialization,
-    threeDSecureRef,
     handleSuccess,
     handleError,
     setThreeDSecureActive,
@@ -120,7 +119,6 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
     const data: ICreatePaymentBody = {
       ...state.data,
-      origin: window.location.origin,
       sessionId: configuration.sessionId,
     };
 

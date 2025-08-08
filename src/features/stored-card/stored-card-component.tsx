@@ -173,7 +173,6 @@ function StoredCardComponent({
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
     const data: ICreatePaymentBody = {
       ...state.data,
-      origin: window.location.origin,
       sessionId: configuration.sessionId,
       paymentMethod: {
         ...state.data.paymentMethod,
