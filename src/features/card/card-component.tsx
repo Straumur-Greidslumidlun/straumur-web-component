@@ -82,7 +82,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
 
     customCardRef.current = new CustomCard(adyenCardRef.current, {
       placeholders: configuration.placeholders,
-      challengeWindowSize: "05", // looks like not working
+      challengeWindowSize: "05",
       brands: schemeBrands,
       onBrand: (event) => {
         setSecurityCodePolicy(event.cvcPolicy);

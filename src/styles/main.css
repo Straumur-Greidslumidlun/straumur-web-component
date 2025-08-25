@@ -38,6 +38,10 @@
   --straumur__space-6xlg: 32px;
   --straumur__space-7xlg: 40px;
   --straumur__space-8xlg: 48px;
+
+  --apple-pay-button-width: 100%;
+  --apple-pay-button-height: 48px;
+  --apple-pay-button-border-radius: 4px;
 }
 
 .straumur__root-component {

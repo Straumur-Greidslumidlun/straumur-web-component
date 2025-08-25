@@ -69,7 +69,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
       },
-
+      challengeWindowSize: "05",
       countryCode: "IS",
       environment: configuration.environment,
       onSubmit: handleOnSubmit,
