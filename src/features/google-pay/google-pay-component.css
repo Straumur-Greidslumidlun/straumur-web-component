@@ -94,3 +94,13 @@
 .adyen-checkout__paywithgoogle {
   height: var(--straumur__space-8xlg);
 }
+
+.adyen-checkout__threeds2__challenge.adyen-checkout__threeds2__challenge--05 {
+  background-color: transparent;
+  display: block;
+  height: inherit;
+  min-height: 400px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
