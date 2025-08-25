@@ -260,3 +260,11 @@
 .straumur__card-component__form--wrapper--label-checkbox--checkbox {
   display: none;
 }
+
+.js-iframe {
+  border: none;
+  color-scheme: auto;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}

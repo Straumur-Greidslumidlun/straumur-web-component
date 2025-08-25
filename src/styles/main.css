@@ -35,6 +35,9 @@
   --straumur__space-3xlg: 18px;
   --straumur__space-4xlg: 20px;
   --straumur__space-5xlg: 24px;
+  --straumur__space-6xlg: 32px;
+  --straumur__space-7xlg: 40px;
+  --straumur__space-8xlg: 48px;
 }
 
 .straumur__root-component {
