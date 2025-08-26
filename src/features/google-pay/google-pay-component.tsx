@@ -194,7 +194,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     } else {
       handleError("error.paymentUnsuccessful");
     }
-    configuration.onPaymentCompleted?.();
+    configuration.onPaymentCompleted?.({ resultCode: data.resultCode });
   }
 
   function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
@@ -204,8 +204,11 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       } else {
         handleError("error.paymentUnsuccessful");
       }
+
+      configuration.onPaymentFailed?.({ resultCode: data.resultCode });
+    } else {
+      configuration.onPaymentFailed?.();
     }
-    configuration.onPaymentFailed?.();
   }
 
   const hasGooglePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "googlepay");

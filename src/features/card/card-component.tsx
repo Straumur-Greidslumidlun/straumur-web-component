@@ -250,7 +250,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
     } else {
       handleError("error.paymentUnsuccessful");
     }
-    configuration.onPaymentCompleted?.();
+    configuration.onPaymentCompleted?.({ resultCode: data.resultCode });
   }
 
   function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
@@ -260,8 +260,11 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
       } else {
         handleError("error.paymentUnsuccessful");
       }
+
+      configuration.onPaymentFailed?.({ resultCode: data.resultCode });
+    } else {
+      configuration.onPaymentFailed?.();
     }
-    configuration.onPaymentFailed?.();
   }
 
   function handleSubmitClick() {
