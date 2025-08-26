@@ -4,8 +4,8 @@ import { Language, TranslationKey } from "../localizations/translations";
 export type StraumurWebConfiguration = {
   sessionId: string;
   environment: "test" | "live";
-  onPaymentCompleted?: () => void;
-  onPaymentFailed?: () => void;
+  onPaymentCompleted?: (data: PaymentCompletedData) => void;
+  onPaymentFailed?: (data?: PaymentFailedData) => void;
   submitDetails?: (details: any) => void;
   placeholders?: Placeholders;
   locale?: "is" | "en";
