@@ -1,5 +1,4 @@
 import { h, render } from "preact";
-import "@adyen/adyen-web/styles/adyen.css";
 import "./styles/main.css";
 import { StraumurCheckoutConfiguration, StraumurWebConfiguration } from "./models/models";
 import { setupPaymentMethods } from "./services/straumur-service";

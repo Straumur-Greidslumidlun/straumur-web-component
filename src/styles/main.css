@@ -35,6 +35,13 @@
   --straumur__space-3xlg: 18px;
   --straumur__space-4xlg: 20px;
   --straumur__space-5xlg: 24px;
+  --straumur__space-6xlg: 32px;
+  --straumur__space-7xlg: 40px;
+  --straumur__space-8xlg: 48px;
+
+  --apple-pay-button-width: 100%;
+  --apple-pay-button-height: 48px;
+  --apple-pay-button-border-radius: 4px;
 }
 
 .straumur__root-component {
@@ -60,4 +67,22 @@
   height: 300px;
   background-color: var(--straumur__color-white);
   border-radius: var(--straumur__border-radius-xxlg);
+}
+
+.js-iframe {
+  border: none;
+  color-scheme: auto;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+.adyen-checkout__threeds2__challenge.adyen-checkout__threeds2__challenge--05 {
+  background-color: transparent;
+  display: block;
+  height: inherit;
+  min-height: 400px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
 }

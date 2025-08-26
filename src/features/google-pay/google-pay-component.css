@@ -90,3 +90,7 @@
   color: #213547;
   font-size: 0.9rem;
 }
+
+.adyen-checkout__paywithgoogle {
+  height: var(--straumur__space-8xlg);
+}

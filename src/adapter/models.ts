@@ -4,7 +4,6 @@ export interface IGetPaymentMethodsBody {
 
 export interface ICreatePaymentBody {
   sessionId: string;
-  origin: string;
 
   riskData?: {
     clientData: string;
