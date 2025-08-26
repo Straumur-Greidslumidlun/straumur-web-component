@@ -80,11 +80,18 @@ type StraumurWebConfiguration = {
     placeholders?: Placeholders;
     locale?: "is" | "en";
 };
+type ResultCode = "AuthenticationFinished" | "AuthenticationNotRequired" | "Authorised" | "Cancelled" | "ChallengeShopper" | "Error" | "IdentifyShopper" | "PartiallyAuthorised" | "Pending" | "PresentToShopper" | "Received" | "RedirectShopper" | "Refused";
+type PaymentCompletedData = {
+    resultCode: ResultCode;
+};
+type PaymentFailedData = {
+    resultCode: ResultCode;
+};
 type StraumurCheckoutConfiguration = {
     sessionId: string;
     environment: "test" | "live";
-    onPaymentCompleted?: () => void;
-    onPaymentFailed?: () => void;
+    onPaymentCompleted?: (data: PaymentCompletedData) => void;
+    onPaymentFailed?: (data?: PaymentFailedData) => void;
     placeholders?: Placeholders;
     locale: Language;
 };

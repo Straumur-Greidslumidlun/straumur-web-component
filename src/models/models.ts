@@ -11,12 +11,35 @@ export type StraumurWebConfiguration = {
   locale?: "is" | "en";
 };
 
+type ResultCode =
+  | "AuthenticationFinished"
+  | "AuthenticationNotRequired"
+  | "Authorised"
+  | "Cancelled"
+  | "ChallengeShopper"
+  | "Error"
+  | "IdentifyShopper"
+  | "PartiallyAuthorised"
+  | "Pending"
+  | "PresentToShopper"
+  | "Received"
+  | "RedirectShopper"
+  | "Refused";
+
+export type PaymentCompletedData = {
+  resultCode: ResultCode;
+};
+
+export type PaymentFailedData = {
+  resultCode: ResultCode;
+};
+
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {
   sessionId: string;
   environment: "test" | "live";
-  onPaymentCompleted?: () => void;
-  onPaymentFailed?: () => void;
+  onPaymentCompleted?: (data: PaymentCompletedData) => void;
+  onPaymentFailed?: (data?: PaymentFailedData) => void;
   placeholders?: Placeholders;
   locale: Language;
 };

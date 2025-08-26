@@ -193,7 +193,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     } else {
       handleError("error.paymentUnsuccessful");
     }
-    configuration.onPaymentCompleted?.();
+    configuration.onPaymentCompleted?.({ resultCode: data.resultCode });
   }
 
   function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
@@ -203,8 +203,10 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       } else {
         handleError("error.paymentUnsuccessful");
       }
+      configuration.onPaymentFailed?.({ resultCode: data.resultCode });
+    } else {
+      configuration.onPaymentFailed?.();
     }
-    configuration.onPaymentFailed?.();
   }
 
   const hasApplePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "applepay");
