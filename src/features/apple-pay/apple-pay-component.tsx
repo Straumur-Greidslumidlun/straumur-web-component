@@ -231,7 +231,9 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       <span className="straumur__apple-pay-component__content">
         <span className="straumur__apple-pay-component--circle"></span>
         <ApplePayIcon />
-        <span className="straumur__apple-pay-component--text">{i18n(configuration.locale, "applePay.title")}</span>
+        <span className="straumur__apple-pay-component--text">
+          {i18n(configuration.locale, "applePay.title", configuration.customLocalizations)}
+        </span>
       </span>
       <div className="straumur__apple-pay-component__expandable">
         <div

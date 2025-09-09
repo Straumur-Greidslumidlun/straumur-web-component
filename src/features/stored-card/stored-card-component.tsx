@@ -302,7 +302,7 @@ function StoredCardComponent({
                 className="straumur__stored-card-component__remove-stored-card-button--text"
                 disabled={askConfirmRemoveStoredCard}
               >
-                {i18n(configuration.locale, "stored-cards.removeStoredCard")}
+                {i18n(configuration.locale, "stored-cards.removeStoredCard", configuration.customLocalizations)}
               </button>
             </div>
           )}
@@ -315,7 +315,7 @@ function StoredCardComponent({
         <div className="straumur__stored-card-component__confirm-remove-stored-card--header">
           <WarningIcon />
           <span className="straumur__stored-card-component__confirm-remove-stored-card--header--title">
-            {i18n(configuration.locale, "stored-cards.removeStoredCardQuestion")}
+            {i18n(configuration.locale, "stored-cards.removeStoredCardQuestion", configuration.customLocalizations)}
           </span>
         </div>
         <div className="straumur__stored-card-component__confirm-remove-stored-card--actions">
@@ -323,13 +323,21 @@ function StoredCardComponent({
             className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
             onClick={handleConfirmRemoveStoredCard}
           >
-            {i18n(configuration.locale, "stored-cards.removeStoredCardQuestionYesRemove")}
+            {i18n(
+              configuration.locale,
+              "stored-cards.removeStoredCardQuestionYesRemove",
+              configuration.customLocalizations
+            )}
           </button>
           <button
             className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
             onClick={handleCancelRemoveStoredCard}
           >
-            {i18n(configuration.locale, "stored-cards.removeStoredCardQuestionCancel")}
+            {i18n(
+              configuration.locale,
+              "stored-cards.removeStoredCardQuestionCancel",
+              configuration.customLocalizations
+            )}
           </button>
         </div>
       </div>
@@ -358,7 +366,7 @@ function StoredCardComponent({
           <div className="straumur__stored-card-component__form--field-wrapper">
             <div className="straumur__stored-card-component__form--wrapper">
               <label className="straumur__stored-card-component__form--wrapper--label straumur__stored-card-component__form--wrapper--label--readonly">
-                {i18n(configuration.locale, "stored-cards.expiryDate")}
+                {i18n(configuration.locale, "stored-cards.expiryDate", configuration.customLocalizations)}
               </label>
               <span className="straumur__stored-card-component__form--wrapper--input straumur__stored-card-component__form--wrapper--input--readonly">
                 {storedPaymentMethod.expiryMonth}/{storedPaymentMethod.expiryYear}
@@ -376,8 +384,16 @@ function StoredCardComponent({
                     }`}
                   >
                     {securityCodePolicy === "optional"
-                      ? i18n(configuration.locale, "stored-cards.securityCode3DigitsOptional")
-                      : i18n(configuration.locale, "stored-cards.securityCode3Digits")}
+                      ? i18n(
+                          configuration.locale,
+                          "stored-cards.securityCode3DigitsOptional",
+                          configuration.customLocalizations
+                        )
+                      : i18n(
+                          configuration.locale,
+                          "stored-cards.securityCode3Digits",
+                          configuration.customLocalizations
+                        )}
                   </label>
                   <span
                     className={`${"straumur__stored-card-component__form--wrapper--input"} ${
@@ -388,7 +404,13 @@ function StoredCardComponent({
                     data-cse="encryptedSecurityCode"
                   >
                     <div className="straumur__stored-card-component__form--wrapper--label--info">
-                      <Tooltip content={i18n(configuration.locale, "stored-cards.securityCode3DigitsInfo")}>
+                      <Tooltip
+                        content={i18n(
+                          configuration.locale,
+                          "stored-cards.securityCode3DigitsInfo",
+                          configuration.customLocalizations
+                        )}
+                      >
                         <InfoIcon />
                       </Tooltip>
                     </div>

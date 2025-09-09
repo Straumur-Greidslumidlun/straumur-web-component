@@ -284,7 +284,9 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
       <span className="straumur__card-component__content">
         <span className="straumur__card-component--circle"></span>
         <CardIcon />
-        <span className="straumur__card-component--text">{i18n(configuration.locale, "cards.title")}</span>
+        <span className="straumur__card-component--text">
+          {i18n(configuration.locale, "cards.title", configuration.customLocalizations)}
+        </span>
         <span className="straumur__card-component--brands">
           <RenderBrandIcons brands={brands} brandHidden={brandHidden} />
         </span>
@@ -317,7 +319,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
                 formErrors.encryptedCardNumber.visible ? "straumur__card-component__form--wrapper--label--error" : ""
               }`}
             >
-              {i18n(configuration.locale, "cards.cardNumber")}
+              {i18n(configuration.locale, "cards.cardNumber", configuration.customLocalizations)}
             </label>
             <span
               className={`${"straumur__card-component__form--wrapper--input"} ${
@@ -338,7 +340,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
                   formErrors.encryptedExpiryDate.visible ? "straumur__card-component__form--wrapper--label--error" : ""
                 }`}
               >
-                {i18n(configuration.locale, "cards.expiryDate")}
+                {i18n(configuration.locale, "cards.expiryDate", configuration.customLocalizations)}
               </label>
               <span
                 className={`${"straumur__card-component__form--wrapper--input"} ${
@@ -364,8 +366,12 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
                     }`}
                   >
                     {securityCodePolicy === "optional"
-                      ? i18n(configuration.locale, "cards.securityCode3DigitsOptional")
-                      : i18n(configuration.locale, "cards.securityCode3Digits")}
+                      ? i18n(
+                          configuration.locale,
+                          "cards.securityCode3DigitsOptional",
+                          configuration.customLocalizations
+                        )
+                      : i18n(configuration.locale, "cards.securityCode3Digits", configuration.customLocalizations)}
                   </label>
                   <span
                     className={`${"straumur__card-component__form--wrapper--input"} ${
@@ -381,7 +387,17 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
                     </span>
                   )}
                   <div className="straumur__card-component__form--wrapper--label--info">
-                    <Tooltip content={<span>{i18n(configuration.locale, "cards.securityCode3DigitsInfo")}</span>}>
+                    <Tooltip
+                      content={
+                        <span>
+                          {i18n(
+                            configuration.locale,
+                            "cards.securityCode3DigitsInfo",
+                            configuration.customLocalizations
+                          )}
+                        </span>
+                      }
+                    >
                       <InfoIcon />
                     </Tooltip>
                   </div>
@@ -415,7 +431,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
                 checked={storePaymentMethod}
                 onChange={handleStorePaymentMethodChange}
               />
-              {i18n(configuration.locale, "cards.storePaymentMethod")}
+              {i18n(configuration.locale, "cards.storePaymentMethod", configuration.customLocalizations)}
             </label>
           )}
 

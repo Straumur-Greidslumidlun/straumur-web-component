@@ -22,14 +22,18 @@ function ResultComponent({ configuration }: ResultComponentProps): h.JSX.Element
       {error && (
         <Fragment>
           <FailureIcon />
-          <p className="straumur__result-component__error--message">{i18n(configuration.locale, error)}</p>
+          <p className="straumur__result-component__error--message">
+            {i18n(configuration.locale, error, configuration.customLocalizations)}
+          </p>
         </Fragment>
       )}
 
       {success && (
         <Fragment>
           <SuccessIcon />
-          <p className="straumur__result-component__success--message">{i18n(configuration.locale, success)}</p>
+          <p className="straumur__result-component__success--message">
+            {i18n(configuration.locale, success, configuration.customLocalizations)}
+          </p>
         </Fragment>
       )}
     </div>

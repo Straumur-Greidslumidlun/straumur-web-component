@@ -233,7 +233,9 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       <span className="straumur__google-pay-component__content">
         <span className="straumur__google-pay-component--circle"></span>
         <GooglePayIcon />
-        <span className="straumur__google-pay-component--text">{i18n(configuration.locale, "googlePay.title")}</span>
+        <span className="straumur__google-pay-component--text">
+          {i18n(configuration.locale, "googlePay.title", configuration.customLocalizations)}
+        </span>
       </span>
       <div className="straumur__google-pay-component__expandable">
         <div

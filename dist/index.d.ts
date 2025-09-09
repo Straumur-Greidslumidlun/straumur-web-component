@@ -79,6 +79,7 @@ type StraumurWebConfiguration = {
     submitDetails?: (details: any) => void;
     placeholders?: Placeholders;
     locale?: "is" | "en";
+    localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
 };
 type ResultCode = "AuthenticationFinished" | "AuthenticationNotRequired" | "Authorised" | "Cancelled" | "ChallengeShopper" | "Error" | "IdentifyShopper" | "PartiallyAuthorised" | "Pending" | "PresentToShopper" | "Received" | "RedirectShopper" | "Refused";
 type PaymentCompletedData = {
@@ -94,6 +95,7 @@ type StraumurCheckoutConfiguration = {
     onPaymentFailed?: (data?: PaymentFailedData) => void;
     placeholders?: Placeholders;
     locale: Language;
+    customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
 };
 type PlaceholderKeys = "cardNumber" | "expiryDate" | "expiryMonth" | "expiryYear" | "securityCodeThreeDigits" | "securityCodeFourDigits";
 type Placeholders = Partial<Record<PlaceholderKeys, string>>;

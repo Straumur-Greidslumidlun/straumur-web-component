@@ -25,7 +25,11 @@ class StraumurCheckout {
   private mountElement: HTMLElement | null = null;
 
   constructor(config: StraumurWebConfiguration) {
-    this.configuration = { ...config, locale: determineLocale(config.locale) };
+    this.configuration = {
+      ...config,
+      locale: determineLocale(config.locale),
+      customLocalizations: config.localizations,
+    };
 
     function determineLocale(locale: "is" | "en" | undefined): Language {
       switch (locale) {
@@ -100,7 +104,7 @@ class StraumurCheckout {
       <RootComponent>
         <div className="straumur__component">
           <SuccessIcon />
-          <p>{i18n(this.configuration.locale, message)}</p>
+          <p>{i18n(this.configuration.locale, message, this.configuration.customLocalizations)}</p>
         </div>
       </RootComponent>,
       this.mountElement!
@@ -189,7 +193,7 @@ class StraumurCheckout {
       <RootComponent>
         <div className="straumur__component">
           <FailureIcon />
-          <p>{i18n(this.configuration.locale, message)}</p>
+          <p>{i18n(this.configuration.locale, message, this.configuration.customLocalizations)}</p>
         </div>
       </RootComponent>,
       this.mountElement!
