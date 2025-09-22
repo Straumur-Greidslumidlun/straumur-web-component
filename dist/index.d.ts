@@ -104,16 +104,17 @@ declare class StraumurCheckout {
     private configuration;
     private paymentMethods;
     private mountElement;
+    private i18n;
     constructor(config: StraumurWebConfiguration);
     mount(selector: HTMLElement | string): Promise<void>;
     private renderComponent;
-    updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void;
     handleSuccess(message: TranslationKey): void;
+    handleError(message: TranslationKey): void;
     submitDetails(redirectResult: string): Promise<void>;
     private handleOnSubmitAdditionalData;
+    updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void;
     setLanguage(locale: Language): void;
     destroy(): void;
-    handleError(message: TranslationKey): void;
 }
 
 export { StraumurCheckout };

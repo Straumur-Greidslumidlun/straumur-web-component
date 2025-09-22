@@ -6,7 +6,6 @@ import { Language, TranslationKey } from "./localizations/translations";
 import StraumurCheckoutContainer from "./features/straumur-checkout-container";
 import { SuccessResponse } from "./services/models";
 import FailureIcon from "./assets/icons/failure";
-import i18n from "./localizations/i18n";
 import LoaderIcon from "./assets/icons/loader";
 import {
   AdyenCheckout,
@@ -18,11 +17,14 @@ import {
 import { ICreateDetailsBody } from "./adapter/models";
 import { createDetailsRequest } from "./adapter/straumur-adapter";
 import SuccessIcon from "./assets/icons/success";
+import { I18nProvider } from "./localizations/i18n-context";
+import { I18nService } from "./localizations/i18n-service";
 
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
   private paymentMethods: SuccessResponse | null = null;
   private mountElement: HTMLElement | null = null;
+  private i18n: I18nService;
 
   constructor(config: StraumurWebConfiguration) {
     this.configuration = {
@@ -30,6 +32,9 @@ class StraumurCheckout {
       locale: determineLocale(config.locale),
       customLocalizations: config.localizations,
     };
+
+    // Create i18n instance
+    this.i18n = new I18nService(this.configuration.locale, this.configuration.customLocalizations);
 
     function determineLocale(locale: "is" | "en" | undefined): Language {
       switch (locale) {
@@ -81,22 +86,18 @@ class StraumurCheckout {
 
     render(
       <RootComponent>
-        <StraumurCheckoutContainer configuration={this.configuration} paymentMethods={this.paymentMethods!} />
+        <I18nProvider
+          i18nService={this.i18n}
+          onLanguageChange={(language) => {
+            this.configuration.locale = language;
+            this.renderComponent();
+          }}
+        >
+          <StraumurCheckoutContainer configuration={this.configuration} paymentMethods={this.paymentMethods!} />
+        </I18nProvider>
       </RootComponent>,
       this.mountElement
     );
-  }
-
-  updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void {
-    this.configuration = {
-      ...this.configuration,
-      ...newConfig,
-    };
-
-    // Re-render the component with new config
-    if (this.mountElement) {
-      this.renderComponent();
-    }
   }
 
   handleSuccess(message: TranslationKey) {
@@ -104,7 +105,19 @@ class StraumurCheckout {
       <RootComponent>
         <div className="straumur__component">
           <SuccessIcon />
-          <p>{i18n(this.configuration.locale, message, this.configuration.customLocalizations)}</p>
+          <p>{this.i18n.t(message)}</p>
+        </div>
+      </RootComponent>,
+      this.mountElement!
+    );
+  }
+
+  handleError(message: TranslationKey) {
+    render(
+      <RootComponent>
+        <div className="straumur__component">
+          <FailureIcon />
+          <p>{this.i18n.t(message)}</p>
         </div>
       </RootComponent>,
       this.mountElement!
@@ -174,6 +187,26 @@ class StraumurCheckout {
     }
   }
 
+  updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void {
+    this.configuration = {
+      ...this.configuration,
+      ...newConfig,
+    };
+
+    // Update i18n if locale or customLocalizations changed
+    if (newConfig.locale) {
+      this.i18n.setLanguage(newConfig.locale);
+    }
+    if (newConfig.customLocalizations) {
+      this.i18n.updateCustomLocalizations(newConfig.customLocalizations);
+    }
+
+    // Re-render the component with new config
+    if (this.mountElement) {
+      this.renderComponent();
+    }
+  }
+
   setLanguage(locale: Language): void {
     this.updateConfig({
       locale: locale,
@@ -186,18 +219,6 @@ class StraumurCheckout {
       render(null, this.mountElement);
       this.mountElement = null;
     }
-  }
-
-  handleError(message: TranslationKey) {
-    render(
-      <RootComponent>
-        <div className="straumur__component">
-          <FailureIcon />
-          <p>{i18n(this.configuration.locale, message, this.configuration.customLocalizations)}</p>
-        </div>
-      </RootComponent>,
-      this.mountElement!
-    );
   }
 }
 
