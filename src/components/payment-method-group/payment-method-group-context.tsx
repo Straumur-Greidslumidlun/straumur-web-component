@@ -1,7 +1,6 @@
 import { h } from "preact";
-import { createContext } from "preact";
+import { createContext, ComponentChildren } from "preact";
 import { useState, useContext } from "preact/hooks";
-import { ComponentChildren } from "preact";
 import { PaymentMethod } from "../../models/constants";
 import { TranslationKey } from "../../localizations/translations";
 

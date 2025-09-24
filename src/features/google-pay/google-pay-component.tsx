@@ -19,7 +19,7 @@ import {
   UIElement,
   UIElementProps,
 } from "@adyen/adyen-web";
-import i18n from "../../localizations/i18n";
+import { useI18n } from "../../localizations/i18n-context";
 import GooglePayIcon from "../../assets/icons/googlepay";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../../adapter/models";
 import { createDetailsRequest, createPaymentRequest } from "../../adapter/straumur-adapter";
@@ -34,6 +34,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
   const googlePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCardRef = useRef<ICore>();
   const googlePayRef = useRef<GooglePay>();
+  const { i18n } = useI18n();
   const {
     activePaymentMethod,
     setActivePaymentMethod,
@@ -233,7 +234,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       <span className="straumur__google-pay-component__content">
         <span className="straumur__google-pay-component--circle"></span>
         <GooglePayIcon />
-        <span className="straumur__google-pay-component--text">{i18n(configuration.locale, "googlePay.title")}</span>
+        <span className="straumur__google-pay-component--text">{i18n.t("googlePay.title")}</span>
       </span>
       <div className="straumur__google-pay-component__expandable">
         <div

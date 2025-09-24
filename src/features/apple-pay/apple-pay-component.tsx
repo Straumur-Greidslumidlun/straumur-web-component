@@ -19,7 +19,7 @@ import {
   UIElement,
   UIElementProps,
 } from "@adyen/adyen-web";
-import i18n from "../../localizations/i18n";
+import { useI18n } from "../../localizations/i18n-context";
 import ApplePayIcon from "../../assets/icons/applepay";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../../adapter/models";
 import { createDetailsRequest, createPaymentRequest } from "../../adapter/straumur-adapter";
@@ -34,6 +34,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
   const applePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCardRef = useRef<ICore>();
   const applePayRef = useRef<ApplePay>();
+  const { i18n } = useI18n();
   const {
     activePaymentMethod,
     setActivePaymentMethod,
@@ -231,7 +232,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       <span className="straumur__apple-pay-component__content">
         <span className="straumur__apple-pay-component--circle"></span>
         <ApplePayIcon />
-        <span className="straumur__apple-pay-component--text">{i18n(configuration.locale, "applePay.title")}</span>
+        <span className="straumur__apple-pay-component--text">{i18n.t("applePay.title")}</span>
       </span>
       <div className="straumur__apple-pay-component__expandable">
         <div

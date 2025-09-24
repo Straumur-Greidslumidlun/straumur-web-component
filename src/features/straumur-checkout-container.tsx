@@ -24,7 +24,7 @@ function StraumurCheckoutContainer({ configuration, paymentMethods }: StraumurCh
         <ApplePayComponent configuration={configuration} paymentMethods={paymentMethods} />
       </PaymentMethodsWrapper>
 
-      <ResultComponent configuration={configuration} />
+      <ResultComponent />
     </PaymentMethodGroup>
   );
 }
