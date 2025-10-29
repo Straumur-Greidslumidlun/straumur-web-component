@@ -34,7 +34,7 @@
     "build": "tsup"
   },
   "dependencies": {
-    "@adyen/adyen-web": "^6.17.0",
+    "@adyen/adyen-web": "^6.23.0",
     "preact": "^10.26.5"
   },
   "devDependencies": {
