@@ -1,6 +1,6 @@
 {
   "name": "straumur-web-component",
-  "version": "0.5.9",
+  "version": "0.6.0-alpha.1",
   "license": "MIT",
   "homepage": "https://docs.straumur.is",
   "type": "module",
