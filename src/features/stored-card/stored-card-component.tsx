@@ -171,6 +171,25 @@ function StoredCardComponent({
     handleError("error.unknownError");
   }
 
+  useEffect(() => {
+    const handleCustomSubmitEvent = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      // Listen for card method since customCardSubmit() dispatches "card" event
+      if (
+        customEvent.detail?.method === "card-custom-submit" &&
+        activePaymentMethod === "storedcard" &&
+        activeStoredPaymentMethodId === storedPaymentMethod.id
+      ) {
+        handleSubmitClick();
+      }
+    };
+
+    document.addEventListener("straumur-submit-card", handleCustomSubmitEvent);
+    return () => {
+      document.removeEventListener("straumur-submit-card", handleCustomSubmitEvent);
+    };
+  }, [activePaymentMethod, activeStoredPaymentMethodId, storedPaymentMethod.id, customCardRef.current]);
+
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
     const data: ICreatePaymentBody = {
       ...state.data,
@@ -351,8 +370,8 @@ function StoredCardComponent({
         <div
           className="straumur__stored-card-component__form"
           style={{
-            opacity: isStoredCardInitialized[storedPaymentMethod.id] ? 1 : 0,
-            position: isStoredCardInitialized[storedPaymentMethod.id] ? "relative" : "absolute",
+            opacity: isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? 1 : 0,
+            position: isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? "relative" : "absolute",
             transition: "opacity 0.3s ease-in-out",
           }}
         >
@@ -386,15 +405,6 @@ function StoredCardComponent({
                         ? "straumur__stored-card-component__form--wrapper--input--error"
                         : ""
                     }`}
-                  >
-                    {i18n.t("stored-cards.securityCode3Digits")}
-                  </span>
-                  <span
-                    className={`${"straumur__stored-card-component__form--wrapper--input"} ${
-                      formErrors.encryptedSecurityCode.visible
-                        ? "straumur__stored-card-component__form--wrapper--input--error"
-                        : ""
-                    }`}
                     data-cse="encryptedSecurityCode"
                   >
                     <div className="straumur__stored-card-component__form--wrapper--label--info">
@@ -413,13 +423,15 @@ function StoredCardComponent({
             </div>
           </div>
 
-          <button
-            className="straumur__stored-card-component__submit-button"
-            disabled={payButtonDisabled}
-            onClick={handleSubmitClick}
-          >
-            {paymentMethods.formattedAmount}
-          </button>
+          {!configuration.customCardSubmission && (
+            <button
+              className="straumur__stored-card-component__submit-button"
+              disabled={payButtonDisabled}
+              onClick={handleSubmitClick}
+            >
+              {paymentMethods.formattedAmount}
+            </button>
+          )}
         </div>
       </div>
     </label>

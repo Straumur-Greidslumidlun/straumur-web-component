@@ -10,6 +10,7 @@ export type StraumurWebConfiguration = {
   placeholders?: Placeholders;
   locale?: "is" | "en";
   localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+  customCardSubmission?: boolean;
 };
 
 type ResultCode =
@@ -44,6 +45,7 @@ export type StraumurCheckoutConfiguration = {
   placeholders?: Placeholders;
   locale: Language;
   customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+  customCardSubmission?: boolean;
 };
 
 type PlaceholderKeys =

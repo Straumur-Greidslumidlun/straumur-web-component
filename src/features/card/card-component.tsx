@@ -174,6 +174,20 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
     storePaymentMethodRef.current = storePaymentMethod;
   }, [storePaymentMethod]);
 
+  useEffect(() => {
+    const handleCustomSubmitEvent = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.method === "card-custom-submit" && activePaymentMethod === "card") {
+        handleSubmitClick();
+      }
+    };
+
+    document.addEventListener("straumur-submit-card", handleCustomSubmitEvent);
+    return () => {
+      document.removeEventListener("straumur-submit-card", handleCustomSubmitEvent);
+    };
+  }, [activePaymentMethod, customCardRef.current]);
+
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
     const data: ICreatePaymentBody = {
       ...state.data,
@@ -420,13 +434,15 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
             </label>
           )}
 
-          <button
-            className="straumur__card-component__submit-button"
-            disabled={payButtonDisabled}
-            onClick={handleSubmitClick}
-          >
-            {paymentMethods.formattedAmount}
-          </button>
+          {!configuration.customCardSubmission && (
+            <button
+              className="straumur__card-component__submit-button"
+              disabled={payButtonDisabled}
+              onClick={handleSubmitClick}
+            >
+              {paymentMethods.formattedAmount}
+            </button>
+          )}
         </div>
       </div>
     </label>
