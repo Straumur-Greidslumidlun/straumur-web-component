@@ -84,7 +84,7 @@
 .straumur__card-component__expandable {
   background: var(--straumur__color-white);
   max-height: 0;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
   opacity: 0;
 }

@@ -220,6 +220,26 @@ class StraumurCheckout {
       this.mountElement = null;
     }
   }
+
+  customCardSubmit(): void {
+    if (!this.mountElement) {
+      console.warn("StraumurCheckout: Cannot submit - component not mounted");
+      return;
+    }
+
+    if (this.configuration.customCardSubmission === false) {
+      console.warn("StraumurCheckout: customCardSubmission is not enabled in the configuration");
+      return;
+    }
+
+    // dispatch custom event to trigger submission on active card/stored card component
+    const event = new CustomEvent("straumur-submit-card", {
+      detail: {
+        method: "card-custom-submit",
+      },
+    });
+    document.dispatchEvent(event);
+  }
 }
 
 export default StraumurCheckout;
