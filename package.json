@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@adyen/adyen-web": "6.25.0",
-    "preact": "^10.26.5"
+    "preact": "~10.26.5"
   },
   "devDependencies": {
     "postcss": "^8.5.3",
