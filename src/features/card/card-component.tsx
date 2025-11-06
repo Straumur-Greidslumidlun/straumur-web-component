@@ -67,13 +67,13 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
     adyenCardRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
+      locale: configuration.locale,
+      countryCode: "IS",
+      paymentMethodsResponse: paymentMethods.paymentMethods,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
       },
-      locale: configuration.locale,
-      countryCode: "IS",
-      paymentMethodsResponse: paymentMethods.paymentMethods,
       onSubmit: handleOnSubmit,
       onAdditionalDetails: handleOnSubmitAdditionalData,
       onError: handleOnError,

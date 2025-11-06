@@ -52,6 +52,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       environment: configuration.environment,
       locale: paymentMethods.locale,
       countryCode: "IS",
+      paymentMethodsResponse: paymentMethods.paymentMethods,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
@@ -62,15 +63,16 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       onPaymentFailed: handlePaymentFailed,
     });
 
-    const apayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "applepay")!
-      .configuration! as { gatewayMerchantId: string; merchantId: string };
+    const apayPaymentMethods = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "applepay")!;
+    const apayConfig = apayPaymentMethods.configuration! as { gatewayMerchantId: string; merchantId: string };
 
     const applePayConfiguration: ApplePayConfiguration = {
+      // @ts-ignore
+      brands: apayPaymentMethods.brands,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
       },
-
       environment: configuration.environment,
       onSubmit: handleOnSubmit,
       configuration: {
