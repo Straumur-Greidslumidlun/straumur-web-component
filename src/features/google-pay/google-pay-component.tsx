@@ -52,6 +52,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       environment: configuration.environment,
       locale: paymentMethods.locale,
       countryCode: "IS",
+      paymentMethodsResponse: paymentMethods.paymentMethods,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
@@ -62,10 +63,11 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       onPaymentFailed: handlePaymentFailed,
     });
 
-    const gpayConfig = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "googlepay")!
-      .configuration! as { gatewayMerchantId: string; merchantId: string };
+    const gpayPaymentMethods = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "googlepay")!;
+    const gpayConfig = gpayPaymentMethods.configuration! as { gatewayMerchantId: string; merchantId: string };
 
     const googlePayConfiguration: GooglePayConfiguration = {
+      brands: gpayPaymentMethods.brands,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,

@@ -1,6 +1,6 @@
 {
   "name": "straumur-web-component",
-  "version": "0.6.1",
+  "version": "1.0.0",
   "license": "MIT",
   "homepage": "https://docs.straumur.is",
   "type": "module",
@@ -34,8 +34,8 @@
     "build": "tsup"
   },
   "dependencies": {
-    "@adyen/adyen-web": "^6.23.0",
-    "preact": "^10.26.5"
+    "@adyen/adyen-web": "6.25.0",
+    "preact": "~10.26.5"
   },
   "devDependencies": {
     "postcss": "^8.5.3",
