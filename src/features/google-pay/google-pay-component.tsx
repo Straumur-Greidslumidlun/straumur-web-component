@@ -67,7 +67,6 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     const gpayConfig = gpayPaymentMethods.configuration! as { gatewayMerchantId: string; merchantId: string };
 
     const googlePayConfiguration: GooglePayConfiguration = {
-      brands: gpayPaymentMethods.brands,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
