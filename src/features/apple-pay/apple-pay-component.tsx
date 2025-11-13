@@ -67,8 +67,6 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     const apayConfig = apayPaymentMethods.configuration! as { gatewayMerchantId: string; merchantId: string };
 
     const applePayConfiguration: ApplePayConfiguration = {
-      // @ts-ignore
-      brands: apayPaymentMethods.brands,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
