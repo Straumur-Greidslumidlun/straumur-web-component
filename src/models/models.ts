@@ -1,4 +1,5 @@
 import { Language, TranslationKey } from "../localizations/translations";
+import { PaymentMethod } from "./constants";
 
 // this will be used to create a type for the configuration object
 export type StraumurWebConfiguration = {
@@ -10,6 +11,7 @@ export type StraumurWebConfiguration = {
   placeholders?: Placeholders;
   locale?: "is" | "en";
   localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+  instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
 };
 
 type ResultCode =
@@ -44,6 +46,7 @@ export type StraumurCheckoutConfiguration = {
   placeholders?: Placeholders;
   locale: Language;
   customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+  instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
 };
 
 type PlaceholderKeys =

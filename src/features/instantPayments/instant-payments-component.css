@@ -1,0 +1,5 @@
+.instant-payments {
+  display: grid;
+  gap: var(--straumur__space-md);
+  grid-template-columns: 1fr 1fr;
+}
