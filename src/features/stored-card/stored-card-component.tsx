@@ -386,15 +386,6 @@ function StoredCardComponent({
                         ? "straumur__stored-card-component__form--wrapper--input--error"
                         : ""
                     }`}
-                  >
-                    {i18n.t("stored-cards.securityCode3Digits")}
-                  </span>
-                  <span
-                    className={`${"straumur__stored-card-component__form--wrapper--input"} ${
-                      formErrors.encryptedSecurityCode.visible
-                        ? "straumur__stored-card-component__form--wrapper--input--error"
-                        : ""
-                    }`}
                     data-cse="encryptedSecurityCode"
                   >
                     <div className="straumur__stored-card-component__form--wrapper--label--info">

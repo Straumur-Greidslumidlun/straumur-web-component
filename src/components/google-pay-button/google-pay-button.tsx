@@ -76,6 +76,7 @@ function GooglePayButton({
       countryCode: "IS",
       environment: configuration.environment,
       onSubmit: handleOnSubmit,
+      buttonSizeMode: "fill",
       configuration: {
         ...gpayConfig,
         merchantName: paymentMethods.merchantName,
