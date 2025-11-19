@@ -90,7 +90,7 @@ function ApplePayButton({
         updatePaymentMethodInitialization("applepay", true);
       })
       .catch(() => {
-        // handleError("error.applePayNotAvailable");
+        handleError("error.applePayNotAvailable");
       });
   };
 
@@ -102,6 +102,7 @@ function ApplePayButton({
 
   useEffect(() => {
     if (applePayRef.current && isPaymentMethodInitialized.applepay) {
+      applePayRef.current!.remove();
       // Most of the time we will change configuration only to update locale, and that's not possible through .update() -> https://github.com/Adyen/adyen-web/issues/2407
       // So we need to reinitialize the component.
       initializeAdyenComponent();

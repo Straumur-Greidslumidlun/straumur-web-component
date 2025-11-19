@@ -36,7 +36,7 @@ function GooglePayButton({
   showPaymentButton,
 }: GooglePayButtonProps): h.JSX.Element | null {
   const googlePayElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<ICore>();
+  const adyenCheckoutRef = useRef<ICore>();
   const googlePayRef = useRef<GooglePay>();
   const {
     isPaymentMethodInitialized,
@@ -48,7 +48,7 @@ function GooglePayButton({
   } = usePaymentMethodGroup();
 
   const initializeAdyenComponent = async () => {
-    adyenCardRef.current = await AdyenCheckout({
+    adyenCheckoutRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
       locale: paymentMethods.locale,
@@ -83,7 +83,7 @@ function GooglePayButton({
       },
     };
 
-    googlePayRef.current = new GooglePay(adyenCardRef.current, googlePayConfiguration);
+    googlePayRef.current = new GooglePay(adyenCheckoutRef.current, googlePayConfiguration);
 
     googlePayRef.current
       .isAvailable()
@@ -104,6 +104,7 @@ function GooglePayButton({
 
   useEffect(() => {
     if (googlePayRef.current && isPaymentMethodInitialized.googlepay) {
+      googlePayRef.current!.remove();
       // Most of the time we will change configuration only to update locale, and that's not possible through .update() -> https://github.com/Adyen/adyen-web/issues/2407
       // So we need to reinitialize the component.
       initializeAdyenComponent();
