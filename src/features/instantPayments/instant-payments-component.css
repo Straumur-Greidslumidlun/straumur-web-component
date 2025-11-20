@@ -3,3 +3,7 @@
   gap: var(--straumur__space-md);
   grid-template-columns: 1fr 1fr;
 }
+
+.instant-payments--single {
+  grid-template-columns: 1fr;
+}
