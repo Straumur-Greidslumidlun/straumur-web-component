@@ -268,3 +268,27 @@
   overflow: hidden;
   width: 100%;
 }
+
+.straumur__card-component__dual-branding {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--straumur__space-5xlg);
+}
+
+.straumur__card-component__dual-branding--logo {
+  display: flex;
+  align-items: center;
+  padding: var(--straumur__space-xs);
+  border: 1px solid var(--straumur__color-secondary-gamma);
+  border-radius: var(--straumur__border-radius-s);
+}
+
+.straumur__card-component__dual-branding--logo--item {
+  display: flex;
+  pointer-events: none;
+}
+
+.straumur__card-component__dual-branding--logo--selected {
+  border: 1px solid var(--straumur__color-cosmos-blue-delta);
+  justify-content: space-between;
+}
