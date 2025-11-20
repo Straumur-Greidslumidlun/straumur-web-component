@@ -39,7 +39,7 @@ function BrandOption({ brand, brandName, isSelected, onBrandClick }: BrandOption
         <RenderBrandIcon brand={brand} defaultToBrandName={false} />
         &nbsp;{brandName ?? ""}
       </div>
-      {isSelected && <CheckmarkIcon />}
+      {isSelected && <CheckmarkIcon color="var(--straumur__color-neon-green-zeta)" />}
     </span>
   );
 }
