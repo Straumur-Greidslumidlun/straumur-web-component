@@ -67,7 +67,13 @@ export function RenderBrandIcons({ brands, brandHidden = [], limit = 3 }: Render
   );
 }
 
-const RenderBrandIcon = ({ brand }: { brand: string }): h.JSX.Element => {
+export const RenderBrandIcon = ({
+  brand,
+  defaultToBrandName = true,
+}: {
+  brand: string;
+  defaultToBrandName?: boolean;
+}): h.JSX.Element => {
   switch (brand) {
     case "visa":
       return <VisaIcon />;
@@ -86,6 +92,9 @@ const RenderBrandIcon = ({ brand }: { brand: string }): h.JSX.Element => {
     case "cup":
       return <CupIcon />;
     default:
-      return <span>{brand}</span>;
+      if (defaultToBrandName) {
+        return <span>{brand}</span>;
+      }
+      return <Fragment></Fragment>;
   }
 };

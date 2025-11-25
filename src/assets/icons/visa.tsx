@@ -5,14 +5,7 @@ interface VisaIconProps {
 }
 
 const VisaIcon = ({ opacity = 1 }: VisaIconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="40"
-    height="26"
-    fill="none"
-    viewBox="0 0 40 26"
-    opacity={opacity}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" fill="none" viewBox="0 0 40 26" opacity={opacity}>
     <path fill="#fff" d="M0 0h40v26H0z" />
     <path
       fill="#1434CB"

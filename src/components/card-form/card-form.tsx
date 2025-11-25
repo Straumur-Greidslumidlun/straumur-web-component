@@ -21,6 +21,7 @@ import InfoIcon from "../../assets/icons/info";
 import { BrandHidden } from "../../utils/renderBrandIcons";
 import LoaderIcon from "../../assets/icons/loader";
 import CheckmarkIcon from "../../assets/icons/checkmark";
+import { RenderDualBrandComponent, DualBrandConfiguration } from "../render-dual-brand/render-dual-brand";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../../adapter/models";
 import { createDetailsRequest, createPaymentRequest } from "../../adapter/straumur-adapter";
 import { StraumurCheckoutConfiguration } from "../../models/models";
@@ -57,6 +58,9 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
   const [securityCodePolicy, setSecurityCodePolicy] = useState<"hidden" | "optional" | "required">("required");
   const [storePaymentMethod, setStorePaymentMethod] = useState(false);
+  const [isDualBrand, setIsDualBrand] = useState(false);
+  const [dualBrandConfiguration, setDualBrandConfiguration] = useState<DualBrandConfiguration | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const storePaymentMethodRef = useRef(false);
   const [formErrors, setFormErrors] = useState<CardFormError>({
     encryptedCardNumber: { visible: false },
@@ -102,24 +106,52 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     });
 
     customCardRef.current = new CustomCard(adyenCardRef.current, {
+      brands: schemeBrands,
       placeholders: configuration.placeholders,
       challengeWindowSize: "05",
+      onBinLookup: (event) => {
+        if (event.supportedBrandsRaw && event.supportedBrandsRaw.length > 1) {
+          setIsDualBrand(true);
+
+          setDualBrandConfiguration({
+            brand1: event.supportedBrandsRaw[0].brand,
+            brand1Name: event.supportedBrandsRaw[0].localeBrand,
+            brand1ImageUrl: event.supportedBrandsRaw[0].brandImageUrl,
+            brand2: event.supportedBrandsRaw[1].brand,
+            brand2Name: event.supportedBrandsRaw[1].localeBrand,
+            brand2ImageUrl: event.supportedBrandsRaw[1].brandImageUrl,
+          });
+        }
+      },
       onBrand: (event) => {
         setSecurityCodePolicy(event.cvcPolicy);
         if (event.brand === "card") {
           onBrandHidden([]);
+          setSelectedBrand(null);
           return;
         }
 
-        onBrandHidden(
+        const selectedBrands = schemeBrands
+          .filter((x) => x !== event.brand)
+          .map((x) => {
+            return {
+              brand: x,
+            };
+          });
+
+        onBrandHidden(selectedBrands);
+
+        if (
           schemeBrands
-            .filter((x) => x !== event.brand)
+            .filter((x) => x === event.brand)
             .map((x) => {
               return {
                 brand: x,
               };
-            })
-        );
+            }).length === 1
+        ) {
+          setSelectedBrand(event.brand);
+        }
       },
       onConfigSuccess() {
         updatePaymentMethodInitialization("card", true);
@@ -171,6 +203,10 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
 
   if (paymentMethods.paymentMethods?.paymentMethods?.length === 0) {
     return null;
+  }
+
+  function dualBrandListener(e: h.JSX.TargetedMouseEvent<HTMLSpanElement>) {
+    customCardRef.current!.dualBrandingChangeHandler(e);
   }
 
   function handleStorePaymentMethodChange(event: h.JSX.TargetedEvent<HTMLInputElement, Event>) {
@@ -386,6 +422,14 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
             )}
           </div>
         </div>
+
+        {isDualBrand && dualBrandConfiguration && (
+          <RenderDualBrandComponent
+            dualBrandConfiguration={dualBrandConfiguration}
+            selectedBrand={selectedBrand}
+            onBrandClick={dualBrandListener}
+          />
+        )}
 
         {paymentMethods.enableStoreDetails === "AskForConsent" && (
           <label className="straumur__card-component__form--wrapper--label-checkbox">
