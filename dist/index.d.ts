@@ -71,6 +71,8 @@ declare const translations: {
 type Language = keyof typeof translations;
 type TranslationKey = keyof (typeof translations)["en-US"] | keyof (typeof translations)["is-IS"];
 
+type PaymentMethod = "card" | "storedcard" | "googlepay" | "applepay";
+
 type StraumurWebConfiguration = {
     sessionId: string;
     environment: "test" | "live";
@@ -80,6 +82,7 @@ type StraumurWebConfiguration = {
     placeholders?: Placeholders;
     locale?: "is" | "en";
     localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+    instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
 };
 type ResultCode = "AuthenticationFinished" | "AuthenticationNotRequired" | "Authorised" | "Cancelled" | "ChallengeShopper" | "Error" | "IdentifyShopper" | "PartiallyAuthorised" | "Pending" | "PresentToShopper" | "Received" | "RedirectShopper" | "Refused";
 type PaymentCompletedData = {
@@ -96,6 +99,7 @@ type StraumurCheckoutConfiguration = {
     placeholders?: Placeholders;
     locale: Language;
     customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+    instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
 };
 type PlaceholderKeys = "cardNumber" | "expiryDate" | "expiryMonth" | "expiryYear" | "securityCodeThreeDigits" | "securityCodeFourDigits";
 type Placeholders = Partial<Record<PlaceholderKeys, string>>;

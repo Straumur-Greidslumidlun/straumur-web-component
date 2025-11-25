@@ -8,6 +8,7 @@ import StoredCardContainerComponent from "./stored-card/stored-card-container-co
 import PaymentMethodGroup from "../components/payment-method-group/payment-method-group";
 import ResultComponent from "./result-component/result-component";
 import PaymentMethodsWrapper from "./payment-methods-wrapper/payment-methods-wrapper";
+import InstantPaymentsComponent from "./instantPayments/instant-payments-component";
 
 interface StraumurCheckoutContainerProps {
   configuration: StraumurCheckoutConfiguration;
@@ -18,6 +19,7 @@ function StraumurCheckoutContainer({ configuration, paymentMethods }: StraumurCh
   return (
     <PaymentMethodGroup initialValue={null}>
       <PaymentMethodsWrapper>
+        <InstantPaymentsComponent configuration={configuration} paymentMethods={paymentMethods} />
         <StoredCardContainerComponent configuration={configuration} paymentMethods={paymentMethods} />
         <CardComponent configuration={configuration} paymentMethods={paymentMethods} />
         <GooglePayComponent configuration={configuration} paymentMethods={paymentMethods} />
