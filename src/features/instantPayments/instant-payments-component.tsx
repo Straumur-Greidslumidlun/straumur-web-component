@@ -43,6 +43,7 @@ function InstantPaymentsComponent({
               configuration={configuration}
               paymentMethods={paymentMethods}
               showPaymentButton={true}
+              isInstantPayment={true}
             />
           );
         }
@@ -53,6 +54,7 @@ function InstantPaymentsComponent({
               configuration={configuration}
               paymentMethods={paymentMethods}
               showPaymentButton={true}
+              isInstantPayment={true}
             />
           );
         }

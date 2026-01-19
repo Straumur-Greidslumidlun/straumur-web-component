@@ -29,12 +29,14 @@ interface ApplePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
   showPaymentButton: boolean;
+  isInstantPayment: boolean;
 }
 
 function ApplePayButton({
   configuration,
   paymentMethods,
   showPaymentButton,
+  isInstantPayment,
 }: ApplePayButtonProps): h.JSX.Element | null {
   const applePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCardRef = useRef<ICore>();
@@ -46,6 +48,8 @@ function ApplePayButton({
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    setActivePaymentMethod,
+    activePaymentMethod,
   } = usePaymentMethodGroup();
 
   const initializeAdyenComponent = async () => {
@@ -116,6 +120,10 @@ function ApplePayButton({
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
+    if(isInstantPayment){
+      setActivePaymentMethod("applepay");
+    }
+
     const data: ICreatePaymentBody = {
       ...state.data,
       sessionId: configuration.sessionId,
@@ -215,7 +223,7 @@ function ApplePayButton({
     return null;
   }
 
-  if (!showPaymentButton && threeDSecureActive) {
+  if (activePaymentMethod !== "applepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show apple pay
     return null;
   }
