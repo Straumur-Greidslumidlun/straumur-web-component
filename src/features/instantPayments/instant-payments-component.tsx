@@ -15,7 +15,7 @@ function InstantPaymentsComponent({
   configuration,
   paymentMethods,
 }: InstantPaymentsComponentProps): h.JSX.Element | null {
-  if (!configuration.instantPayments || configuration.instantPayments.length === 0) {
+  if (!configuration.instantPayments) {
     return null;
   }
 
