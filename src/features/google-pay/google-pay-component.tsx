@@ -24,7 +24,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     return null;
   }
 
-  if(activePaymentMethod !== "googlepay" && threeDSecureActive) {
+  if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
     return null;
   }
 

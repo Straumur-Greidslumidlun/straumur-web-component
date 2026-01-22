@@ -38,10 +38,10 @@ export type PaymentFailedData = {
 };
 
 type UniqueInstantPayments =
-    | [Extract<PaymentMethod, "googlepay">]
-    | [Extract<PaymentMethod, "applepay">]
-    | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">]
-    | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
+  | [Extract<PaymentMethod, "googlepay">]
+  | [Extract<PaymentMethod, "applepay">]
+  | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">]
+  | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
 
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {

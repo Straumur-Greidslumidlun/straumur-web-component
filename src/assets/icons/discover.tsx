@@ -5,14 +5,7 @@ interface DiscoverIconProps {
 }
 
 const DiscoverIcon = ({ opacity = 1 }: DiscoverIconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="40"
-    height="26"
-    fill="none"
-    viewBox="0 0 40 26"
-    opacity={opacity}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" fill="none" viewBox="0 0 40 26" opacity={opacity}>
     <path fill="#fff" d="M0 0h40v26H0z" />
     <g clip-path="url(#a)">
       <g clip-path="url(#b)">
@@ -25,33 +18,13 @@ const DiscoverIcon = ({ opacity = 1 }: DiscoverIconProps) => (
         fill="#000"
         d="M36.16 10.13a.4.4 0 0 0-.4.4.4.4 0 1 0 .8 0 .4.4 0 0 0-.4-.4Zm0 .74a.32.32 0 0 1-.34-.31.32.32 0 0 1 .65-.03.34.34 0 0 1-.3.34Z"
       />
-      <path
-        fill="url(#c)"
-        d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z"
-      />
-      <path
-        fill="url(#d)"
-        d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z"
-      />
-      <mask
-        id="e"
-        width="6"
-        height="6"
-        x="18"
-        y="10"
-        maskUnits="userSpaceOnUse"
-        style="mask-type:luminance"
-      >
-        <path
-          fill="#fff"
-          d="M18.06 12.75a2.74 2.74 0 1 0 5.49 0 2.74 2.74 0 0 0-5.5 0Z"
-        />
+      <path fill="url(#c)" d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z" />
+      <path fill="url(#d)" d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z" />
+      <mask id="e" width="6" height="6" x="18" y="10" maskUnits="userSpaceOnUse" style="mask-type:luminance">
+        <path fill="#fff" d="M18.06 12.75a2.74 2.74 0 1 0 5.49 0 2.74 2.74 0 0 0-5.5 0Z" />
       </mask>
       <g mask="url(#e)">
-        <path
-          fill="url(#f)"
-          d="M17.75 12.87a3.36 3.36 0 1 0 6.72 0 3.36 3.36 0 0 0-6.72 0Z"
-        />
+        <path fill="url(#f)" d="M17.75 12.87a3.36 3.36 0 1 0 6.72 0 3.36 3.36 0 0 0-6.72 0Z" />
       </g>
     </g>
     <g clip-path="url(#g)">
@@ -65,44 +38,17 @@ const DiscoverIcon = ({ opacity = 1 }: DiscoverIconProps) => (
         fill="#000"
         d="M36.16 10.13a.4.4 0 0 0-.4.4.4.4 0 1 0 .8 0 .4.4 0 0 0-.4-.4Zm0 .74a.32.32 0 0 1-.34-.31.32.32 0 0 1 .65-.03.34.34 0 0 1-.3.34Z"
       />
-      <path
-        fill="url(#i)"
-        d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z"
-      />
-      <path
-        fill="url(#j)"
-        d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z"
-      />
-      <mask
-        id="k"
-        width="6"
-        height="6"
-        x="18"
-        y="10"
-        maskUnits="userSpaceOnUse"
-        style="mask-type:luminance"
-      >
-        <path
-          fill="#fff"
-          d="M18.06 12.75a2.74 2.74 0 1 0 5.49 0 2.74 2.74 0 0 0-5.5 0Z"
-        />
+      <path fill="url(#i)" d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z" />
+      <path fill="url(#j)" d="M18.06 12.75a2.75 2.75 0 1 0 5.49 0 2.75 2.75 0 0 0-5.5 0Z" />
+      <mask id="k" width="6" height="6" x="18" y="10" maskUnits="userSpaceOnUse" style="mask-type:luminance">
+        <path fill="#fff" d="M18.06 12.75a2.74 2.74 0 1 0 5.49 0 2.74 2.74 0 0 0-5.5 0Z" />
       </mask>
       <g mask="url(#k)">
-        <path
-          fill="url(#l)"
-          d="M17.75 12.87a3.36 3.36 0 1 0 6.72 0 3.36 3.36 0 0 0-6.72 0Z"
-        />
+        <path fill="url(#l)" d="M17.75 12.87a3.36 3.36 0 1 0 6.72 0 3.36 3.36 0 0 0-6.72 0Z" />
       </g>
     </g>
     <defs>
-      <linearGradient
-        id="c"
-        x1="22.25"
-        x2="19.35"
-        y1="15.06"
-        y2="10.42"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="c" x1="22.25" x2="19.35" y1="15.06" y2="10.42" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#F59F00" />
         <stop offset=".19" stop-color="#F49B00" />
         <stop offset=".37" stop-color="#F29101" />
@@ -111,14 +57,7 @@ const DiscoverIcon = ({ opacity = 1 }: DiscoverIconProps) => (
         <stop offset=".76" stop-color="#EC7008" />
         <stop offset="1" stop-color="#EC6D09" />
       </linearGradient>
-      <linearGradient
-        id="d"
-        x1="22.25"
-        x2="19.35"
-        y1="15.06"
-        y2="10.42"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="d" x1="22.25" x2="19.35" y1="15.06" y2="10.42" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#F3941E" stop-opacity="0" />
         <stop offset=".04" stop-color="#F48C1C" stop-opacity=".08" />
         <stop offset=".2" stop-color="#F77314" stop-opacity=".32" />
@@ -144,14 +83,7 @@ const DiscoverIcon = ({ opacity = 1 }: DiscoverIconProps) => (
         <stop offset=".96" stop-color="#441304" stop-opacity=".87" />
         <stop offset=".99" stop-color="#2F0401" stop-opacity=".97" />
       </radialGradient>
-      <linearGradient
-        id="i"
-        x1="22.25"
-        x2="19.35"
-        y1="15.06"
-        y2="10.42"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="i" x1="22.25" x2="19.35" y1="15.06" y2="10.42" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#F59F00" />
         <stop offset=".19" stop-color="#F49B00" />
         <stop offset=".37" stop-color="#F29101" />
@@ -160,14 +92,7 @@ const DiscoverIcon = ({ opacity = 1 }: DiscoverIconProps) => (
         <stop offset=".76" stop-color="#EC7008" />
         <stop offset="1" stop-color="#EC6D09" />
       </linearGradient>
-      <linearGradient
-        id="j"
-        x1="22.25"
-        x2="19.35"
-        y1="15.06"
-        y2="10.42"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="j" x1="22.25" x2="19.35" y1="15.06" y2="10.42" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#F3941E" stop-opacity="0" />
         <stop offset=".04" stop-color="#F48C1C" stop-opacity=".08" />
         <stop offset=".2" stop-color="#F77314" stop-opacity=".32" />

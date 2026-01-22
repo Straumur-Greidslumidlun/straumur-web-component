@@ -5,26 +5,13 @@ interface CupIconProps {
 }
 
 const CupIcon = ({ opacity = 1 }: CupIconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 40 26"
-    width="40"
-    height="26"
-    opacity={opacity}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 26" width="40" height="26" opacity={opacity}>
     <rect width="45.3" height="27" x="-3.3" y="-.79" fill="#fff" rx="2.82" />
     <path
       fill="#01798a"
       d="M27.27-.79a4.06 4.06 0 0 0-3.6 2.8l-4.96 23.42a2.14 2.14 0 0 0 2 2.8h18.35a2.81 2.81 0 0 0 2.8-2.82V1.15A2.25 2.25 0 0 0 40-.8"
     />
-    <rect
-      width="20.38"
-      height="29.02"
-      x="-4"
-      y="-.79"
-      fill="#dc1f2b"
-      rx="2.82"
-    />
+    <rect width="20.38" height="29.02" x="-4" y="-.79" fill="#dc1f2b" rx="2.82" />
     <path
       fill="#1a4580"
       d="M24.37 2.02a3.98 3.98 0 0 1 3.48-2.8H14.18a3.97 3.97 0 0 0-3.5 2.8l-4.85 23.4a2.13 2.13 0 0 0 1.94 2.81h13.7a2.13 2.13 0 0 1-1.94-2.8z"

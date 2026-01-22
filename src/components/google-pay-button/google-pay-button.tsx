@@ -35,7 +35,7 @@ function GooglePayButton({
   configuration,
   paymentMethods,
   showPaymentButton,
-  isInstantPayment
+  isInstantPayment,
 }: GooglePayButtonProps): h.JSX.Element | null {
   const googlePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCheckoutRef = useRef<ICore>();
@@ -48,7 +48,7 @@ function GooglePayButton({
     setThreeDSecureActive,
     threeDSecureActive,
     setActivePaymentMethod,
-    activePaymentMethod
+    activePaymentMethod,
   } = usePaymentMethodGroup();
 
   const initializeAdyenComponent = async () => {
@@ -122,8 +122,8 @@ function GooglePayButton({
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
-    if(isInstantPayment){
-      setActivePaymentMethod("googlepay")
+    if (isInstantPayment) {
+      setActivePaymentMethod("googlepay");
     }
     const data: ICreatePaymentBody = {
       ...state.data,
@@ -224,8 +224,8 @@ function GooglePayButton({
   if (!hasGooglePay) {
     return null;
   }
-console.log("activePaymentMethod",activePaymentMethod);
-console.log("threeDSecureActive",threeDSecureActive);
+  console.log("activePaymentMethod", activePaymentMethod);
+  console.log("threeDSecureActive", threeDSecureActive);
   if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show google pay
     return null;

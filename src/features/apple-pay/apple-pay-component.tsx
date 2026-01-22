@@ -24,9 +24,9 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     return null;
   }
 
-    if(activePaymentMethod !== "applepay" && threeDSecureActive) {
-        return null;
-    }
+  if (activePaymentMethod !== "applepay" && threeDSecureActive) {
+    return null;
+  }
 
   return (
     <label className="straumur__apple-pay-component">

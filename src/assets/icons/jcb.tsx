@@ -5,20 +5,10 @@ interface JcbIconProps {
 }
 
 const JcbIcon = ({ opacity = 1 }: JcbIconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="40"
-    height="26"
-    fill="none"
-    viewBox="0 0 40 26"
-    opacity={opacity}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" fill="none" viewBox="0 0 40 26" opacity={opacity}>
     <g clip-path="url(#a)">
       <path fill="#fff" d="M0 0h40v26H0V0Z" />
-      <path
-        fill="#fff"
-        d="M36.6 20.66a5.22 5.22 0 0 1-5.22 5.22H3V5.22A5.22 5.22 0 0 1 8.22 0H36.6v20.66Z"
-      />
+      <path fill="#fff" d="M36.6 20.66a5.22 5.22 0 0 1-5.22 5.22H3V5.22A5.22 5.22 0 0 1 8.22 0H36.6v20.66Z" />
       <path
         fill="url(#b)"
         d="M27.36 15.36h2.15l.27-.02a.96.96 0 0 0 .76-.96 1 1 0 0 0-.76-.97c-.06-.02-.19-.02-.27-.02h-2.15v1.97Z"
@@ -41,66 +31,31 @@ const JcbIcon = ({ opacity = 1 }: JcbIconProps) => (
       />
     </g>
     <defs>
-      <linearGradient
-        id="b"
-        x1="25.52"
-        x2="34.75"
-        y1="14.38"
-        y2="14.38"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="b" x1="25.52" x2="34.75" y1="14.38" y2="14.38" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#007940" />
         <stop offset=".23" stop-color="#00873F" />
         <stop offset=".74" stop-color="#40A737" />
         <stop offset="1" stop-color="#5CB531" />
       </linearGradient>
-      <linearGradient
-        id="c"
-        x1="25.52"
-        x2="34.75"
-        y1="12.94"
-        y2="12.94"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="c" x1="25.52" x2="34.75" y1="12.94" y2="12.94" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#007940" />
         <stop offset=".23" stop-color="#00873F" />
         <stop offset=".74" stop-color="#40A737" />
         <stop offset="1" stop-color="#5CB531" />
       </linearGradient>
-      <linearGradient
-        id="d"
-        x1="25.52"
-        x2="34.75"
-        y1="11.37"
-        y2="11.37"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="d" x1="25.52" x2="34.75" y1="11.37" y2="11.37" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#007940" />
         <stop offset=".23" stop-color="#00873F" />
         <stop offset=".74" stop-color="#40A737" />
         <stop offset="1" stop-color="#5CB531" />
       </linearGradient>
-      <linearGradient
-        id="e"
-        x1="4.86"
-        x2="14.24"
-        y1="12.94"
-        y2="12.94"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="e" x1="4.86" x2="14.24" y1="12.94" y2="12.94" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#1F286F" />
         <stop offset=".48" stop-color="#004E94" />
         <stop offset=".83" stop-color="#0066B1" />
         <stop offset="1" stop-color="#006FBC" />
       </linearGradient>
-      <linearGradient
-        id="f"
-        x1="15.15"
-        x2="24.25"
-        y1="12.94"
-        y2="12.94"
-        gradientUnits="userSpaceOnUse"
-      >
+      <linearGradient id="f" x1="15.15" x2="24.25" y1="12.94" y2="12.94" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#6C2C2F" />
         <stop offset=".17" stop-color="#882730" />
         <stop offset=".57" stop-color="#BE1833" />

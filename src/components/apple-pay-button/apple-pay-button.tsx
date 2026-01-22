@@ -120,7 +120,7 @@ function ApplePayButton({
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
-    if(isInstantPayment){
+    if (isInstantPayment) {
       setActivePaymentMethod("applepay");
     }
 

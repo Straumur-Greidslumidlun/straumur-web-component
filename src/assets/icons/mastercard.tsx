@@ -5,13 +5,7 @@ interface MasterCardIconProps {
 }
 
 const MasterCardIcon = ({ opacity = 1 }: MasterCardIconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="40"
-    height="26"
-    viewBox="0 0 40 26"
-    opacity={opacity}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" viewBox="0 0 40 26" opacity={opacity}>
     <path fill="#fff" d="M0 0h40v26H0z" />
     <path fill="#F06022" d="M16.13 19.29h7.74V6.7h-7.74v12.58z" />
     <path
