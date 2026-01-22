@@ -11,7 +11,7 @@
     "import": "./dist/index.mjs",
     "default": "./dist/index.js"
   },
-  "description": "",
+  "description": "Embeddable payment checkout component for Straumur with support for cards, Apple Pay, Google Pay, 3D Secure, and stored payment methods",
   "keywords": [
     "straumur",
     "checkout",
