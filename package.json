@@ -31,7 +31,9 @@
   ],
   "scripts": {
     "dev": "tsup src/index.ts --watch",
-    "build": "tsup"
+    "build": "tsup",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\""
   },
   "dependencies": {
     "@adyen/adyen-web": "6.25.0",
@@ -39,6 +41,7 @@
   },
   "devDependencies": {
     "postcss": "^8.5.3",
+    "prettier": "^3.8.1",
     "tslib": "^2.8.1",
     "tsup": "^8.4.0",
     "typescript": "^5.8.3"

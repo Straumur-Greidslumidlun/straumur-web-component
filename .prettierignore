@@ -1,0 +1,22 @@
+# Build outputs
+dist/
+*.min.js
+*.map
+
+# Dependencies
+node_modules/
+
+# CI/CD
+.github/
+
+# IDE
+.idea/
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Coverage
+coverage/
+.nyc_output/
