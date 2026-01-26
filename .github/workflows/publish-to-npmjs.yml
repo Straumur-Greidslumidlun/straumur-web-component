@@ -8,17 +8,13 @@ on:
         required: true
         type: boolean
 
-    secrets:
-      NPM_TOKEN:
-        required: true
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
