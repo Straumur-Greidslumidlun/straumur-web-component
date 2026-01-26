@@ -25,17 +25,24 @@ function InstantPaymentsComponent({
     validInstantPayments.includes(payment)
   );
 
-  if (availableInstantPayments.length === 0) {
+  const availableWalletPayments = paymentMethods.paymentMethods.paymentMethods?.filter(x => x.type === "applepay" || x.type === "googlepay") || [];
+
+  // another safeguard: ensure that the payment methods are actually available from the paymentMethods response
+  const finalAvailableInstantPayments = availableInstantPayments.filter((payment) =>
+    availableWalletPayments.some(pm => pm.type === payment)
+  );
+
+  if (finalAvailableInstantPayments.length === 0) {
     return null;
   }
 
   return (
     <div
       class={`instant-payments ${
-        availableInstantPayments.length > 1 ? "instant-payments--multiple" : "instant-payments--single"
+        finalAvailableInstantPayments.length > 1 ? "instant-payments--multiple" : "instant-payments--single"
       }`}
     >
-      {availableInstantPayments.map((paymentMethod) => {
+      {finalAvailableInstantPayments.map((paymentMethod) => {
         if (paymentMethod === "googlepay") {
           return (
             <GooglePayButton
