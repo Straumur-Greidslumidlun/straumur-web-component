@@ -78,7 +78,10 @@ class StraumurCheckout {
       this.configuration.locale = this.configuration.locale || this.paymentMethods.locale;
 
       this.renderComponent();
-    } catch (error) {}
+    } catch (error) {
+      console.error("Straumur checkout mount failed:", error);
+      this.handleError("error.failedToInitializeStraumurWebComponent");
+    }
   }
 
   private renderComponent(): void {
