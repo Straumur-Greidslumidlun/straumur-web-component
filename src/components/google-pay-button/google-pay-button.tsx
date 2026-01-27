@@ -224,8 +224,7 @@ function GooglePayButton({
   if (!hasGooglePay) {
     return null;
   }
-console.log("activePaymentMethod",activePaymentMethod);
-console.log("threeDSecureActive",threeDSecureActive);
+
   if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show google pay
     return null;
