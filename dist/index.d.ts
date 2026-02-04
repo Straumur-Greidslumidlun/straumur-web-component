@@ -82,7 +82,7 @@ type StraumurWebConfiguration = {
     placeholders?: Placeholders;
     locale?: "is" | "en";
     localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-    instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
+    instantPayments?: UniqueInstantPayments;
 };
 type ResultCode = "AuthenticationFinished" | "AuthenticationNotRequired" | "Authorised" | "Cancelled" | "ChallengeShopper" | "Error" | "IdentifyShopper" | "PartiallyAuthorised" | "Pending" | "PresentToShopper" | "Received" | "RedirectShopper" | "Refused";
 type PaymentCompletedData = {
@@ -91,6 +91,7 @@ type PaymentCompletedData = {
 type PaymentFailedData = {
     resultCode: ResultCode;
 };
+type UniqueInstantPayments = [Extract<PaymentMethod, "googlepay">] | [Extract<PaymentMethod, "applepay">] | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">] | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
 type StraumurCheckoutConfiguration = {
     sessionId: string;
     environment: "test" | "live";
@@ -99,7 +100,7 @@ type StraumurCheckoutConfiguration = {
     placeholders?: Placeholders;
     locale: Language;
     customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-    instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
+    instantPayments?: UniqueInstantPayments;
 };
 type PlaceholderKeys = "cardNumber" | "expiryDate" | "expiryMonth" | "expiryYear" | "securityCodeThreeDigits" | "securityCodeFourDigits";
 type Placeholders = Partial<Record<PlaceholderKeys, string>>;

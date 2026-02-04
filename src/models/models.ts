@@ -11,7 +11,7 @@ export type StraumurWebConfiguration = {
   placeholders?: Placeholders;
   locale?: "is" | "en";
   localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-  instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
+  instantPayments?: UniqueInstantPayments;
 };
 
 type ResultCode =
@@ -37,6 +37,12 @@ export type PaymentFailedData = {
   resultCode: ResultCode;
 };
 
+type UniqueInstantPayments =
+    | [Extract<PaymentMethod, "googlepay">]
+    | [Extract<PaymentMethod, "applepay">]
+    | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">]
+    | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
+
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {
   sessionId: string;
@@ -46,7 +52,7 @@ export type StraumurCheckoutConfiguration = {
   placeholders?: Placeholders;
   locale: Language;
   customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-  instantPayments?: Extract<PaymentMethod, "googlepay" | "applepay">[];
+  instantPayments?: UniqueInstantPayments;
 };
 
 type PlaceholderKeys =

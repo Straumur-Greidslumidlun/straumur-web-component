@@ -14,7 +14,7 @@ interface ApplePayComponentProps {
 
 function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentProps): h.JSX.Element | null {
   const { i18n } = useI18n();
-  const { activePaymentMethod, setActivePaymentMethod } = usePaymentMethodGroup();
+  const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive } = usePaymentMethodGroup();
 
   const handleBoxChange = () => {
     setActivePaymentMethod("applepay");
@@ -23,6 +23,10 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
   if (configuration.instantPayments && configuration.instantPayments.some((x) => x === "applepay")) {
     return null;
   }
+
+    if(activePaymentMethod !== "applepay" && threeDSecureActive) {
+        return null;
+    }
 
   return (
     <label className="straumur__apple-pay-component">
@@ -42,6 +46,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
           configuration={configuration}
           paymentMethods={paymentMethods}
           showPaymentButton={activePaymentMethod === "applepay"}
+          isInstantPayment={false}
         />
       </div>
     </label>

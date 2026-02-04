@@ -14,13 +14,17 @@ interface GooglePayComponentProps {
 
 function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponentProps): h.JSX.Element | null {
   const { i18n } = useI18n();
-  const { activePaymentMethod, setActivePaymentMethod } = usePaymentMethodGroup();
+  const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive } = usePaymentMethodGroup();
 
   const handleBoxChange = () => {
     setActivePaymentMethod("googlepay");
   };
 
   if (configuration.instantPayments && configuration.instantPayments.some((x) => x === "googlepay")) {
+    return null;
+  }
+
+  if(activePaymentMethod !== "googlepay" && threeDSecureActive) {
     return null;
   }
 
@@ -42,6 +46,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
           configuration={configuration}
           paymentMethods={paymentMethods}
           showPaymentButton={activePaymentMethod === "googlepay"}
+          isInstantPayment={false}
         />
       </div>
     </label>

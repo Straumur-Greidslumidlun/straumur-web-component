@@ -15,7 +15,7 @@ function InstantPaymentsComponent({
   configuration,
   paymentMethods,
 }: InstantPaymentsComponentProps): h.JSX.Element | null {
-  if (!configuration.instantPayments || configuration.instantPayments.length === 0) {
+  if (!configuration.instantPayments) {
     return null;
   }
 
@@ -25,17 +25,24 @@ function InstantPaymentsComponent({
     validInstantPayments.includes(payment)
   );
 
-  if (availableInstantPayments.length === 0) {
+  const availableWalletPayments = paymentMethods.paymentMethods.paymentMethods?.filter(x => x.type === "applepay" || x.type === "googlepay") || [];
+
+  // another safeguard: ensure that the payment methods are actually available from the paymentMethods response
+  const finalAvailableInstantPayments = availableInstantPayments.filter((payment) =>
+    availableWalletPayments.some(pm => pm.type === payment)
+  );
+
+  if (finalAvailableInstantPayments.length === 0) {
     return null;
   }
 
   return (
     <div
       class={`instant-payments ${
-        availableInstantPayments.length > 1 ? "instant-payments--multiple" : "instant-payments--single"
+        finalAvailableInstantPayments.length > 1 ? "instant-payments--multiple" : "instant-payments--single"
       }`}
     >
-      {availableInstantPayments.map((paymentMethod) => {
+      {finalAvailableInstantPayments.map((paymentMethod) => {
         if (paymentMethod === "googlepay") {
           return (
             <GooglePayButton
@@ -43,6 +50,7 @@ function InstantPaymentsComponent({
               configuration={configuration}
               paymentMethods={paymentMethods}
               showPaymentButton={true}
+              isInstantPayment={true}
             />
           );
         }
@@ -53,6 +61,7 @@ function InstantPaymentsComponent({
               configuration={configuration}
               paymentMethods={paymentMethods}
               showPaymentButton={true}
+              isInstantPayment={true}
             />
           );
         }

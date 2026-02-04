@@ -1,6 +1,6 @@
 import "./google-pay-button.css";
 import { Fragment, h } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
 import { StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
@@ -28,12 +28,14 @@ interface GooglePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
   showPaymentButton: boolean;
+  isInstantPayment: boolean;
 }
 
 function GooglePayButton({
   configuration,
   paymentMethods,
   showPaymentButton,
+  isInstantPayment
 }: GooglePayButtonProps): h.JSX.Element | null {
   const googlePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCheckoutRef = useRef<ICore>();
@@ -45,6 +47,8 @@ function GooglePayButton({
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    setActivePaymentMethod,
+    activePaymentMethod
   } = usePaymentMethodGroup();
 
   const initializeAdyenComponent = async () => {
@@ -118,6 +122,9 @@ function GooglePayButton({
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
+    if(isInstantPayment){
+      setActivePaymentMethod("googlepay")
+    }
     const data: ICreatePaymentBody = {
       ...state.data,
       sessionId: configuration.sessionId,
@@ -218,7 +225,7 @@ function GooglePayButton({
     return null;
   }
 
-  if (!showPaymentButton && threeDSecureActive) {
+  if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show google pay
     return null;
   }
