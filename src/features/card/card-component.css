@@ -1,79 +1,4 @@
-.straumur__card-component {
-  position: relative;
-  cursor: pointer;
-  background: var(--straumur__color-white);
-  border-radius: var(--straumur__border-radius-lg);
-  transition: all 0.3s ease;
-  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);
-}
-
-.straumur__card-component__radio-selector {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.straumur__card-component__content {
-  display: grid;
-  grid-template-columns: 26px 40px auto 1fr;
-  /* display: flex; */
-  align-items: center;
-  gap: var(--straumur__space-lg);
-  transition: background-color 0.3s ease;
-}
-
-.straumur__card-component__radio-selector:checked + .straumur__card-component__content {
-  padding-bottom: var(--straumur__space-xxlg);
-}
-
-.straumur__card-component--circle {
-  width: var(--straumur__space-5xlg);
-  height: var(--straumur__space-5xlg);
-  border: 1px solid var(--straumur__color-cosmos-blue-gamma);
-  background: var(--straumur__color-secondary-gamma);
-  border-radius: 50%;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.straumur__card-component__content:hover .straumur__card-component--circle {
-  border: 1px solid var(--straumur__color-cosmos-blue-delta);
-}
-
-.straumur__card-component--circle::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 0.2s ease;
-}
-
-.straumur__card-component__radio-selector:checked
-  + .straumur__card-component__content
-  .straumur__card-component--circle {
-  background: var(--straumur__color-blue-beta);
-  border-color: var(--straumur__color-transparent);
-}
-
-.straumur__card-component__radio-selector:checked
-  + .straumur__card-component__content
-  .straumur__card-component--circle::after {
-  transform: translate(-50%, -50%) scale(1);
-  background: var(--straumur__color-primary);
-  height: var(--straumur__space-md);
-  width: var(--straumur__space-md);
-}
-
-.straumur__card-component--text {
-  color: #213547;
-  font-size: 1rem;
-  user-select: none;
-}
-
+/* Brands row — pushed to the right of the header via margin-left: auto */
 .straumur__card-component--brands {
   display: flex;
   margin-left: auto;
@@ -81,22 +6,14 @@
   gap: var(--straumur__space-xxs);
 }
 
+/* CardForm root — plain container used for Adyen mounting and 3DS iframe */
 .straumur__card-component__expandable {
   background: var(--straumur__color-white);
-  max-height: 0;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  opacity: 0;
 }
 
 .straumur__card-component__loading-text {
   display: flex;
   justify-content: center;
-}
-
-.straumur__card-component__radio-selector:checked ~ .straumur__card-component__expandable {
-  max-height: 600px;
-  opacity: 1;
 }
 
 .straumur__card-component__form {

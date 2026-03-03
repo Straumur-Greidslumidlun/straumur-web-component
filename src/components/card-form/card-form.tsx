@@ -68,8 +68,6 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     encryptedSecurityCode: { visible: false },
   });
 
-  const hasCardPaymentMethod = paymentMethods.paymentMethods.paymentMethods?.some((x) => x.type === "scheme");
-
   const {
     activePaymentMethod,
     isPaymentMethodInitialized,
@@ -78,9 +76,10 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    hasCard,
   } = usePaymentMethodGroup();
 
-  if (!hasCardPaymentMethod || (activePaymentMethod !== "card" && threeDSecureActive)) {
+  if (!hasCard || (activePaymentMethod !== "card" && threeDSecureActive)) {
     // if threeDSecureActive for some other payment method, do not show card form
     return null;
   }

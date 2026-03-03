@@ -5,6 +5,7 @@ import { SuccessResponse } from "../../services/models";
 import GooglePayButton from "../../components/google-pay-button/google-pay-button";
 import ApplePayButton from "../../components/apple-pay-button/apple-pay-button";
 import { PaymentMethod } from "../../models/constants";
+import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 
 interface InstantPaymentsComponentProps {
   configuration: StraumurCheckoutConfiguration;
@@ -15,6 +16,8 @@ function InstantPaymentsComponent({
   configuration,
   paymentMethods,
 }: InstantPaymentsComponentProps): h.JSX.Element | null {
+  const { hasGooglePay, hasApplePay } = usePaymentMethodGroup();
+
   if (!configuration.instantPayments) {
     return null;
   }
@@ -25,11 +28,9 @@ function InstantPaymentsComponent({
     validInstantPayments.includes(payment)
   );
 
-  const availableWalletPayments = paymentMethods.paymentMethods.paymentMethods?.filter(x => x.type === "applepay" || x.type === "googlepay") || [];
-
-  // another safeguard: ensure that the payment methods are actually available from the paymentMethods response
+  // ensure the payment method is actually available from the paymentMethods response
   const finalAvailableInstantPayments = availableInstantPayments.filter((payment) =>
-    availableWalletPayments.some(pm => pm.type === payment)
+    payment === "googlepay" ? hasGooglePay : hasApplePay
   );
 
   if (finalAvailableInstantPayments.length === 0) {

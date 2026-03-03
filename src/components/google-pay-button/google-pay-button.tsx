@@ -219,12 +219,6 @@ function GooglePayButton({
     }
   }
 
-  const hasGooglePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "googlepay");
-
-  if (!hasGooglePay) {
-    return null;
-  }
-
   if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show google pay
     return null;

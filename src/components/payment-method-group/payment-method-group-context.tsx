@@ -19,6 +19,11 @@ type PaymentMethodContextType = {
   error: TranslationKey | null;
   threeDSecureActive: boolean;
   setThreeDSecureActive: (value: boolean) => void;
+  isSolePaymentMethod: boolean;
+  hasCard: boolean;
+  hasGooglePay: boolean;
+  hasApplePay: boolean;
+  hasStoredPaymentMethods: boolean;
 };
 
 const PaymentMethodContext = createContext<PaymentMethodContextType | undefined>(undefined);
@@ -33,9 +38,19 @@ const defaultIsInitialized: Record<PaymentMethod, boolean> = {
 export const PaymentMethodGroupContext = ({
   children,
   initialValue,
+  isSolePaymentMethod,
+  hasCard,
+  hasGooglePay,
+  hasApplePay,
+  hasStoredPaymentMethods,
 }: {
   children: ComponentChildren;
   initialValue: PaymentMethod | null;
+  isSolePaymentMethod: boolean;
+  hasCard: boolean;
+  hasGooglePay: boolean;
+  hasApplePay: boolean;
+  hasStoredPaymentMethods: boolean;
 }): h.JSX.Element => {
   const [activePaymentMethod, setActivePaymentMethod] = useState(initialValue);
   const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] = useState<string | null>(null);
@@ -85,6 +100,11 @@ export const PaymentMethodGroupContext = ({
         error,
         threeDSecureActive,
         setThreeDSecureActive,
+        isSolePaymentMethod,
+        hasCard,
+        hasGooglePay,
+        hasApplePay,
+        hasStoredPaymentMethods,
       }}
     >
       {children}

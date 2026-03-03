@@ -217,12 +217,6 @@ function ApplePayButton({
     }
   }
 
-  const hasApplePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "applepay");
-
-  if (!hasApplePay) {
-    return null;
-  }
-
   if (activePaymentMethod !== "applepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show apple pay
     return null;
