@@ -1,4 +1,5 @@
 import { h } from "preact";
+import { useState } from "preact/hooks";
 import "./apple-pay-component.css";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 import { StraumurCheckoutConfiguration } from "../../models/models";
@@ -17,8 +18,9 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
   const { i18n } = useI18n();
   const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive, isSolePaymentMethod, hasApplePay } =
     usePaymentMethodGroup();
+  const [isUnavailable, setIsUnavailable] = useState(false);
 
-  if (!hasApplePay) {
+  if (!hasApplePay || isUnavailable) {
     return null;
   }
 
@@ -43,6 +45,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
         paymentMethods={paymentMethods}
         showPaymentButton={activePaymentMethod === "applepay"}
         isInstantPayment={false}
+        onUnavailable={() => setIsUnavailable(true)}
       />
     </PaymentMethodItem>
   );

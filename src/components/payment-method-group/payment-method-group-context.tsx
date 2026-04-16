@@ -6,7 +6,7 @@ import { TranslationKey } from "../../localizations/translations";
 
 type PaymentMethodContextType = {
   activePaymentMethod: PaymentMethod | null;
-  setActivePaymentMethod: (value: PaymentMethod) => void;
+  setActivePaymentMethod: (value: PaymentMethod | null) => void;
   activeStoredPaymentMethodId: string | null;
   setActiveStoredPaymentMethodId: (value: string) => void;
   isPaymentMethodInitialized: Record<PaymentMethod, boolean>;

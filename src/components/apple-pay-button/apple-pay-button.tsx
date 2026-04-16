@@ -30,6 +30,7 @@ interface ApplePayButtonProps {
   paymentMethods: SuccessResponse;
   showPaymentButton: boolean;
   isInstantPayment: boolean;
+  onUnavailable?: () => void;
 }
 
 function ApplePayButton({
@@ -37,6 +38,7 @@ function ApplePayButton({
   paymentMethods,
   showPaymentButton,
   isInstantPayment,
+  onUnavailable,
 }: ApplePayButtonProps): h.JSX.Element | null {
   const applePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCardRef = useRef<ICore>();
@@ -94,7 +96,11 @@ function ApplePayButton({
         updatePaymentMethodInitialization("applepay", true);
       })
       .catch(() => {
-        handleError("error.applePayNotAvailable");
+        updatePaymentMethodInitialization("applepay", true);
+        if (activePaymentMethod === "applepay") {
+          setActivePaymentMethod(null);
+        }
+        onUnavailable?.();
       });
   };
 

@@ -29,13 +29,15 @@ interface GooglePayButtonProps {
   paymentMethods: SuccessResponse;
   showPaymentButton: boolean;
   isInstantPayment: boolean;
+  onUnavailable?: () => void;
 }
 
 function GooglePayButton({
   configuration,
   paymentMethods,
   showPaymentButton,
-  isInstantPayment
+  isInstantPayment,
+  onUnavailable,
 }: GooglePayButtonProps): h.JSX.Element | null {
   const googlePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCheckoutRef = useRef<ICore>();
@@ -96,7 +98,11 @@ function GooglePayButton({
         updatePaymentMethodInitialization("googlepay", true);
       })
       .catch(() => {
-        handleError("error.googlePayNotAvailable");
+        updatePaymentMethodInitialization("googlepay", true);
+        if (activePaymentMethod === "googlepay") {
+          setActivePaymentMethod(null);
+        }
+        onUnavailable?.();
       });
   };
 

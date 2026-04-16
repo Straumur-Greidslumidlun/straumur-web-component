@@ -1,4 +1,5 @@
 import { h } from "preact";
+import { useState } from "preact/hooks";
 import "./instant-payments-component.css";
 import { StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
@@ -17,6 +18,11 @@ function InstantPaymentsComponent({
   paymentMethods,
 }: InstantPaymentsComponentProps): h.JSX.Element | null {
   const { hasGooglePay, hasApplePay } = usePaymentMethodGroup();
+  const [unavailableMethods, setUnavailableMethods] = useState<Set<string>>(new Set());
+
+  const handleUnavailable = (method: string) => {
+    setUnavailableMethods((prev) => new Set(prev).add(method));
+  };
 
   if (!configuration.instantPayments) {
     return null;
@@ -33,6 +39,10 @@ function InstantPaymentsComponent({
     payment === "googlepay" ? hasGooglePay : hasApplePay
   );
 
+  const visibleInstantPayments = finalAvailableInstantPayments.filter(
+    (payment) => !unavailableMethods.has(payment)
+  );
+
   if (finalAvailableInstantPayments.length === 0) {
     return null;
   }
@@ -40,8 +50,9 @@ function InstantPaymentsComponent({
   return (
     <div
       class={`instant-payments ${
-        finalAvailableInstantPayments.length > 1 ? "instant-payments--multiple" : "instant-payments--single"
+        visibleInstantPayments.length > 1 ? "instant-payments--multiple" : "instant-payments--single"
       }`}
+      style={{ display: visibleInstantPayments.length === 0 ? "none" : undefined }}
     >
       {finalAvailableInstantPayments.map((paymentMethod) => {
         if (paymentMethod === "googlepay") {
@@ -52,6 +63,7 @@ function InstantPaymentsComponent({
               paymentMethods={paymentMethods}
               showPaymentButton={true}
               isInstantPayment={true}
+              onUnavailable={() => handleUnavailable("googlepay")}
             />
           );
         }
@@ -63,6 +75,7 @@ function InstantPaymentsComponent({
               paymentMethods={paymentMethods}
               showPaymentButton={true}
               isInstantPayment={true}
+              onUnavailable={() => handleUnavailable("applepay")}
             />
           );
         }

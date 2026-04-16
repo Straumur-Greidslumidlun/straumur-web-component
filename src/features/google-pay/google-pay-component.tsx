@@ -1,4 +1,5 @@
 import { h } from "preact";
+import { useState } from "preact/hooks";
 import "./google-pay-component.css";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 import { StraumurCheckoutConfiguration } from "../../models/models";
@@ -17,8 +18,9 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
   const { i18n } = useI18n();
   const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive, isSolePaymentMethod, hasGooglePay } =
     usePaymentMethodGroup();
+  const [isUnavailable, setIsUnavailable] = useState(false);
 
-  if (!hasGooglePay) {
+  if (!hasGooglePay || isUnavailable) {
     return null;
   }
 
@@ -43,6 +45,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
         paymentMethods={paymentMethods}
         showPaymentButton={activePaymentMethod === "googlepay"}
         isInstantPayment={false}
+        onUnavailable={() => setIsUnavailable(true)}
       />
     </PaymentMethodItem>
   );
