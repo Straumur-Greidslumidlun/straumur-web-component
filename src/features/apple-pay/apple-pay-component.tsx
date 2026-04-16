@@ -43,7 +43,6 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       <ApplePayButton
         configuration={configuration}
         paymentMethods={paymentMethods}
-        showPaymentButton={activePaymentMethod === "applepay"}
         isInstantPayment={false}
         onUnavailable={() => setIsUnavailable(true)}
       />

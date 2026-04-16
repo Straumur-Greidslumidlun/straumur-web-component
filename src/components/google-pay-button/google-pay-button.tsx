@@ -27,7 +27,6 @@ import LoaderIcon from "../../assets/icons/loader";
 interface GooglePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
-  showPaymentButton: boolean;
   isInstantPayment: boolean;
   onUnavailable?: () => void;
 }
@@ -35,7 +34,6 @@ interface GooglePayButtonProps {
 function GooglePayButton({
   configuration,
   paymentMethods,
-  showPaymentButton,
   isInstantPayment,
   onUnavailable,
 }: GooglePayButtonProps): h.JSX.Element | null {
@@ -107,10 +105,10 @@ function GooglePayButton({
   };
 
   useEffect(() => {
-    if (showPaymentButton && !isPaymentMethodInitialized.googlepay) {
+    if (!isPaymentMethodInitialized.googlepay) {
       initializeAdyenComponent();
     }
-  }, [configuration, showPaymentButton]);
+  }, [configuration]);
 
   useEffect(() => {
     if (googlePayRef.current && isPaymentMethodInitialized.googlepay) {

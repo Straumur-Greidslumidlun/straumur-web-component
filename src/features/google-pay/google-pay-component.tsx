@@ -43,7 +43,6 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       <GooglePayButton
         configuration={configuration}
         paymentMethods={paymentMethods}
-        showPaymentButton={activePaymentMethod === "googlepay"}
         isInstantPayment={false}
         onUnavailable={() => setIsUnavailable(true)}
       />

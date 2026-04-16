@@ -28,7 +28,6 @@ import LoaderIcon from "../../assets/icons/loader";
 interface ApplePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
-  showPaymentButton: boolean;
   isInstantPayment: boolean;
   onUnavailable?: () => void;
 }
@@ -36,7 +35,6 @@ interface ApplePayButtonProps {
 function ApplePayButton({
   configuration,
   paymentMethods,
-  showPaymentButton,
   isInstantPayment,
   onUnavailable,
 }: ApplePayButtonProps): h.JSX.Element | null {
@@ -105,10 +103,10 @@ function ApplePayButton({
   };
 
   useEffect(() => {
-    if (showPaymentButton && !isPaymentMethodInitialized.applepay) {
+    if (!isPaymentMethodInitialized.applepay) {
       initializeAdyenComponent();
     }
-  }, [configuration, showPaymentButton]);
+  }, [configuration]);
 
   useEffect(() => {
     if (applePayRef.current && isPaymentMethodInitialized.applepay) {
