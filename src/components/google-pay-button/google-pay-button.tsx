@@ -27,15 +27,15 @@ import LoaderIcon from "../../assets/icons/loader";
 interface GooglePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
-  showPaymentButton: boolean;
   isInstantPayment: boolean;
+  onUnavailable?: () => void;
 }
 
 function GooglePayButton({
   configuration,
   paymentMethods,
-  showPaymentButton,
-  isInstantPayment
+  isInstantPayment,
+  onUnavailable,
 }: GooglePayButtonProps): h.JSX.Element | null {
   const googlePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCheckoutRef = useRef<ICore>();
@@ -96,15 +96,19 @@ function GooglePayButton({
         updatePaymentMethodInitialization("googlepay", true);
       })
       .catch(() => {
-        handleError("error.googlePayNotAvailable");
+        updatePaymentMethodInitialization("googlepay", true);
+        if (activePaymentMethod === "googlepay") {
+          setActivePaymentMethod(null);
+        }
+        onUnavailable?.();
       });
   };
 
   useEffect(() => {
-    if (showPaymentButton && !isPaymentMethodInitialized.googlepay) {
+    if (!isPaymentMethodInitialized.googlepay) {
       initializeAdyenComponent();
     }
-  }, [configuration, showPaymentButton]);
+  }, [configuration]);
 
   useEffect(() => {
     if (googlePayRef.current && isPaymentMethodInitialized.googlepay) {
@@ -217,12 +221,6 @@ function GooglePayButton({
     } else {
       configuration.onPaymentFailed?.();
     }
-  }
-
-  const hasGooglePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "googlepay");
-
-  if (!hasGooglePay) {
-    return null;
   }
 
   if (activePaymentMethod !== "googlepay" && threeDSecureActive) {

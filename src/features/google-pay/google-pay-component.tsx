@@ -1,4 +1,5 @@
 import { h } from "preact";
+import { useState } from "preact/hooks";
 import "./google-pay-component.css";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 import { StraumurCheckoutConfiguration } from "../../models/models";
@@ -6,6 +7,7 @@ import { SuccessResponse } from "../../services/models";
 import { useI18n } from "../../localizations/i18n-context";
 import GooglePayIcon from "../../assets/icons/googlepay";
 import GooglePayButton from "../../components/google-pay-button/google-pay-button";
+import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
 
 interface GooglePayComponentProps {
   configuration: StraumurCheckoutConfiguration;
@@ -14,42 +16,37 @@ interface GooglePayComponentProps {
 
 function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponentProps): h.JSX.Element | null {
   const { i18n } = useI18n();
-  const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive } = usePaymentMethodGroup();
+  const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive, isSolePaymentMethod, hasGooglePay } =
+    usePaymentMethodGroup();
+  const [isUnavailable, setIsUnavailable] = useState(false);
 
-  const handleBoxChange = () => {
-    setActivePaymentMethod("googlepay");
-  };
+  if (!hasGooglePay || isUnavailable) {
+    return null;
+  }
 
   if (configuration.instantPayments && configuration.instantPayments.some((x) => x === "googlepay")) {
     return null;
   }
 
-  if(activePaymentMethod !== "googlepay" && threeDSecureActive) {
+  if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
     return null;
   }
 
   return (
-    <label className="straumur__google-pay-component">
-      <input
-        type="radio"
-        className="straumur__google-pay-component__radio-selector"
-        checked={activePaymentMethod === "googlepay"}
-        onChange={handleBoxChange}
+    <PaymentMethodItem
+      icon={<GooglePayIcon />}
+      title={i18n.t("googlePay.title")}
+      isActive={activePaymentMethod === "googlepay"}
+      isSole={isSolePaymentMethod}
+      onChange={() => setActivePaymentMethod("googlepay")}
+    >
+      <GooglePayButton
+        configuration={configuration}
+        paymentMethods={paymentMethods}
+        isInstantPayment={false}
+        onUnavailable={() => setIsUnavailable(true)}
       />
-      <span className="straumur__google-pay-component__content">
-        <span className="straumur__google-pay-component--circle"></span>
-        <GooglePayIcon />
-        <span className="straumur__google-pay-component--text">{i18n.t("googlePay.title")}</span>
-      </span>
-      <div className="straumur__google-pay-component__expandable">
-        <GooglePayButton
-          configuration={configuration}
-          paymentMethods={paymentMethods}
-          showPaymentButton={activePaymentMethod === "googlepay"}
-          isInstantPayment={false}
-        />
-      </div>
-    </label>
+    </PaymentMethodItem>
   );
 }
 

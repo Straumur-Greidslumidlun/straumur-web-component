@@ -25,13 +25,14 @@ import { StoredCardComponentProps, StoredCardFormError, StoredCardFormErrorField
 import WarningIcon from "../../assets/icons/warning";
 import { ICreateDetailsBody, ICreatePaymentBody, IPostDisableTokenBody } from "../../adapter/models";
 import { createDetailsRequest, createPaymentRequest, postDisableTokenRequest } from "../../adapter/straumur-adapter";
+import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
 
 function StoredCardComponent({
   configuration,
   paymentMethods,
   storedPaymentMethod,
   onStoredCardRemoved,
-}: StoredCardComponentProps): h.JSX.Element {
+}: StoredCardComponentProps): h.JSX.Element | null {
   const storedCardElementRef = useRef<HTMLDivElement>(null);
   const adyenCardRef = useRef<ICore>();
   const customCardRef = useRef<CustomCard>();
@@ -53,7 +54,18 @@ function StoredCardComponent({
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    isSolePaymentMethod,
   } = usePaymentMethodGroup();
+
+  // In sole mode there is only one stored card, so being the active payment method is enough.
+  // In normal mode both the method and the specific card ID must match.
+  const isActive = isSolePaymentMethod
+    ? activePaymentMethod === "storedcard"
+    : activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id;
+
+  if (threeDSecureActive && !isActive) {
+    return null;
+  }
 
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout({
@@ -67,7 +79,7 @@ function StoredCardComponent({
       },
       paymentMethodsResponse: paymentMethods.paymentMethods,
       onError: handleOnError,
-
+      onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: handlePaymentCompleted,
       onPaymentFailed: handlePaymentFailed,
     });
@@ -75,7 +87,6 @@ function StoredCardComponent({
     customCardRef.current = new CustomCard(adyenCardRef.current, {
       brands: [storedPaymentMethod.brand!],
       onSubmit: handleOnSubmit,
-      onAdditionalDetails: handleOnSubmitAdditionalData,
       onConfigSuccess() {
         updateStoredCardInitialization(storedPaymentMethod.id, true);
       },
@@ -109,14 +120,10 @@ function StoredCardComponent({
   };
 
   useEffect(() => {
-    if (
-      activePaymentMethod === "storedcard" &&
-      activeStoredPaymentMethodId === storedPaymentMethod.id &&
-      !isStoredCardInitialized[activeStoredPaymentMethodId!]
-    ) {
+    if (isActive && !isStoredCardInitialized[storedPaymentMethod.id]) {
       initializeAdyenComponent();
     }
-  }, [configuration, activePaymentMethod, activeStoredPaymentMethodId]);
+  }, [configuration, isActive]);
 
   useEffect(() => {
     if (customCardRef.current && isStoredCardInitialized[activeStoredPaymentMethodId!]) {
@@ -275,16 +282,50 @@ function StoredCardComponent({
     customCardRef.current!.submit();
   }
 
+  const headerRight = isActive && isStoredCardInitialized[storedPaymentMethod.id] ? (
+    <div className="straumur__stored-card-component__remove-stored-card-button">
+      <button
+        onClick={handleAskToConfirmRemoveCard}
+        className="straumur__stored-card-component__remove-stored-card-button--text"
+        disabled={askConfirmRemoveStoredCard}
+      >
+        {i18n.t("stored-cards.removeStoredCard")}
+      </button>
+    </div>
+  ) : null;
+
+  const confirmSection = (
+    <div
+      className={`${"straumur__stored-card-component__confirm-remove-stored-card"} ${
+        askConfirmRemoveStoredCard ? "straumur__stored-card-component__confirm-remove-stored-card--expanded" : ""
+      }`}
+    >
+      <div className="straumur__stored-card-component__confirm-remove-stored-card--header">
+        <WarningIcon />
+        <span className="straumur__stored-card-component__confirm-remove-stored-card--header--title">
+          {i18n.t("stored-cards.removeStoredCardQuestion")}
+        </span>
+      </div>
+      <div className="straumur__stored-card-component__confirm-remove-stored-card--actions">
+        <button
+          className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
+          onClick={handleConfirmRemoveStoredCard}
+        >
+          {i18n.t("stored-cards.removeStoredCardQuestionYesRemove")}
+        </button>
+        <button
+          className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
+          onClick={handleCancelRemoveStoredCard}
+        >
+          {i18n.t("stored-cards.removeStoredCardQuestionCancel")}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <label className="straumur__stored-card-component">
-      <input
-        type="radio"
-        className="straumur__stored-card-component__radio-selector"
-        checked={activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id}
-        onChange={handleBoxChange}
-      />
-      <span className="straumur__stored-card-component__content">
-        <span className="straumur__stored-card-component--circle"></span>
+    <PaymentMethodItem
+      icon={
         <RenderBrandIcons
           brands={[
             {
@@ -293,49 +334,15 @@ function StoredCardComponent({
             },
           ]}
         />
-        <span className="straumur__stored-card-component--text">•••• {storedPaymentMethod.lastFour}</span>
-        {activePaymentMethod === "storedcard" &&
-          activeStoredPaymentMethodId === storedPaymentMethod.id &&
-          isStoredCardInitialized[storedPaymentMethod.id] && (
-            <div className="straumur__stored-card-component__remove-stored-card-button">
-              <button
-                onClick={handleAskToConfirmRemoveCard}
-                className="straumur__stored-card-component__remove-stored-card-button--text"
-                disabled={askConfirmRemoveStoredCard}
-              >
-                {i18n.t("stored-cards.removeStoredCard")}
-              </button>
-            </div>
-          )}
-      </span>
+      }
+      title={`•••• ${storedPaymentMethod.lastFour}`}
+      isActive={isActive}
+      isSole={isSolePaymentMethod}
+      onChange={handleBoxChange}
+      headerRight={headerRight}
+      confirmSection={confirmSection}
+    >
       <div
-        className={`${"straumur__stored-card-component__confirm-remove-stored-card"} ${
-          askConfirmRemoveStoredCard ? "straumur__stored-card-component__confirm-remove-stored-card--expanded" : ""
-        }`}
-      >
-        <div className="straumur__stored-card-component__confirm-remove-stored-card--header">
-          <WarningIcon />
-          <span className="straumur__stored-card-component__confirm-remove-stored-card--header--title">
-            {i18n.t("stored-cards.removeStoredCardQuestion")}
-          </span>
-        </div>
-        <div className="straumur__stored-card-component__confirm-remove-stored-card--actions">
-          <button
-            className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
-            onClick={handleConfirmRemoveStoredCard}
-          >
-            {i18n.t("stored-cards.removeStoredCardQuestionYesRemove")}
-          </button>
-          <button
-            className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
-            onClick={handleCancelRemoveStoredCard}
-          >
-            {i18n.t("stored-cards.removeStoredCardQuestionCancel")}
-          </button>
-        </div>
-      </div>
-      <div
-        className="straumur__stored-card-component__expandable"
         ref={storedCardElementRef}
         style={{
           height: threeDSecureActive ? "600px" : "auto",
@@ -351,8 +358,8 @@ function StoredCardComponent({
         <div
           className="straumur__stored-card-component__form"
           style={{
-            opacity: isStoredCardInitialized[storedPaymentMethod.id] ? 1 : 0,
-            position: isStoredCardInitialized[storedPaymentMethod.id] ? "relative" : "absolute",
+            opacity: isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? 1 : 0,
+            position: isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? "relative" : "absolute",
             transition: "opacity 0.3s ease-in-out",
           }}
         >
@@ -413,7 +420,7 @@ function StoredCardComponent({
           </button>
         </div>
       </div>
-    </label>
+    </PaymentMethodItem>
   );
 }
 

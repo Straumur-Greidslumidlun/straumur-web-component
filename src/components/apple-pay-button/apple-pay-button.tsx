@@ -28,15 +28,15 @@ import LoaderIcon from "../../assets/icons/loader";
 interface ApplePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
-  showPaymentButton: boolean;
   isInstantPayment: boolean;
+  onUnavailable?: () => void;
 }
 
 function ApplePayButton({
   configuration,
   paymentMethods,
-  showPaymentButton,
   isInstantPayment,
+  onUnavailable,
 }: ApplePayButtonProps): h.JSX.Element | null {
   const applePayElementRef = useRef<HTMLDivElement>(null);
   const adyenCardRef = useRef<ICore>();
@@ -94,15 +94,19 @@ function ApplePayButton({
         updatePaymentMethodInitialization("applepay", true);
       })
       .catch(() => {
-        handleError("error.applePayNotAvailable");
+        updatePaymentMethodInitialization("applepay", true);
+        if (activePaymentMethod === "applepay") {
+          setActivePaymentMethod(null);
+        }
+        onUnavailable?.();
       });
   };
 
   useEffect(() => {
-    if (showPaymentButton && !isPaymentMethodInitialized.applepay) {
+    if (!isPaymentMethodInitialized.applepay) {
       initializeAdyenComponent();
     }
-  }, [configuration, showPaymentButton]);
+  }, [configuration]);
 
   useEffect(() => {
     if (applePayRef.current && isPaymentMethodInitialized.applepay) {
@@ -215,12 +219,6 @@ function ApplePayButton({
     } else {
       configuration.onPaymentFailed?.();
     }
-  }
-
-  const hasApplePay = paymentMethods.paymentMethods!.paymentMethods?.some((x) => x.type === "applepay");
-
-  if (!hasApplePay) {
-    return null;
   }
 
   if (activePaymentMethod !== "applepay" && threeDSecureActive) {

@@ -1,0 +1,108 @@
+.straumur__payment-method-item {
+  position: relative;
+  cursor: pointer;
+  background: var(--straumur__color-white);
+  border-radius: var(--straumur__border-radius-lg);
+  transition: all 0.3s ease;
+  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);
+}
+
+.straumur__payment-method-item--sole {
+  cursor: default;
+}
+
+.straumur__payment-method-item:has(.straumur__payment-method-item__radio-selector:checked) {
+  cursor: default;
+}
+
+.straumur__payment-method-item__radio-selector {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.straumur__payment-method-item__content {
+  display: flex;
+  align-items: center;
+  gap: var(--straumur__space-lg);
+  transition: background-color 0.3s ease;
+}
+
+/* Padding-bottom when radio checked (non-sole mode) */
+.straumur__payment-method-item__radio-selector:checked + .straumur__payment-method-item__content {
+  padding-bottom: var(--straumur__space-xxlg);
+}
+
+/* Padding-bottom in sole mode (always expanded) */
+.straumur__payment-method-item__content--expanded {
+  padding-bottom: var(--straumur__space-xxlg);
+}
+
+.straumur__payment-method-item--circle {
+  width: var(--straumur__space-5xlg);
+  height: var(--straumur__space-5xlg);
+  border: 1px solid var(--straumur__color-cosmos-blue-gamma);
+  background: var(--straumur__color-secondary-gamma);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.straumur__payment-method-item__content:hover .straumur__payment-method-item--circle {
+  border: 1px solid var(--straumur__color-cosmos-blue-delta);
+}
+
+.straumur__payment-method-item--circle::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
+}
+
+.straumur__payment-method-item__radio-selector:checked
+  + .straumur__payment-method-item__content
+  .straumur__payment-method-item--circle {
+  background: var(--straumur__color-blue-beta);
+  border-color: var(--straumur__color-transparent);
+}
+
+.straumur__payment-method-item__radio-selector:checked
+  + .straumur__payment-method-item__content
+  .straumur__payment-method-item--circle::after {
+  transform: translate(-50%, -50%) scale(1);
+  background: var(--straumur__color-primary);
+  height: var(--straumur__space-md);
+  width: var(--straumur__space-md);
+}
+
+.straumur__payment-method-item--title {
+  color: #213547;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.straumur__payment-method-item__expandable {
+  background: var(--straumur__color-white);
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+/* Expandable via :checked sibling selector (non-sole mode) */
+.straumur__payment-method-item__radio-selector:checked ~ .straumur__payment-method-item__expandable {
+  max-height: 600px;
+  opacity: 1;
+}
+
+/* Expandable always visible in sole mode */
+.straumur__payment-method-item__expandable--visible {
+  max-height: 600px;
+  opacity: 1;
+}
