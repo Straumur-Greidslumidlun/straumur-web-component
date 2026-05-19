@@ -7,3 +7,9 @@
 .instant-payments--single {
   grid-template-columns: 1fr;
 }
+
+@media (max-width: 527px) {
+  .instant-payments {
+    grid-template-columns: 1fr;
+  }
+}
