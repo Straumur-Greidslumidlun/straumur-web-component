@@ -1,0 +1,125 @@
+name: Publish Package to CDN
+
+on:
+  workflow_run:
+    workflows: ["Publish Package to npmjs"]
+    types: [completed]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'release')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - run: npm ci
+
+      - name: Build library
+        run: npm run build
+
+      - name: Read package version
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload versioned build (immutable)
+        env:
+          BUCKET: ${{ secrets.CDN_S3_BUCKET }}
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: |
+          DEST="s3://$BUCKET/libs/straumur-web-component/$VERSION/"
+          aws s3 cp dist/ "$DEST" \
+            --recursive \
+            --exclude "*" \
+            --include "index.js" \
+            --include "index.mjs" \
+            --include "index.js.map" \
+            --include "index.mjs.map" \
+            --include "index.d.ts" \
+            --cache-control "public, max-age=31536000, immutable" \
+            --only-show-errors
+
+      - name: Upload "latest" build (short cache)
+        env:
+          BUCKET: ${{ secrets.CDN_S3_BUCKET }}
+        run: |
+          DEST="s3://$BUCKET/libs/straumur-web-component/latest/"
+          aws s3 cp dist/ "$DEST" \
+            --recursive \
+            --exclude "*" \
+            --include "index.js" \
+            --include "index.mjs" \
+            --include "index.js.map" \
+            --include "index.mjs.map" \
+            --include "index.d.ts" \
+            --cache-control "public, max-age=300, must-revalidate" \
+            --only-show-errors
+
+      - name: Invalidate CloudFront cache for "latest"
+        env:
+          DIST_ID: ${{ secrets.CDN_CLOUDFRONT_ID }}
+        run: |
+          if [ -z "$DIST_ID" ]; then
+            echo "CDN_CLOUDFRONT_ID not set; skipping invalidation."
+            exit 0
+          fi
+          aws cloudfront create-invalidation \
+            --distribution-id "$DIST_ID" \
+            --paths "/libs/straumur-web-component/latest/*" \
+            --output text --query 'Invalidation.Status'
+
+      - name: Generate SRI hashes and summary
+        env:
+          VERSION: ${{ steps.pkg.outputs.version }}
+          CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+        run: |
+          sri_js=$(openssl dgst -sha384 -binary dist/index.js | openssl base64 -A)
+          sri_mjs=$(openssl dgst -sha384 -binary dist/index.mjs | openssl base64 -A)
+
+          BASE="${CDN_BASE_URL:-https://<your-cdn-domain>}"
+
+          {
+            echo "## Straumur Web Component — CDN publish"
+            echo ""
+            echo "**Version:** \`$VERSION\`"
+            echo ""
+            echo "### IIFE bundle (global \`StraumurWeb\`)"
+            echo '```html'
+            echo "<script src=\"$BASE/libs/straumur-web-component/$VERSION/index.js\""
+            echo "        integrity=\"sha384-$sri_js\""
+            echo "        crossorigin=\"anonymous\"></script>"
+            echo '```'
+            echo ""
+            echo "### ESM module"
+            echo '```html'
+            echo "<script type=\"module\">"
+            echo "  import { StraumurCheckout } from \"$BASE/libs/straumur-web-component/$VERSION/index.mjs\";"
+            echo "</script>"
+            echo '```'
+            echo ""
+            echo "**SRI (index.js):** \`sha384-$sri_js\`"
+            echo ""
+            echo "**SRI (index.mjs):** \`sha384-$sri_mjs\`"
+            echo ""
+            echo "_Also published under \`latest/\` (no SRI — use a pinned version for integrity)._"
+          } >> "$GITHUB_STEP_SUMMARY"
