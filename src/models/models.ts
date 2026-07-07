@@ -12,6 +12,9 @@ export type StraumurWebConfiguration = {
   locale?: "is" | "en";
   localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
   instantPayments?: UniqueInstantPayments;
+  hideSubmitButton?: boolean;
+  onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+  allowedPaymentMethods?: PaymentMethod[];
 };
 
 type ResultCode =
@@ -53,6 +56,9 @@ export type StraumurCheckoutConfiguration = {
   locale: Language;
   customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
   instantPayments?: UniqueInstantPayments;
+  hideSubmitButton?: boolean;
+  onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+  allowedPaymentMethods?: PaymentMethod[];
 };
 
 type PlaceholderKeys =

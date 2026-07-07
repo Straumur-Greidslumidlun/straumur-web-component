@@ -77,7 +77,25 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     setThreeDSecureActive,
     threeDSecureActive,
     hasCard,
+    registerSubmitHandler,
+    unregisterSubmitHandler,
   } = usePaymentMethodGroup();
+
+  useEffect(() => {
+    const isActive = activePaymentMethod === "card" && isPaymentMethodInitialized.card;
+    if (!isActive) {
+      // Nothing selected yet, or a different payment method is active - tell the
+      // host explicitly so a custom submit button can default to disabled.
+      configuration.onCardValidityChanged?.(false, false);
+      return;
+    }
+
+    registerSubmitHandler(handleSubmitClick);
+    return () => {
+      unregisterSubmitHandler(handleSubmitClick);
+      configuration.onCardValidityChanged?.(false, false);
+    };
+  }, [activePaymentMethod, isPaymentMethodInitialized.card, registerSubmitHandler, unregisterSubmitHandler]);
 
   if (!hasCard || (activePaymentMethod !== "card" && threeDSecureActive)) {
     // if threeDSecureActive for some other payment method, do not show card form
@@ -173,6 +191,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       },
       onAllValid: (event) => {
         setPayButtonDisabled(!event.allValid);
+        configuration.onCardValidityChanged?.(event.allValid, true);
       },
     });
 
@@ -457,13 +476,15 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
           </label>
         )}
 
-        <button
-          className="straumur__card-component__submit-button"
-          disabled={payButtonDisabled}
-          onClick={handleSubmitClick}
-        >
-          {paymentMethods.formattedAmount}
-        </button>
+        {!configuration.hideSubmitButton && (
+          <button
+            className="straumur__card-component__submit-button"
+            disabled={payButtonDisabled}
+            onClick={handleSubmitClick}
+          >
+            {paymentMethods.formattedAmount}
+          </button>
+        )}
       </div>
     </div>
   );
