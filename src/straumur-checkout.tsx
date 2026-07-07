@@ -147,11 +147,11 @@ class StraumurCheckout {
     });
   }
 
-  private async handleOnSubmitAdditionalData(
+  private handleOnSubmitAdditionalData = async (
     state: AdditionalDetailsData,
     _: UIElement<UIElementProps>,
     actions: AdditionalDetailsActions
-  ) {
+  ) => {
     const data: ICreateDetailsBody = {
       ...state.data,
       sessionId: this.configuration.sessionId,
@@ -185,7 +185,7 @@ class StraumurCheckout {
     } else {
       this.handleError("error.paymentUnsuccessful");
     }
-  }
+  };
 
   updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void {
     this.configuration = {
