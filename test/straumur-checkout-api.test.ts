@@ -89,6 +89,28 @@ describe("StraumurCheckout locale mapping", () => {
   });
 });
 
+describe("StraumurCheckout status screen accessibility", () => {
+  it("renders the failure screen with role=alert so screen readers announce it", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.handleError({ key: "error.unknownError" });
+
+    const alert = root().querySelector('[role="alert"]');
+    expect(alert?.textContent).toContain(en("error.unknownError"));
+  });
+
+  it("renders the success screen with role=status", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.handleSuccess({ key: "success.paymentAuthorized" });
+
+    const status = root().querySelector('[role="status"]');
+    expect(status?.textContent).toContain(en("success.paymentAuthorized"));
+  });
+});
+
 describe("StraumurCheckout config updates", () => {
   it("switches the active language via updateConfig using the public short code", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });

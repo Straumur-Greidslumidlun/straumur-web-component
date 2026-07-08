@@ -24,7 +24,7 @@ function SuccessTrigger() {
 function wrap(ui: h.JSX.Element) {
   return render(
     <I18nProvider i18nService={new I18nService("en-US")}>
-      <PaymentMethodGroupContext {...(makeGroupProps() as any)}>{ui}</PaymentMethodGroupContext>
+      <PaymentMethodGroupContext {...makeGroupProps()}>{ui}</PaymentMethodGroupContext>
     </I18nProvider>
   );
 }
@@ -46,6 +46,18 @@ describe("ResultComponent", () => {
     expect(screen.getByText(translations["en-US"]["error.unknownError"])).toBeTruthy();
   });
 
+  it("announces errors assertively via role=alert for screen readers", () => {
+    wrap(
+      <Fragment>
+        <ErrorTrigger />
+        <ResultComponent />
+      </Fragment>
+    );
+    fireEvent.click(screen.getByTestId("err"));
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toBe(translations["en-US"]["error.unknownError"]);
+  });
+
   it("renders the localized success message when success is set", () => {
     wrap(
       <Fragment>
@@ -55,6 +67,18 @@ describe("ResultComponent", () => {
     );
     fireEvent.click(screen.getByTestId("ok"));
     expect(screen.getByText(translations["en-US"]["success.paymentAuthorized"])).toBeTruthy();
+  });
+
+  it("announces success politely via role=status for screen readers", () => {
+    wrap(
+      <Fragment>
+        <SuccessTrigger />
+        <ResultComponent />
+      </Fragment>
+    );
+    fireEvent.click(screen.getByTestId("ok"));
+    const status = screen.getByRole("status");
+    expect(status.textContent).toBe(translations["en-US"]["success.paymentAuthorized"]);
   });
 });
 

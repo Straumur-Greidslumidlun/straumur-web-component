@@ -33,8 +33,9 @@ export function StatusScreen({
   return (
     <RootComponent>
       <div className="straumur__component">
-        {variant === "success" ? <SuccessIcon /> : <FailureIcon />}
-        <p>{"key" in message ? i18n.t(message.key) : message.text}</p>
+        <span aria-hidden="true">{variant === "success" ? <SuccessIcon /> : <FailureIcon />}</span>
+        {/* Failure is announced assertively (role="alert"); success politely (role="status"). */}
+        <p role={variant === "success" ? "status" : "alert"}>{"key" in message ? i18n.t(message.key) : message.text}</p>
       </div>
     </RootComponent>
   );

@@ -20,15 +20,25 @@ function ResultComponent(): h.JSX.Element | null {
     <div className="straumur__result-component">
       {error && (
         <Fragment>
-          <FailureIcon />
-          <p className="straumur__result-component__error--message">{renderMessage(error)}</p>
+          <span aria-hidden="true">
+            <FailureIcon />
+          </span>
+          {/* role="alert" announces the failure to screen readers assertively (a declined payment
+              was previously silent). */}
+          <p className="straumur__result-component__error--message" role="alert">
+            {renderMessage(error)}
+          </p>
         </Fragment>
       )}
 
       {success && (
         <Fragment>
-          <SuccessIcon />
-          <p className="straumur__result-component__success--message">{renderMessage(success)}</p>
+          <span aria-hidden="true">
+            <SuccessIcon />
+          </span>
+          <p className="straumur__result-component__success--message" role="status">
+            {renderMessage(success)}
+          </p>
         </Fragment>
       )}
     </div>
