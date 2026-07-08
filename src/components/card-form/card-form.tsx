@@ -14,6 +14,7 @@ import { SuccessResponse } from "../../services/models";
 import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
 import { submitCardWithGate } from "../shared/before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
+import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activate";
 
 export interface CardFormProps {
   configuration: StraumurCheckoutConfiguration;
@@ -243,6 +244,9 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     setStorePaymentMethod(event.currentTarget.checked);
   }
 
+  // When the 3DS challenge replaces the card fields, move focus into the container.
+  useFocusOnActivate(cardElementRef, threeDSecureActive && activePaymentMethod === "card");
+
   // Render guards live below all hooks so hook order is identical on every render.
   if (!hasCard || isObscuredByThreeDS("card")) {
     return null;
@@ -256,6 +260,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     <div
       className="straumur__card-component__expandable"
       ref={cardElementRef}
+      tabIndex={-1}
       style={{
         height: threeDSecureActive ? "600px" : "auto",
         minWidth: threeDSecureActive ? "350px" : "auto",
@@ -288,6 +293,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
               formErrors.encryptedCardNumber.visible ? "straumur__card-component__form--wrapper--input--error" : ""
             }`}
             data-cse="encryptedCardNumber"
+            role="group"
+            aria-label={i18n.t("cards.cardNumber")}
           />
           {formErrors.encryptedCardNumber.visible && (
             <span className="straumur__card-component__form--wrapper--error">
@@ -309,6 +316,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                 formErrors.encryptedExpiryDate.visible ? "straumur__card-component__form--wrapper--input--error" : ""
               }`}
               data-cse="encryptedExpiryDate"
+              role="group"
+              aria-label={i18n.t("cards.expiryDate")}
             />
             {formErrors.encryptedExpiryDate.visible && (
               <span className="straumur__card-component__form--wrapper--error">
@@ -338,6 +347,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                       : ""
                   }`}
                   data-cse="encryptedSecurityCode"
+                  role="group"
+                  aria-label={i18n.t("cards.securityCode3Digits")}
                 />
                 {formErrors.encryptedSecurityCode.visible && (
                   <span className="straumur__card-component__form--wrapper--error">

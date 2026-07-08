@@ -25,6 +25,15 @@ interface BrandOptionProps {
 }
 
 function BrandOption({ brand, brandName, isSelected, onBrandClick }: BrandOptionProps): h.JSX.Element {
+  // Enter/Space activate the option like a click. Synthesizing a real click (rather than calling
+  // onBrandClick directly) keeps the currentTarget/data-value that Adyen's dualBrandingChangeHandler reads.
+  const handleKeyDown = (e: h.JSX.TargetedKeyboardEvent<HTMLSpanElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.currentTarget.click();
+    }
+  };
+
   return (
     <span
       className={
@@ -34,6 +43,11 @@ function BrandOption({ brand, brandName, isSelected, onBrandClick }: BrandOption
       title={brand}
       data-value={brand}
       onClick={onBrandClick}
+      onKeyDown={handleKeyDown}
+      role="radio"
+      aria-checked={isSelected}
+      aria-label={brandName ?? brand}
+      tabIndex={0}
     >
       <div className="straumur__card-component__dual-branding--logo--item">
         <RenderBrandIcon brand={brand} defaultToBrandName={false} />
@@ -50,7 +64,7 @@ export function RenderDualBrandComponent({
   onBrandClick,
 }: RenderDualBrandComponentProps): h.JSX.Element {
   return (
-    <div className="straumur__card-component__dual-branding">
+    <div className="straumur__card-component__dual-branding" role="radiogroup" aria-label="Card brand">
       <BrandOption
         brand={dualBrandConfiguration.brand1}
         brandName={dualBrandConfiguration.brand1Name}

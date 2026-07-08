@@ -14,6 +14,7 @@ import PaymentMethodItem from "../../components/payment-method-item/payment-meth
 import { createAdyenPaymentHandlers } from "../../components/shared/create-adyen-handlers";
 import { submitCardWithGate } from "../../components/shared/before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
+import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activate";
 import { toResultMessage } from "../../flows/payment-flow";
 
 function StoredCardComponent({
@@ -166,6 +167,9 @@ function StoredCardComponent({
     setAskConfirmRemoveStoredCard(false);
   }, [activePaymentMethod, activeStoredPaymentMethodId]);
 
+  // When the 3DS challenge replaces the stored-card field, move focus into the container.
+  useFocusOnActivate(storedCardElementRef, threeDSecureActive && isActive);
+
   // Keep this guard below every hook call: returning early above a hook violates the
   // rules of hooks and corrupts hook ordering across renders.
   // Deliberately NOT isObscuredByThreeDS("storedcard"): several stored-card components can be
@@ -265,6 +269,7 @@ function StoredCardComponent({
     >
       <div
         ref={storedCardElementRef}
+        tabIndex={-1}
         style={{
           height: threeDSecureActive ? "600px" : "auto",
           minWidth: threeDSecureActive ? "350px" : "auto",
@@ -315,6 +320,8 @@ function StoredCardComponent({
                         : ""
                     }`}
                     data-cse="encryptedSecurityCode"
+                    role="group"
+                    aria-label={i18n.t("stored-cards.securityCode3Digits")}
                   >
                     <div className="straumur__stored-card-component__form--wrapper--label--info">
                       <Tooltip content={i18n.t("stored-cards.securityCode3DigitsInfo")}>
