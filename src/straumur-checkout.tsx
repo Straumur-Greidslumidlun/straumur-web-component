@@ -6,48 +6,18 @@ import {
   StraumurCheckoutUpdateOptions,
   StraumurWebAdvancedConfiguration,
   StraumurWebConfiguration,
-  StraumurWebInternalConfiguration,
 } from "./models/models";
 import { setupPaymentMethods } from "./services/straumur-service";
 import { normalizeLocale, PublicLocale } from "./localizations/locale";
 import StraumurCheckoutContainer from "./features/straumur-checkout-container";
 import { PaymentMethodsResponse, SuccessResponse } from "./services/models";
-import FailureIcon from "./assets/icons/failure";
-import LoaderIcon from "./assets/icons/loader";
-import SuccessIcon from "./assets/icons/success";
 import { AdyenCheckout } from "@adyen/adyen-web";
 import { I18nProvider } from "./localizations/i18n-context";
 import { I18nService } from "./localizations/i18n-service";
 import { SubmitApi } from "./components/payment-method-group/payment-method-group-context";
-import { createAdvancedPaymentFlow, createSessionPaymentFlow } from "./flows/payment-flow";
 import { createAdyenPaymentHandlers } from "./components/shared/create-adyen-handlers";
-import { normalizeAdvancedConfiguration } from "./services/advanced-normalizer";
-
-function isSessionConfiguration(config: StraumurWebInternalConfiguration): config is StraumurWebConfiguration {
-  return typeof config.sessionId === "string" && config.sessionId.length > 0;
-}
-
-// the union only protects TypeScript consumers — IIFE consumers get no compile-time checking
-function isValidAdvancedConfiguration(config: StraumurWebAdvancedConfiguration): boolean {
-  return (
-    typeof config.clientKey === "string" &&
-    config.clientKey.length > 0 &&
-    typeof config.countryCode === "string" &&
-    config.countryCode.length > 0 &&
-    typeof config.paymentMethods === "object" &&
-    config.paymentMethods !== null &&
-    typeof config.amount === "object" &&
-    config.amount !== null &&
-    typeof config.amount.value === "number" &&
-    typeof config.amount.currency === "string" &&
-    typeof config.onSubmit === "function" &&
-    typeof config.onAdditionalDetails === "function"
-  );
-}
-
-// Session mode has no countryCode input and the payment-methods response carries none,
-// so it is fixed to Iceland until the backend provides one.
-const SESSION_COUNTRY_CODE = "IS";
+import { LoaderScreen, RootComponent, StatusScreen } from "./components/shared/status-screen";
+import { buildCheckoutConfiguration } from "./config/build-checkout-configuration";
 
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
@@ -61,36 +31,12 @@ class StraumurCheckout {
   // Public signature accepts the session configuration only. The advanced-mode configuration
   // (internal, used by Straumur Hosted Checkout via the IIFE bundle) is detected at runtime.
   constructor(publicConfig: StraumurWebConfiguration) {
-    const config = publicConfig as StraumurWebInternalConfiguration;
-    const locale = normalizeLocale(config.locale);
-    const isSession = isSessionConfiguration(config);
+    const initialization = buildCheckoutConfiguration(publicConfig);
 
-    this.configuration = {
-      mode: isSession ? "session" : "advanced",
-      sessionId: config.sessionId,
-      environment: config.environment,
-      countryCode: isSession ? SESSION_COUNTRY_CODE : config.countryCode,
-      paymentFlow: isSession
-        ? createSessionPaymentFlow(config.environment, config.sessionId)
-        : createAdvancedPaymentFlow(config),
-      onPaymentCompleted: config.onPaymentCompleted,
-      onPaymentFailed: config.onPaymentFailed,
-      placeholders: config.placeholders,
-      locale,
-      customLocalizations: config.localizations,
-      instantPayments: config.instantPayments,
-    };
-
-    if (!isSession) {
-      if (isValidAdvancedConfiguration(config)) {
-        this.advancedConfiguration = config;
-        this.paymentMethods = normalizeAdvancedConfiguration(config, locale);
-      } else {
-        this.initializationFailed = true;
-      }
-    }
-
-    // Create i18n instance
+    this.configuration = initialization.configuration;
+    this.advancedConfiguration = initialization.advancedConfiguration;
+    this.paymentMethods = initialization.paymentMethods;
+    this.initializationFailed = initialization.initializationFailed;
     this.i18n = new I18nService(this.configuration.locale, this.configuration.customLocalizations);
   }
 
@@ -112,14 +58,7 @@ class StraumurCheckout {
         return;
       }
 
-      render(
-        <RootComponent>
-          <div className="straumur__component">
-            <LoaderIcon />
-          </div>
-        </RootComponent>,
-        this.mountElement
-      );
+      render(<LoaderScreen />, this.mountElement);
 
       const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
 
@@ -165,29 +104,13 @@ class StraumurCheckout {
   handleSuccess(message: ResultMessage) {
     if (!this.mountElement) return;
 
-    render(
-      <RootComponent>
-        <div className="straumur__component">
-          <SuccessIcon />
-          <p>{"key" in message ? this.i18n.t(message.key) : message.text}</p>
-        </div>
-      </RootComponent>,
-      this.mountElement
-    );
+    render(<StatusScreen variant="success" message={message} i18n={this.i18n} />, this.mountElement);
   }
 
   handleError(message: ResultMessage) {
     if (!this.mountElement) return;
 
-    render(
-      <RootComponent>
-        <div className="straumur__component">
-          <FailureIcon />
-          <p>{"key" in message ? this.i18n.t(message.key) : message.text}</p>
-        </div>
-      </RootComponent>,
-      this.mountElement
-    );
+    render(<StatusScreen variant="failure" message={message} i18n={this.i18n} />, this.mountElement);
   }
 
   // Resolves what the redirect-return Adyen bootstrap needs per mode, rendering the
@@ -325,7 +248,3 @@ class StraumurCheckout {
 }
 
 export default StraumurCheckout;
-
-function RootComponent({ children }: { children: h.JSX.Element }) {
-  return <div className="straumur__root-component">{children}</div>;
-}
