@@ -196,5 +196,35 @@ wallets.forEach(({ name, Comp, method }) => {
 
       expect(onPaymentFailed).toHaveBeenCalledWith();
     });
+
+    it("reports unavailable instead of crashing when the wallet has no configuration", async () => {
+      const onUnavailable = vi.fn();
+      const methodsWithoutConfig = makePaymentMethods({
+        paymentMethods: { paymentMethods: [{ type: method, name }] },
+      });
+
+      render(
+        <I18nProvider i18nService={new I18nService("en-US")}>
+          <PaymentMethodGroupContext
+            initialValue={null}
+            isSolePaymentMethod={false}
+            hasCard={false}
+            hasGooglePay={true}
+            hasApplePay={true}
+            hasStoredPaymentMethods={false}
+          >
+            <Comp
+              configuration={baseConfig()}
+              paymentMethods={methodsWithoutConfig}
+              isInstantPayment={false}
+              onUnavailable={onUnavailable}
+            />
+          </PaymentMethodGroupContext>
+        </I18nProvider>
+      );
+
+      await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
+      expect(A.cap.wallet.length).toBe(0);
+    });
   });
 });
