@@ -68,6 +68,7 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     locale,
     customLocalizations: config.localizations,
     instantPayments: config.instantPayments,
+    theme: config.theme ?? "light",
   };
 
   if (isSession) {

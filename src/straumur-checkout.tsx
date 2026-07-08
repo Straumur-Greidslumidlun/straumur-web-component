@@ -58,7 +58,7 @@ class StraumurCheckout {
         return;
       }
 
-      render(<LoaderScreen />, this.mountElement);
+      render(<LoaderScreen theme={this.configuration.theme} />, this.mountElement);
 
       const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
 
@@ -80,7 +80,7 @@ class StraumurCheckout {
     if (!this.mountElement) return;
 
     render(
-      <RootComponent>
+      <RootComponent theme={this.configuration.theme}>
         <I18nProvider
           i18nService={this.i18n}
           onLanguageChange={(language) => {
@@ -104,13 +104,19 @@ class StraumurCheckout {
   handleSuccess(message: ResultMessage) {
     if (!this.mountElement) return;
 
-    render(<StatusScreen variant="success" message={message} i18n={this.i18n} />, this.mountElement);
+    render(
+      <StatusScreen variant="success" message={message} i18n={this.i18n} theme={this.configuration.theme} />,
+      this.mountElement
+    );
   }
 
   handleError(message: ResultMessage) {
     if (!this.mountElement) return;
 
-    render(<StatusScreen variant="failure" message={message} i18n={this.i18n} />, this.mountElement);
+    render(
+      <StatusScreen variant="failure" message={message} i18n={this.i18n} theme={this.configuration.theme} />,
+      this.mountElement
+    );
   }
 
   // Resolves what the redirect-return Adyen bootstrap needs per mode, rendering the

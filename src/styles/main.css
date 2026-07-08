@@ -19,6 +19,14 @@
   --straumur__color-white: #ffffff;
   --straumur__color-transparent: transparent;
 
+  /* Role tokens for colors that were previously hard-coded in component CSS.
+     Kept as variables so the dark theme below can override them in one place. */
+  --straumur__color-text: #00112c;
+  --straumur__color-border: #dbdee2;
+  --straumur__color-warning-text: #775d00;
+  --straumur__color-warning-bg: #fff7db;
+  --straumur__color-danger-text: #d03e00;
+
   --straumur__border-radius-xxs: 4px;
   --straumur__border-radius-xs: 6px;
   --straumur__border-radius-s: 8px;
@@ -52,12 +60,47 @@
   min-width: 320px;
 }
 
+/*
+ * Dark theme. Scoped to the widget wrapper (via data-theme) so it never leaks to the host page.
+ * These override the color-named tokens with their dark-mode equivalents — the token *names*
+ * still read "white", "primary", etc., but in this scope they hold dark values. RootComponent
+ * sets data-theme; "system" resolves it from prefers-color-scheme at runtime.
+ * NOTE: these hex values are a sensible default palette, not confirmed brand colors — worth a
+ * design pass before they're treated as final.
+ */
+.straumur__root-component[data-theme="dark"] {
+  --straumur__color-primary: #e8edf2;
+  --straumur__color-secondary: #9aa7b5;
+  --straumur__color-secondary-gamma: #2a313b;
+
+  --straumur__color-blue-beta: #24506b;
+  --straumur__color-blue-gamma: #1b2733;
+
+  --straumur__color-neon-green-zeta: #9cbf5e;
+
+  --straumur__color-red-beta: #e08a8a;
+  --straumur__color-red-gamma: #2e2020;
+
+  --straumur__color-gray-epsilon: #3a424d;
+
+  --straumur__color-cosmos-blue-delta: #3a424d;
+  --straumur__color-cosmos-blue-gamma: #262d36;
+
+  --straumur__color-white: #1e232b;
+
+  --straumur__color-text: #e8edf2;
+  --straumur__color-border: #3a424d;
+  --straumur__color-warning-text: #e6c766;
+  --straumur__color-warning-bg: #2f2a17;
+  --straumur__color-danger-text: #f0895f;
+}
+
 .straumur__component * {
   font-family: inherit;
 }
 
 .straumur__render-brand-icons__overflow {
-  color: #72889d;
+  color: var(--straumur__color-secondary);
 }
 
 .straumur__component {

@@ -16,7 +16,17 @@ type StraumurWebBaseConfiguration = {
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];
+  /**
+   * Color theme for the widget. "system" follows the shopper's OS/browser preference
+   * (`prefers-color-scheme`) and updates live if it changes. Defaults to "light".
+   */
+  theme?: Theme;
 };
+
+export type Theme = "light" | "dark" | "system";
+
+/** The resolved theme actually applied to the DOM ("system" collapses to one of these). */
+export type ResolvedTheme = "light" | "dark";
 
 // the public configuration (session mode): the component loads everything itself from the Straumur API using the sessionId
 export type StraumurWebConfiguration = StraumurWebBaseConfiguration & {
@@ -149,6 +159,7 @@ export type StraumurCheckoutConfiguration = {
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];
+  theme: Theme;
 };
 
 // What updateConfig() accepts: internal config fields minus the immutable ones,

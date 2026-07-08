@@ -63,7 +63,7 @@
 
 .straumur__card-component__form--wrapper--input {
   background: var(--straumur__color-secondary-gamma);
-  color: #00112c;
+  color: var(--straumur__color-text);
   display: block;
   font-family: inherit;
   border: 1px solid var(--straumur__color-transparent);
@@ -112,12 +112,12 @@
 
 .straumur__card-component__submit-button:hover {
   background: var(--straumur__color-primary);
-  border: 1px solid #dbdee2;
+  border: 1px solid var(--straumur__color-border);
 }
 
 .straumur__card-component__submit-button:disabled {
-  background: #72889d;
-  border: 1px solid #dbdee2;
+  background: var(--straumur__color-secondary);
+  border: 1px solid var(--straumur__color-border);
   cursor: not-allowed;
 }
 

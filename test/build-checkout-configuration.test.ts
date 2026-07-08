@@ -36,6 +36,13 @@ describe("buildCheckoutConfiguration", () => {
     expect(result.configuration.locale).toBe("is-IS");
   });
 
+  it("defaults the theme to light and passes through an explicit theme", () => {
+    expect(buildCheckoutConfiguration({ sessionId: "s1", environment: "test" }).configuration.theme).toBe("light");
+    expect(
+      buildCheckoutConfiguration({ sessionId: "s1", environment: "test", theme: "dark" }).configuration.theme
+    ).toBe("dark");
+  });
+
   it("detects a valid advanced configuration and normalizes its payment methods", () => {
     const config = advancedConfig({ countryCode: "DE", amount: { value: 2500, currency: "EUR" }, locale: "en" });
 

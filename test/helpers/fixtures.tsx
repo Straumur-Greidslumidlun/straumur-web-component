@@ -60,6 +60,7 @@ export function baseConfig(overrides: Partial<StraumurCheckoutConfiguration> = {
     countryCode: "IS",
     paymentFlow: createSessionPaymentFlow("test", "s1"),
     locale: "en-US",
+    theme: "light",
     ...overrides,
   };
 }

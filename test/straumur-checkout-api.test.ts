@@ -89,6 +89,39 @@ describe("StraumurCheckout locale mapping", () => {
   });
 });
 
+describe("StraumurCheckout theme", () => {
+  it("defaults to the light theme on the widget wrapper", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test" });
+    await checkout.mount("#root");
+
+    expect(root().querySelector('.straumur__root-component[data-theme="light"]')).toBeTruthy();
+  });
+
+  it("applies the dark theme when requested", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "dark" });
+    await checkout.mount("#root");
+
+    expect(root().querySelector('.straumur__root-component[data-theme="dark"]')).toBeTruthy();
+  });
+
+  it("applies the theme to the failure screen too", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "dark" });
+    await checkout.mount("#root");
+    checkout.handleError({ key: "error.unknownError" });
+
+    expect(root().querySelector('.straumur__root-component[data-theme="dark"]')).toBeTruthy();
+  });
+
+  it("switches theme via updateConfig", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "light" });
+    await checkout.mount("#root");
+    expect(root().querySelector('[data-theme="light"]')).toBeTruthy();
+
+    checkout.updateConfig({ theme: "dark" });
+    expect(root().querySelector('[data-theme="dark"]')).toBeTruthy();
+  });
+});
+
 describe("StraumurCheckout status screen accessibility", () => {
   it("renders the failure screen with role=alert so screen readers announce it", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });

@@ -4,7 +4,7 @@
 }
 
 .straumur__stored-card-component__remove-stored-card-button--text {
-  color: #d03e00;
+  color: var(--straumur__color-danger-text);
   text-decoration: none;
   background: none;
   border: none;
@@ -14,12 +14,12 @@
 
 .straumur__stored-card-component__remove-stored-card-button--text:disabled {
   cursor: not-allowed;
-  color: #72889d;
+  color: var(--straumur__color-secondary);
 }
 
 /* Confirm-remove section */
 .straumur__stored-card-component__confirm-remove-stored-card {
-  background-color: #fff7db;
+  background-color: var(--straumur__color-warning-bg);
   border-radius: var(--straumur__border-radius-s);
 
   max-height: 0;
@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   gap: var(--straumur__space-lg);
-  color: #262b31;
+  color: var(--straumur__color-text);
   padding-bottom: var(--straumur__space-xxlg);
 }
 
@@ -48,7 +48,7 @@
 }
 
 .straumur__stored-card-component__confirm-remove-stored-card--actions--button {
-  color: #775d00;
+  color: var(--straumur__color-warning-text);
   background: none;
   border: none;
   cursor: pointer;
@@ -115,7 +115,7 @@
 
 .straumur__stored-card-component__form--wrapper--input {
   background: var(--straumur__color-secondary-gamma);
-  color: #00112c;
+  color: var(--straumur__color-text);
   display: flex;
   align-items: center;
   border: 1px solid var(--straumur__color-transparent);
@@ -173,11 +173,11 @@
 
 .straumur__stored-card-component__submit-button:hover {
   background: var(--straumur__color-primary);
-  border: 1px solid #dbdee2;
+  border: 1px solid var(--straumur__color-border);
 }
 
 .straumur__stored-card-component__submit-button:disabled {
-  background: #72889d;
-  border: 1px solid #dbdee2;
+  background: var(--straumur__color-secondary);
+  border: 1px solid var(--straumur__color-border);
   cursor: not-allowed;
 }
