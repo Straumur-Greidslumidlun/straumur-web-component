@@ -51,20 +51,28 @@ export type StraumurWebAdvancedConfiguration = StraumurWebBaseConfiguration & {
 // INTERNAL — union the constructor actually accepts at runtime (public signature stays session-only)
 export type StraumurWebInternalConfiguration = StraumurWebConfiguration | StraumurWebAdvancedConfiguration;
 
-export type ResultCode =
-  | "AuthenticationFinished"
-  | "AuthenticationNotRequired"
-  | "Authorised"
-  | "Cancelled"
-  | "ChallengeShopper"
-  | "Error"
-  | "IdentifyShopper"
-  | "PartiallyAuthorised"
-  | "Pending"
-  | "PresentToShopper"
-  | "Received"
-  | "RedirectShopper"
-  | "Refused";
+const RESULT_CODES = [
+  "AuthenticationFinished",
+  "AuthenticationNotRequired",
+  "Authorised",
+  "Cancelled",
+  "ChallengeShopper",
+  "Error",
+  "IdentifyShopper",
+  "PartiallyAuthorised",
+  "Pending",
+  "PresentToShopper",
+  "Received",
+  "RedirectShopper",
+  "Refused",
+] as const;
+
+export type ResultCode = (typeof RESULT_CODES)[number];
+
+/** Narrows a resultCode string from the Adyen boundary to our ResultCode union; unknown values map to "Error". */
+export function toResultCode(value: string | undefined): ResultCode {
+  return value && (RESULT_CODES as readonly string[]).includes(value) ? (value as ResultCode) : "Error";
+}
 
 export type PaymentCompletedData = {
   resultCode: ResultCode;

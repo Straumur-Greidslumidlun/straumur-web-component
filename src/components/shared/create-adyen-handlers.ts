@@ -8,7 +8,7 @@ import {
   UIElement,
   UIElementProps,
 } from "@adyen/adyen-web";
-import { AdvancedSubmitState, ResultCode, ResultMessage, StraumurCheckoutConfiguration } from "../../models/models";
+import { AdvancedSubmitState, ResultMessage, StraumurCheckoutConfiguration, toResultCode } from "../../models/models";
 import { toResultMessage } from "../../flows/payment-flow";
 
 export interface AdyenPaymentHandlersOptions {
@@ -52,9 +52,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     }
 
     try {
-      const data = enrichSubmitData
-        ? enrichSubmitData(state.data)
-        : (state.data as unknown as AdvancedSubmitState["data"]);
+      const data = enrichSubmitData ? enrichSubmitData(state.data) : (state.data as AdvancedSubmitState["data"]);
 
       const { resultCode, action, errorMessage } = await paymentFlow.submitPayment(data);
 
@@ -99,7 +97,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       handleError(failureResultMessage());
     }
 
-    configuration.onPaymentCompleted?.({ resultCode: data.resultCode as ResultCode });
+    configuration.onPaymentCompleted?.({ resultCode: toResultCode(data.resultCode) });
   }
 
   function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
@@ -110,7 +108,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
         handleError(failureResultMessage());
       }
 
-      configuration.onPaymentFailed?.({ resultCode: data.resultCode as ResultCode });
+      configuration.onPaymentFailed?.({ resultCode: toResultCode(data.resultCode) });
     } else {
       configuration.onPaymentFailed?.();
     }

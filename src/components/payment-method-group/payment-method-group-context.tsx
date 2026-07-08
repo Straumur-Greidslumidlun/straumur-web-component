@@ -4,7 +4,15 @@ import { useState, useContext, useCallback, useRef, useLayoutEffect } from "prea
 import { PaymentMethod } from "../../models/constants";
 import { ResultMessage } from "../../models/models";
 
+/** A submit trigger registered by the active card-type component. May be async — see SubmitApi. */
+export type SubmitHandler = () => void | Promise<void>;
+
 export type SubmitApi = {
+  /**
+   * Invokes the active card form's submit handler. The boolean only says a handler existed
+   * and was invoked — the submission itself runs asynchronously and reports its outcome
+   * through onPaymentCompleted/onPaymentFailed.
+   */
   triggerSubmit: () => boolean;
 };
 
@@ -28,8 +36,8 @@ type PaymentMethodContextType = {
   hasGooglePay: boolean;
   hasApplePay: boolean;
   hasStoredPaymentMethods: boolean;
-  registerSubmitHandler: (handler: () => void) => void;
-  unregisterSubmitHandler: (handler: () => void) => void;
+  registerSubmitHandler: (handler: SubmitHandler) => void;
+  unregisterSubmitHandler: (handler: SubmitHandler) => void;
 };
 
 const PaymentMethodContext = createContext<PaymentMethodContextType | undefined>(undefined);
@@ -61,13 +69,13 @@ export const PaymentMethodGroupContext = ({
   onSubmitApiReady?: (api: SubmitApi) => void;
 }): h.JSX.Element => {
   const [activePaymentMethod, setActivePaymentMethod] = useState(initialValue);
-  const activeSubmitHandlerRef = useRef<(() => void) | null>(null);
+  const activeSubmitHandlerRef = useRef<SubmitHandler | null>(null);
 
-  const registerSubmitHandler = useCallback((handler: () => void): void => {
+  const registerSubmitHandler = useCallback((handler: SubmitHandler): void => {
     activeSubmitHandlerRef.current = handler;
   }, []);
 
-  const unregisterSubmitHandler = useCallback((handler: () => void): void => {
+  const unregisterSubmitHandler = useCallback((handler: SubmitHandler): void => {
     // Identity check guards against effect-cleanup ordering races when switching
     // between card-type payment methods: an outgoing form's cleanup must not
     // clobber a handler an incoming form already registered.

@@ -1,5 +1,5 @@
 import { getPaymentMethods } from "../adapter/straumur-adapter";
-import { TranslationKey } from "../localizations/translations";
+import { isTranslationKey, TranslationKey } from "../localizations/translations";
 import { StraumurCheckoutPaymentMethods, StraumurCheckoutPaymentMethodsResponse } from "./models";
 
 export async function setupPaymentMethods(
@@ -15,7 +15,12 @@ export async function setupPaymentMethods(
       const contentType = fetchResponse.headers.get("content-type");
       let errorMessage: TranslationKey = "error.failedToInitializePaymentMethods";
       if (contentType && contentType.includes("application/json")) {
-        errorMessage = (await fetchResponse.json()).errorMessage;
+        // The server's errorMessage is untrusted input: only adopt it when it is a known
+        // translation key, otherwise the raw string would be shown to the buyer verbatim.
+        const serverErrorMessage: unknown = (await fetchResponse.json()).errorMessage;
+        if (isTranslationKey(serverErrorMessage)) {
+          errorMessage = serverErrorMessage;
+        }
       }
 
       return {

@@ -12,7 +12,8 @@ export interface ICreatePaymentBody {
   storePaymentMethod?: boolean;
 
   paymentMethod: {
-    [key: string]: any;
+    // Adyen's encrypted card state carries fields we never inspect; keep them opaque.
+    [key: string]: unknown;
     checkoutAttemptId?: string;
   };
   browserInfo?: BrowserInfo;
@@ -34,7 +35,7 @@ export interface ICreateDetailsBody {
   details: {
     redirectResult?: string;
     threeDSResult?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

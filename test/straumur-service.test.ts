@@ -42,6 +42,20 @@ describe("setupPaymentMethods", () => {
     expect(result).toEqual({ resultCode: "Error", error: "error.paymentFailed" });
   });
 
+  it("falls back to the generic error key when the server errorMessage is not a known translation key", async () => {
+    getPaymentMethodsMock.mockResolvedValue(
+      fakeResponse({
+        ok: false,
+        contentType: "application/json",
+        json: { errorMessage: "Internal server error: stack trace..." },
+      })
+    );
+
+    const result = await setupPaymentMethods("test", "session-1");
+
+    expect(result).toEqual({ resultCode: "Error", error: "error.failedToInitializePaymentMethods" });
+  });
+
   it("uses the generic error key when a failed response is not JSON", async () => {
     getPaymentMethodsMock.mockResolvedValue(fakeResponse({ ok: false, contentType: "text/html" }));
 

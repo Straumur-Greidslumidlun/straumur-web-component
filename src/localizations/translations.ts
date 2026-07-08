@@ -79,3 +79,8 @@ export const translations = {
 
 export type Language = keyof typeof translations;
 export type TranslationKey = keyof (typeof translations)["en-US"] | keyof (typeof translations)["is-IS"];
+
+/** Narrows an untrusted string (e.g. a server error code) to a known translation key. */
+export function isTranslationKey(value: unknown): value is TranslationKey {
+  return typeof value === "string" && (value in translations["en-US"] || value in translations["is-IS"]);
+}
