@@ -8,6 +8,7 @@ export const translations = {
     "cards.securityCode3DigitsInfo": "3-digit on the back of the card",
     "cards.securityCode4DigitsInfo": "4-digit on the back of the card",
     "cards.storePaymentMethod": "Store payment information",
+    "cards.saveCardDetails": "Save card details",
     "googlePay.title": "Google Pay",
     "applePay.title": "Apple Pay",
     "stored-cards.expiryDate": "Expiry date",
@@ -19,6 +20,7 @@ export const translations = {
     "stored-cards.removeStoredCardQuestion": "Remove stored payment method?",
     "stored-cards.removeStoredCardQuestionYesRemove": "Yes, remove",
     "stored-cards.removeStoredCardQuestionCancel": "Cancel",
+    "stored-cards.saveCardDetails": "Save card details",
 
     "success.paymentAuthorized": "Payment authorized",
 
@@ -44,6 +46,7 @@ export const translations = {
     "cards.securityCode3DigitsInfo": "3 tölustafir aftan á kortinu",
     "cards.securityCode4DigitsInfo": "4 tölustafir aftan á kortinu",
     "cards.storePaymentMethod": "Vista greiðsluupplýsingar",
+    "cards.saveCardDetails": "Vista kortaupplýsingar",
     "googlePay.title": "Google Pay",
     "applePay.title": "Apple Pay",
     "stored-cards.expiryDate": "Gildisdagur",
@@ -55,6 +58,7 @@ export const translations = {
     "stored-cards.removeStoredCardQuestion": "Fjarlægja geymdan greiðslumáta?",
     "stored-cards.removeStoredCardQuestionYesRemove": "Já, fjarlægja",
     "stored-cards.removeStoredCardQuestionCancel": "Hætta við",
+    "stored-cards.saveCardDetails": "Vista kortaupplýsingar",
 
     "success.paymentAuthorized": "Greiðsla samþykkt",
 

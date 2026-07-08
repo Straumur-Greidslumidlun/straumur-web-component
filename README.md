@@ -125,6 +125,12 @@ const checkout = new StraumurCheckout(config);
 `ChallengeShopper`, `IdentifyShopper`, `Error`, or `Cancelled`. Note that a refused payment is a
 normal completion of the flow — branch on `resultCode`, not on whether a callback fired.
 
+## Breaking changes in v2.0.0
+
+- Removed the config field `submitDetails?: (details: any) => void` (it was never invoked). Use the `submitDetails(redirectResult)` method on the class instead.
+- `updateConfig()` accepts only the documented configuration fields.
+- `submitDetails(redirectResult)` now invokes `onPaymentCompleted` / `onPaymentFailed`.
+
 ## License
 
 MIT

@@ -6,16 +6,10 @@ import { usePaymentMethodGroup } from "../../components/payment-method-group/pay
 import { Tooltip } from "../../components/tooltip/tooltip";
 import InfoIcon from "../../assets/icons/info";
 import {
-  AdditionalDetailsActions,
-  AdditionalDetailsData,
   AdyenCheckout,
   AdyenCheckoutError,
   CustomCard,
   ICore,
-  PaymentCompletedData,
-  PaymentFailedData,
-  SubmitActions,
-  SubmitData,
   UIElement,
   UIElementProps,
 } from "@adyen/adyen-web";
@@ -23,9 +17,9 @@ import { RenderBrandIcons } from "../../utils/renderBrandIcons";
 import LoaderIcon from "../../assets/icons/loader";
 import { StoredCardComponentProps, StoredCardFormError, StoredCardFormErrorField } from "./models";
 import WarningIcon from "../../assets/icons/warning";
-import { ICreateDetailsBody, ICreatePaymentBody, IPostDisableTokenBody } from "../../adapter/models";
-import { createDetailsRequest, createPaymentRequest, postDisableTokenRequest } from "../../adapter/straumur-adapter";
 import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
+import { createAdyenPaymentHandlers } from "../../components/shared/create-adyen-handlers";
+import { toResultMessage } from "../../flows/payment-flow";
 
 function StoredCardComponent({
   configuration,
@@ -85,12 +79,27 @@ function StoredCardComponent({
     return null;
   }
 
+  const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
+    createAdyenPaymentHandlers({
+      configuration,
+      handleSuccess,
+      handleError,
+      setThreeDSecureActive,
+      enrichSubmitData: (data) => ({
+        ...data,
+        paymentMethod: {
+          ...data.paymentMethod,
+          storedPaymentMethodId: storedPaymentMethod.id,
+        },
+      }),
+    });
+
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
       locale: configuration.locale,
-      countryCode: "IS",
+      countryCode: configuration.countryCode,
       amount: {
         value: paymentMethods.minorUnitsAmount,
         currency: paymentMethods.currency,
@@ -171,137 +180,37 @@ function StoredCardComponent({
   }
 
   async function handleConfirmRemoveStoredCard() {
-    const data: IPostDisableTokenBody = {
-      storedPaymentMethodId: storedPaymentMethod.id,
-      sessionId: configuration.sessionId,
-    };
+    const { disableToken } = configuration.paymentFlow;
 
-    const fetchResponse = await postDisableTokenRequest(configuration.environment, data);
+    if (!disableToken) return;
 
-    if (!fetchResponse.ok) {
-      handleError("error.failedToSubmitRemoveStoredPaymentCard");
-      return;
+    try {
+      await disableToken(storedPaymentMethod.id);
+      onStoredCardRemoved(storedPaymentMethod.id);
+    } catch (error) {
+      handleError(toResultMessage(error, "error.failedToSubmitRemoveStoredPaymentCard"));
     }
-
-    const disableTokenResponse = await fetchResponse.json();
-
-    if (!disableTokenResponse.success) {
-      handleError("error.failedToRemoveStoredPaymentCard");
-      return;
-    }
-
-    onStoredCardRemoved(storedPaymentMethod.id);
   }
 
   function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined) {
-    handleError("error.unknownError");
+    handleError({ key: "error.unknownError" });
   }
 
-  async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
-    const data: ICreatePaymentBody = {
-      ...state.data,
-      sessionId: configuration.sessionId,
-      paymentMethod: {
-        ...state.data.paymentMethod,
-        storedPaymentMethodId: storedPaymentMethod.id,
-      },
-    };
-
-    const fetchResponse = await createPaymentRequest(configuration.environment, data);
-
-    // We will always get 200 OK unless there is an error in our server code.
-    // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
-    if (!fetchResponse.ok) {
-      actions.reject();
-      handleError("error.failedToSubmitPayment");
-      return;
-    }
-
-    const response = await fetchResponse.json();
-
-    // ResultCode should never be empty.
-    if (!response.resultCode) {
-      actions.reject();
-      handleError("error.paymentFailed");
-      return;
-    }
-
-    const { resultCode, action } = response;
-
-    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
-      setThreeDSecureActive(true);
-    }
-
-    // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
-    // You must call this, even if the result of the payment is unsuccessful.
-    actions.resolve({ resultCode, action });
-  }
-
-  async function handleOnSubmitAdditionalData(
-    state: AdditionalDetailsData,
-    _: UIElement<UIElementProps>,
-    actions: AdditionalDetailsActions
-  ) {
-    const data: ICreateDetailsBody = {
-      ...state.data,
-      sessionId: configuration.sessionId,
-    };
-
-    const fetchResponse = await createDetailsRequest(configuration.environment, data);
-
-    // We will always get 200 OK unless there is an error in our server code.
-    // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
-    if (!fetchResponse.ok) {
-      actions.reject();
-      // const errorResponse = await fetchResponse.json();
-      handleError("error.failedToSubmitPaymentDetails");
-      return;
-    }
-
-    const response = await fetchResponse.json();
-
-    // ResultCode should never be empty.
-    if (!response.resultCode) {
-      actions.reject();
-      handleError("error.paymentDetailsFailed");
-      return;
-    }
-
-    const { resultCode, action } = response;
-
-    actions.resolve({ resultCode, action });
-  }
-
-  function handlePaymentCompleted(data: PaymentCompletedData, _?: UIElement<UIElementProps> | undefined): void {
-    if (data.resultCode === "Authorised") {
-      handleSuccess("success.paymentAuthorized");
-    } else {
-      handleError("error.paymentUnsuccessful");
-    }
-    configuration.onPaymentCompleted?.({ resultCode: data.resultCode });
-  }
-
-  function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
-    if (data) {
-      if (data.resultCode === "Authorised") {
-        handleSuccess("success.paymentAuthorized");
-      } else {
-        handleError("error.paymentUnsuccessful");
-      }
-
-      configuration.onPaymentFailed?.({ resultCode: data.resultCode });
-    } else {
-      configuration.onPaymentFailed?.();
-    }
-  }
-
-  function handleSubmitClick() {
+  async function handleSubmitClick() {
     if (!customCardRef.current) return;
+
+    const { beforeSubmit } = configuration.paymentFlow;
+
+    if (beforeSubmit && !(await beforeSubmit())) {
+      return;
+    }
 
     customCardRef.current!.submit();
   }
 
-  const headerRight = isActive && isStoredCardInitialized[storedPaymentMethod.id] ? (
+  const canRemoveStoredCard = configuration.paymentFlow.disableToken !== undefined;
+
+  const headerRight = canRemoveStoredCard && isActive && isStoredCardInitialized[storedPaymentMethod.id] ? (
     <div className="straumur__stored-card-component__remove-stored-card-button">
       <button
         onClick={handleAskToConfirmRemoveCard}
@@ -436,7 +345,9 @@ function StoredCardComponent({
               disabled={payButtonDisabled}
               onClick={handleSubmitClick}
             >
-              {paymentMethods.formattedAmount}
+              {paymentMethods.minorUnitsAmount === 0
+                ? i18n.t("stored-cards.saveCardDetails")
+                : paymentMethods.formattedAmount}
             </button>
           )}
         </div>

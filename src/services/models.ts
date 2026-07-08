@@ -54,7 +54,7 @@ export type StraumurCheckoutPaymentMethods = {
   paymentMethods: PaymentMethodsResponse;
 };
 
-interface PaymentMethodsResponse {
+export interface PaymentMethodsResponse {
   /**
    * Detailed list of payment methods required to generate payment forms.
    */

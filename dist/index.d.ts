@@ -8,6 +8,7 @@ declare const translations: {
         "cards.securityCode3DigitsInfo": string;
         "cards.securityCode4DigitsInfo": string;
         "cards.storePaymentMethod": string;
+        "cards.saveCardDetails": string;
         "googlePay.title": string;
         "applePay.title": string;
         "stored-cards.expiryDate": string;
@@ -19,6 +20,7 @@ declare const translations: {
         "stored-cards.removeStoredCardQuestion": string;
         "stored-cards.removeStoredCardQuestionYesRemove": string;
         "stored-cards.removeStoredCardQuestionCancel": string;
+        "stored-cards.saveCardDetails": string;
         "success.paymentAuthorized": string;
         "error.unknownError": string;
         "error.failedToInitializeStraumurWebComponent": string;
@@ -42,6 +44,7 @@ declare const translations: {
         "cards.securityCode3DigitsInfo": string;
         "cards.securityCode4DigitsInfo": string;
         "cards.storePaymentMethod": string;
+        "cards.saveCardDetails": string;
         "googlePay.title": string;
         "applePay.title": string;
         "stored-cards.expiryDate": string;
@@ -53,6 +56,7 @@ declare const translations: {
         "stored-cards.removeStoredCardQuestion": string;
         "stored-cards.removeStoredCardQuestionYesRemove": string;
         "stored-cards.removeStoredCardQuestionCancel": string;
+        "stored-cards.saveCardDetails": string;
         "success.paymentAuthorized": string;
         "error.unknownError": string;
         "error.failedToInitializeStraumurWebComponent": string;
@@ -73,12 +77,42 @@ type TranslationKey = keyof (typeof translations)["en-US"] | keyof (typeof trans
 
 type PaymentMethod = "card" | "storedcard" | "googlepay" | "applepay";
 
-type StraumurWebConfiguration = {
+interface ICreatePaymentBody {
     sessionId: string;
+    riskData?: {
+        clientData: string;
+    };
+    clientStateDataIndicator: boolean;
+    storePaymentMethod?: boolean;
+    paymentMethod: {
+        [key: string]: any;
+        checkoutAttemptId?: string;
+    };
+    browserInfo?: BrowserInfo;
+}
+interface BrowserInfo {
+    acceptHeader: string;
+    colorDepth: number;
+    language: string;
+    javaEnabled: boolean;
+    screenHeight: number;
+    screenWidth: number;
+    userAgent: string;
+    timeZoneOffset: number;
+}
+interface ICreateDetailsBody {
+    sessionId: string;
+    details: {
+        redirectResult?: string;
+        threeDSResult?: string;
+        [key: string]: any;
+    };
+}
+
+type StraumurWebBaseConfiguration = {
     environment: "test" | "live";
     onPaymentCompleted?: (data: PaymentCompletedData) => void;
     onPaymentFailed?: (data?: PaymentFailedData) => void;
-    submitDetails?: (details: any) => void;
     placeholders?: Placeholders;
     locale?: "is" | "en";
     localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
@@ -87,6 +121,9 @@ type StraumurWebConfiguration = {
     onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
     allowedPaymentMethods?: PaymentMethod[];
 };
+type StraumurWebConfiguration = StraumurWebBaseConfiguration & {
+    sessionId: string;
+};
 type ResultCode = "AuthenticationFinished" | "AuthenticationNotRequired" | "Authorised" | "Cancelled" | "ChallengeShopper" | "Error" | "IdentifyShopper" | "PartiallyAuthorised" | "Pending" | "PresentToShopper" | "Received" | "RedirectShopper" | "Refused";
 type PaymentCompletedData = {
     resultCode: ResultCode;
@@ -94,10 +131,39 @@ type PaymentCompletedData = {
 type PaymentFailedData = {
     resultCode: ResultCode;
 };
+type AdvancedSubmitState = {
+    data: Omit<ICreatePaymentBody, "sessionId">;
+};
+type AdvancedAdditionalDetailsState = {
+    data: Omit<ICreateDetailsBody, "sessionId">;
+};
+type PaymentFlowResult = {
+    resultCode: ResultCode;
+    action?: unknown;
+    /**
+     * Optional buyer-friendly failure message shown on the built-in failure screen
+     * instead of the generic localized one (advanced mode only).
+     */
+    errorMessage?: string;
+};
+interface PaymentFlow {
+    submitPayment(data: AdvancedSubmitState["data"]): Promise<PaymentFlowResult>;
+    submitAdditionalDetails(data: AdvancedAdditionalDetailsState["data"]): Promise<PaymentFlowResult>;
+    disableToken?: (storedPaymentMethodId: string) => Promise<void>;
+    beforeSubmit?: () => boolean | Promise<boolean>;
+}
+type ResultMessage = {
+    key: TranslationKey;
+} | {
+    text: string;
+};
 type UniqueInstantPayments = [Extract<PaymentMethod, "googlepay">] | [Extract<PaymentMethod, "applepay">] | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">] | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
 type StraumurCheckoutConfiguration = {
-    sessionId: string;
+    mode: "session" | "advanced";
+    sessionId?: string;
     environment: "test" | "live";
+    countryCode: string;
+    paymentFlow: PaymentFlow;
     onPaymentCompleted?: (data: PaymentCompletedData) => void;
     onPaymentFailed?: (data?: PaymentFailedData) => void;
     placeholders?: Placeholders;
@@ -113,21 +179,23 @@ type Placeholders = Partial<Record<PlaceholderKeys, string>>;
 
 declare class StraumurCheckout {
     private configuration;
+    private advancedConfiguration;
     private paymentMethods;
     private mountElement;
     private i18n;
     private submitApi;
-    constructor(config: StraumurWebConfiguration);
+    private initializationFailed;
+    constructor(publicConfig: StraumurWebConfiguration);
     mount(selector: HTMLElement | string): Promise<void>;
     private renderComponent;
-    handleSuccess(message: TranslationKey): void;
-    handleError(message: TranslationKey): void;
-    submitDetails(redirectResult: string): Promise<void>;
+    handleSuccess(message: ResultMessage): void;
+    handleError(message: ResultMessage): void;
+    submitDetails(redirectResult: string, selector?: HTMLElement | string): Promise<void>;
     private handleOnSubmitAdditionalData;
-    updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void;
+    updateConfig(newConfig: Partial<Omit<StraumurCheckoutConfiguration, "mode" | "paymentFlow">>): void;
     setLanguage(locale: Language): void;
     destroy(): void;
     submitCard(): boolean;
 }
 
-export { StraumurCheckout };
+export { type PaymentCompletedData, type PaymentFailedData, type Placeholders, type ResultCode, StraumurCheckout, type StraumurWebConfiguration };

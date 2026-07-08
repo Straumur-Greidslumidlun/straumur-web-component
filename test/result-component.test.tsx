@@ -14,11 +14,11 @@ import { makeGroupProps } from "./helpers/fixtures";
 
 function ErrorTrigger() {
   const { handleError } = usePaymentMethodGroup();
-  return <button data-testid="err" onClick={() => handleError("error.unknownError")} />;
+  return <button data-testid="err" onClick={() => handleError({ key: "error.unknownError" })} />;
 }
 function SuccessTrigger() {
   const { handleSuccess } = usePaymentMethodGroup();
-  return <button data-testid="ok" onClick={() => handleSuccess("success.paymentAuthorized")} />;
+  return <button data-testid="ok" onClick={() => handleSuccess({ key: "success.paymentAuthorized" })} />;
 }
 
 function wrap(ui: h.JSX.Element) {

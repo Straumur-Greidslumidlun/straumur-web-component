@@ -1,4 +1,5 @@
-import { h, Fragment } from "preact";
+﻿import { h, Fragment } from "preact";
+import { ResultMessage } from "../src/models/models";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act, fireEvent } from "@testing-library/preact";
 
@@ -50,9 +51,12 @@ const paymentMethods = makePaymentMethods({
   paymentMethods: { paymentMethods: [], storedPaymentMethods: [storedCard()] },
 });
 
+const messageText = (message: ResultMessage | null) =>
+  message === null ? String(message) : "key" in message ? message.key : message.text;
+
 function Probe() {
   const { error } = usePaymentMethodGroup();
-  return <span data-testid="error">{String(error)}</span>;
+  return <span data-testid="error">{messageText(error)}</span>;
 }
 
 async function setup(config = baseConfig()) {

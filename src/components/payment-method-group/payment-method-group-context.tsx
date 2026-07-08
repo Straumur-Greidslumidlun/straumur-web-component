@@ -8,7 +8,7 @@ import {
   useLayoutEffect,
 } from "preact/hooks";
 import { PaymentMethod } from "../../models/constants";
-import { TranslationKey } from "../../localizations/translations";
+import { ResultMessage } from "../../models/models";
 
 export type SubmitApi = {
   triggerSubmit: () => boolean;
@@ -29,10 +29,10 @@ type PaymentMethodContextType = {
     storedPaymentMethod: string,
     isInitialized: boolean,
   ) => void;
-  handleSuccess: (success: TranslationKey) => void;
-  success: TranslationKey | null;
-  handleError: (error: TranslationKey) => void;
-  error: TranslationKey | null;
+  handleSuccess: (success: ResultMessage) => void;
+  success: ResultMessage | null;
+  handleError: (error: ResultMessage) => void;
+  error: ResultMessage | null;
   threeDSecureActive: boolean;
   setThreeDSecureActive: (value: boolean) => void;
   isSolePaymentMethod: boolean;
@@ -113,8 +113,8 @@ export const PaymentMethodGroupContext = ({
     Record<string, boolean>
   >({});
 
-  const [success, setSuccess] = useState<TranslationKey | null>(null);
-  const [error, setError] = useState<TranslationKey | null>(null);
+  const [success, setSuccess] = useState<ResultMessage | null>(null);
+  const [error, setError] = useState<ResultMessage | null>(null);
 
   const updatePaymentMethodInitialization = (
     paymentMethod: PaymentMethod,
@@ -136,11 +136,11 @@ export const PaymentMethodGroupContext = ({
     }));
   };
 
-  const handleError = (error: TranslationKey) => {
+  const handleError = (error: ResultMessage) => {
     setError(error);
   };
 
-  const handleSuccess = (success: TranslationKey) => {
+  const handleSuccess = (success: ResultMessage) => {
     setSuccess(success);
   };
 

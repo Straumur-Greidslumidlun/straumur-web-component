@@ -1,12 +1,19 @@
 import { h, render } from "preact";
 import "./styles/main.css";
-import { StraumurCheckoutConfiguration, StraumurWebConfiguration } from "./models/models";
+import {
+  ResultMessage,
+  StraumurCheckoutConfiguration,
+  StraumurWebAdvancedConfiguration,
+  StraumurWebConfiguration,
+  StraumurWebInternalConfiguration,
+} from "./models/models";
 import { setupPaymentMethods } from "./services/straumur-service";
-import { Language, TranslationKey } from "./localizations/translations";
+import { Language } from "./localizations/translations";
 import StraumurCheckoutContainer from "./features/straumur-checkout-container";
 import { SuccessResponse } from "./services/models";
 import FailureIcon from "./assets/icons/failure";
 import LoaderIcon from "./assets/icons/loader";
+import SuccessIcon from "./assets/icons/success";
 import {
   AdyenCheckout,
   AdditionalDetailsData,
@@ -14,40 +21,88 @@ import {
   UIElementProps,
   AdditionalDetailsActions,
 } from "@adyen/adyen-web";
-import { ICreateDetailsBody } from "./adapter/models";
-import { createDetailsRequest } from "./adapter/straumur-adapter";
-import SuccessIcon from "./assets/icons/success";
 import { I18nProvider } from "./localizations/i18n-context";
 import { I18nService } from "./localizations/i18n-service";
 import { SubmitApi } from "./components/payment-method-group/payment-method-group-context";
+import { createAdvancedPaymentFlow, createSessionPaymentFlow, toResultMessage } from "./flows/payment-flow";
+import { normalizeAdvancedConfiguration } from "./services/advanced-normalizer";
+
+function isSessionConfiguration(config: StraumurWebInternalConfiguration): config is StraumurWebConfiguration {
+  return typeof config.sessionId === "string" && config.sessionId.length > 0;
+}
+
+// the union only protects TypeScript consumers — IIFE consumers get no compile-time checking
+function isValidAdvancedConfiguration(config: StraumurWebAdvancedConfiguration): boolean {
+  return (
+    typeof config.clientKey === "string" &&
+    config.clientKey.length > 0 &&
+    typeof config.countryCode === "string" &&
+    config.countryCode.length > 0 &&
+    typeof config.paymentMethods === "object" &&
+    config.paymentMethods !== null &&
+    typeof config.amount === "object" &&
+    config.amount !== null &&
+    typeof config.amount.value === "number" &&
+    typeof config.amount.currency === "string" &&
+    typeof config.onSubmit === "function" &&
+    typeof config.onAdditionalDetails === "function"
+  );
+}
+
+function determineLocale(locale: "is" | "en" | undefined): Language {
+  switch (locale) {
+    case "is":
+      return "is-IS";
+    case "en":
+      return "en-US";
+    default:
+      return "is-IS";
+  }
+}
 
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
+  private advancedConfiguration: StraumurWebAdvancedConfiguration | null = null;
   private paymentMethods: SuccessResponse | null = null;
   private mountElement: HTMLElement | null = null;
   private i18n: I18nService;
   private submitApi: SubmitApi | null = null;
+  private initializationFailed = false;
 
-  constructor(config: StraumurWebConfiguration) {
+  // Public signature accepts the session configuration only. The advanced-mode configuration
+  // (internal, used by Straumur Hosted Checkout via the IIFE bundle) is detected at runtime.
+  constructor(publicConfig: StraumurWebConfiguration) {
+    const config = publicConfig as StraumurWebInternalConfiguration;
+    const locale = determineLocale(config.locale);
+    const isSession = isSessionConfiguration(config);
+
     this.configuration = {
-      ...config,
-      locale: determineLocale(config.locale),
+      mode: isSession ? "session" : "advanced",
+      sessionId: config.sessionId,
+      environment: config.environment,
+      countryCode: isSession ? "IS" : config.countryCode,
+      paymentFlow: isSession
+        ? createSessionPaymentFlow(config.environment, config.sessionId)
+        : createAdvancedPaymentFlow(config),
+      onPaymentCompleted: config.onPaymentCompleted,
+      onPaymentFailed: config.onPaymentFailed,
+      placeholders: config.placeholders,
+      locale,
       customLocalizations: config.localizations,
+      instantPayments: config.instantPayments,
     };
+
+    if (!isSession) {
+      if (isValidAdvancedConfiguration(config)) {
+        this.advancedConfiguration = config;
+        this.paymentMethods = normalizeAdvancedConfiguration(config, locale);
+      } else {
+        this.initializationFailed = true;
+      }
+    }
 
     // Create i18n instance
     this.i18n = new I18nService(this.configuration.locale, this.configuration.customLocalizations);
-
-    function determineLocale(locale: "is" | "en" | undefined): Language {
-      switch (locale) {
-        case "is":
-          return "is-IS";
-        case "en":
-          return "en-US";
-        default:
-          return "is-IS";
-      }
-    }
   }
 
   async mount(selector: HTMLElement | string): Promise<void> {
@@ -55,7 +110,16 @@ class StraumurCheckout {
       this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
 
       if (!this.mountElement) {
-        this.handleError("error.failedToInitializeStraumurWebComponent");
+        return;
+      }
+
+      if (this.initializationFailed) {
+        this.handleError({ key: "error.failedToInitializeStraumurWebComponent" });
+        return;
+      }
+
+      if (this.configuration.mode === "advanced") {
+        this.renderComponent();
         return;
       }
 
@@ -68,10 +132,10 @@ class StraumurCheckout {
         this.mountElement
       );
 
-      const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
+      const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
 
       if (response.resultCode === "Error") {
-        this.handleError(response.error);
+        this.handleError({ key: response.error });
         return;
       }
 
@@ -108,35 +172,67 @@ class StraumurCheckout {
     );
   }
 
-  handleSuccess(message: TranslationKey) {
+  handleSuccess(message: ResultMessage) {
+    if (!this.mountElement) return;
+
     render(
       <RootComponent>
         <div className="straumur__component">
           <SuccessIcon />
-          <p>{this.i18n.t(message)}</p>
+          <p>{"key" in message ? this.i18n.t(message.key) : message.text}</p>
         </div>
       </RootComponent>,
-      this.mountElement!
+      this.mountElement
     );
   }
 
-  handleError(message: TranslationKey) {
+  handleError(message: ResultMessage) {
+    if (!this.mountElement) return;
+
     render(
       <RootComponent>
         <div className="straumur__component">
           <FailureIcon />
-          <p>{this.i18n.t(message)}</p>
+          <p>{"key" in message ? this.i18n.t(message.key) : message.text}</p>
         </div>
       </RootComponent>,
-      this.mountElement!
+      this.mountElement
     );
   }
 
-  async submitDetails(redirectResult: string) {
-    const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
+  // selector lets a page that never called mount() (e.g. a 3DS redirect return) show the result screens
+  async submitDetails(redirectResult: string, selector?: HTMLElement | string) {
+    if (selector) {
+      this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
+    }
+
+    if (this.configuration.mode === "advanced") {
+      if (this.initializationFailed || !this.advancedConfiguration) {
+        this.handleError({ key: "error.failedToInitializeStraumurWebComponent" });
+        return;
+      }
+
+      const checkout = await AdyenCheckout({
+        environment: this.configuration.environment,
+        clientKey: this.advancedConfiguration.clientKey,
+        paymentMethodsResponse: this.advancedConfiguration.paymentMethods,
+        countryCode: this.configuration.countryCode,
+        onAdditionalDetails: this.handleOnSubmitAdditionalData,
+      });
+
+      checkout.submitDetails({
+        details: {
+          redirectResult,
+        },
+      });
+
+      return;
+    }
+
+    const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
 
     if (response.resultCode === "Error") {
-      this.handleError(response.error);
+      this.handleError({ key: response.error });
       return;
     }
 
@@ -144,7 +240,7 @@ class StraumurCheckout {
       environment: this.configuration.environment,
       clientKey: response.clientKey,
       paymentMethodsResponse: response.paymentMethods,
-      countryCode: "IS",
+      countryCode: this.configuration.countryCode,
       onAdditionalDetails: this.handleOnSubmitAdditionalData,
     });
 
@@ -155,47 +251,34 @@ class StraumurCheckout {
     });
   }
 
+  // arrow function so `this` stays bound when Adyen invokes the handler
   private handleOnSubmitAdditionalData = async (
     state: AdditionalDetailsData,
     _: UIElement<UIElementProps>,
     actions: AdditionalDetailsActions
   ) => {
-    const data: ICreateDetailsBody = {
-      ...state.data,
-      sessionId: this.configuration.sessionId,
-    };
+    try {
+      const { resultCode, action, errorMessage } = await this.configuration.paymentFlow.submitAdditionalDetails(
+        state.data
+      );
 
-    const fetchResponse = await createDetailsRequest(this.configuration.environment, data);
+      actions.resolve({ resultCode, action } as Parameters<AdditionalDetailsActions["resolve"]>[0]);
 
-    // We will always get 200 OK unless there is an error in our server code.
-    // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
-    if (!fetchResponse.ok) {
+      if (resultCode === "Authorised") {
+        this.handleSuccess({ key: "success.paymentAuthorized" });
+        this.configuration.onPaymentCompleted?.({ resultCode });
+      } else {
+        this.handleError(errorMessage ? { text: errorMessage } : { key: "error.paymentUnsuccessful" });
+        this.configuration.onPaymentFailed?.({ resultCode });
+      }
+    } catch (error) {
       actions.reject();
-      this.handleError("error.failedToSubmitPaymentDetails");
-      return;
-    }
-
-    const response = await fetchResponse.json();
-
-    // ResultCode should always be either Authorised or Refused or IdentifyShopper. Never empty.
-    if (!response.resultCode) {
-      actions.reject();
-      this.handleError("error.paymentDetailsFailed");
-      return;
-    }
-
-    const { resultCode, action } = response;
-
-    actions.resolve({ resultCode, action });
-
-    if (resultCode === "Authorised") {
-      this.handleSuccess("success.paymentAuthorized");
-    } else {
-      this.handleError("error.paymentUnsuccessful");
+      this.handleError(toResultMessage(error, "error.failedToSubmitPaymentDetails"));
+      this.configuration.onPaymentFailed?.();
     }
   };
 
-  updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void {
+  updateConfig(newConfig: Partial<Omit<StraumurCheckoutConfiguration, "mode" | "paymentFlow">>): void {
     this.configuration = {
       ...this.configuration,
       ...newConfig,

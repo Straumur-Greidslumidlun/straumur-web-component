@@ -2,16 +2,10 @@ import { Fragment, h } from "preact";
 import { useRef, useState, useEffect, StateUpdater, Dispatch } from "preact/hooks";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
 import {
-  AdditionalDetailsActions,
-  AdditionalDetailsData,
   AdyenCheckout,
   AdyenCheckoutError,
   CustomCard,
   ICore,
-  PaymentCompletedData,
-  PaymentFailedData,
-  SubmitActions,
-  SubmitData,
   UIElement,
   UIElementProps,
 } from "@adyen/adyen-web";
@@ -22,10 +16,9 @@ import { BrandHidden } from "../../utils/renderBrandIcons";
 import LoaderIcon from "../../assets/icons/loader";
 import CheckmarkIcon from "../../assets/icons/checkmark";
 import { RenderDualBrandComponent, DualBrandConfiguration } from "../render-dual-brand/render-dual-brand";
-import { ICreateDetailsBody, ICreatePaymentBody } from "../../adapter/models";
-import { createDetailsRequest, createPaymentRequest } from "../../adapter/straumur-adapter";
 import { StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
+import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
 
 export interface CardFormProps {
   configuration: StraumurCheckoutConfiguration;
@@ -103,6 +96,18 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   const schemeBrands =
     paymentMethods.paymentMethods?.paymentMethods?.find((x) => x.type === "scheme")?.brands ?? [];
 
+  const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
+    createAdyenPaymentHandlers({
+      configuration,
+      handleSuccess,
+      handleError,
+      setThreeDSecureActive,
+      enrichSubmitData: (data) => ({
+        ...data,
+        storePaymentMethod: storePaymentMethodRef.current,
+      }),
+    });
+
   const initializeAdyenComponent = async () => {
     // Fully tear down any previous instance before re-initializing (e.g. on locale change),
     // otherwise the old secure iframes leak and stack up on the same DOM node. Uses remove()
@@ -113,7 +118,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
       locale: configuration.locale,
-      countryCode: "IS",
+      countryCode: configuration.countryCode,
       paymentMethodsResponse: paymentMethods.paymentMethods,
       amount: {
         value: paymentMethods.minorUnitsAmount,
@@ -236,105 +241,17 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   }
 
   function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
-    handleError("error.unknownError");
+    handleError({ key: "error.unknownError" });
   }
 
-  async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
-    const data: ICreatePaymentBody = {
-      ...state.data,
-      storePaymentMethod: storePaymentMethodRef.current,
-      sessionId: configuration.sessionId,
-    };
-
-    const fetchResponse = await createPaymentRequest(configuration.environment, data);
-
-    // We will always get 200 OK unless there is an error in our server code.
-    // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
-    if (!fetchResponse.ok) {
-      actions.reject();
-      handleError("error.failedToSubmitPayment");
-      return;
-    }
-
-    const response = await fetchResponse.json();
-
-    // ResultCode should never be empty.
-    if (!response.resultCode) {
-      actions.reject();
-      handleError("error.paymentFailed");
-      return;
-    }
-
-    const { resultCode, action } = response;
-
-    if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
-      setThreeDSecureActive(true);
-    }
-
-    // If the /payments request from your server is successful, you must call this to resolve whichever of the listed objects are available.
-    // You must call this, even if the result of the payment is unsuccessful.
-    actions.resolve({ resultCode, action });
-  }
-
-  async function handleOnSubmitAdditionalData(
-    state: AdditionalDetailsData,
-    _: UIElement<UIElementProps>,
-    actions: AdditionalDetailsActions
-  ) {
-    const data: ICreateDetailsBody = {
-      ...state.data,
-      sessionId: configuration.sessionId,
-    };
-
-    const fetchResponse = await createDetailsRequest(configuration.environment, data);
-
-    // We will always get 200 OK unless there is an error in our server code.
-    // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
-    if (!fetchResponse.ok) {
-      actions.reject();
-      handleError("error.failedToSubmitPaymentDetails");
-      return;
-    }
-
-    const response = await fetchResponse.json();
-
-    // ResultCode should always be either Authorised or Refused or IdentifyShopper. Never empty.
-    if (!response.resultCode) {
-      actions.reject();
-      handleError("error.paymentDetailsFailed");
-      return;
-    }
-
-    const { resultCode, action } = response;
-
-    actions.resolve({ resultCode, action });
-  }
-
-  function handlePaymentCompleted(data: PaymentCompletedData, _?: UIElement<UIElementProps> | undefined): void {
-    if (data.resultCode === "Authorised") {
-      handleSuccess("success.paymentAuthorized");
-    } else {
-      handleError("error.paymentUnsuccessful");
-    }
-    configuration.onPaymentCompleted?.({ resultCode: data.resultCode });
-  }
-
-  function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
-    if (data) {
-      if (data.resultCode === "Authorised") {
-        handleSuccess("success.paymentAuthorized");
-      } else {
-        handleError("error.paymentUnsuccessful");
-      }
-
-      configuration.onPaymentFailed?.({ resultCode: data.resultCode });
-    } else {
-      configuration.onPaymentFailed?.();
-    }
-  }
-
-  function handleSubmitClick() {
+  async function handleSubmitClick() {
     if (!customCardRef.current) return;
+
+    const { beforeSubmit } = configuration.paymentFlow;
+
+    if (beforeSubmit && !(await beforeSubmit())) {
+      return;
+    }
 
     customCardRef.current!.submit();
   }
@@ -492,7 +409,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
             disabled={payButtonDisabled}
             onClick={handleSubmitClick}
           >
-            {paymentMethods.formattedAmount}
+            {paymentMethods.minorUnitsAmount === 0 ? i18n.t("cards.saveCardDetails") : paymentMethods.formattedAmount}
           </button>
         )}
       </div>

@@ -5,6 +5,7 @@ import { I18nProvider } from "../../src/localizations/i18n-context";
 import { I18nService } from "../../src/localizations/i18n-service";
 import { SuccessResponse } from "../../src/services/models";
 import { StraumurCheckoutConfiguration } from "../../src/models/models";
+import { createSessionPaymentFlow } from "../../src/flows/payment-flow";
 
 /**
  * A Success payment-methods response with sensible defaults; override any slice per test.
@@ -53,7 +54,15 @@ export const storedCard = (overrides: Record<string, unknown> = {}) => ({
 export function baseConfig(
   overrides: Partial<StraumurCheckoutConfiguration> = {}
 ): StraumurCheckoutConfiguration {
-  return { sessionId: "s1", environment: "test", locale: "en-US", ...overrides };
+  return {
+    mode: "session",
+    sessionId: "s1",
+    environment: "test",
+    countryCode: "IS",
+    paymentFlow: createSessionPaymentFlow("test", "s1"),
+    locale: "en-US",
+    ...overrides,
+  };
 }
 
 export function makeGroupProps(overrides: Record<string, unknown> = {}) {

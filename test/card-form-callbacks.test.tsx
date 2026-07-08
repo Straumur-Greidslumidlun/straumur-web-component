@@ -1,4 +1,5 @@
-import { h, Fragment } from "preact";
+﻿import { h, Fragment } from "preact";
+import { ResultMessage } from "../src/models/models";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/preact";
 
@@ -50,13 +51,16 @@ const createDetails = vi.mocked(createDetailsRequest);
 
 const paymentMethods = makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(["visa", "mc"])] } });
 
+const messageText = (message: ResultMessage | null) =>
+  message === null ? String(message) : "key" in message ? message.key : message.text;
+
 function Probe() {
   const { threeDSecureActive, error, success } = usePaymentMethodGroup();
   return (
     <Fragment>
       <span data-testid="tds">{String(threeDSecureActive)}</span>
-      <span data-testid="error">{String(error)}</span>
-      <span data-testid="success">{String(success)}</span>
+      <span data-testid="error">{messageText(error)}</span>
+      <span data-testid="success">{messageText(success)}</span>
     </Fragment>
   );
 }
