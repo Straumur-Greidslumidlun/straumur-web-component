@@ -21,7 +21,7 @@ function StoredCardComponent({
   onStoredCardRemoved,
 }: StoredCardComponentProps): h.JSX.Element | null {
   const storedCardElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<ICore>();
+  const adyenCheckoutRef = useRef<ICore>();
   const customCardRef = useRef<CustomCard>();
   const { i18n } = useI18n();
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
@@ -84,7 +84,7 @@ function StoredCardComponent({
     });
 
   const initializeAdyenComponent = async () => {
-    adyenCardRef.current = await AdyenCheckout({
+    adyenCheckoutRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
       locale: configuration.locale,
@@ -100,7 +100,7 @@ function StoredCardComponent({
       onPaymentFailed: handlePaymentFailed,
     });
 
-    customCardRef.current = new CustomCard(adyenCardRef.current, {
+    customCardRef.current = new CustomCard(adyenCheckoutRef.current, {
       brands: [storedPaymentMethod.brand!],
       onSubmit: handleOnSubmit,
       onConfigSuccess() {
@@ -128,7 +128,8 @@ function StoredCardComponent({
         configuration.onCardValidityChanged?.(event.allValid, true);
       },
       placeholders: configuration.placeholders,
-      challengeWindowSize: "05", // looks like not working
+      // Adyen appears to ignore challengeWindowSize on CustomCard; kept for parity with the wallet configs.
+      challengeWindowSize: "05",
     });
 
     if (storedCardElementRef.current) {

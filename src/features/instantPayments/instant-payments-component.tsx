@@ -46,9 +46,13 @@ function InstantPaymentsComponent({
   }
 
   return (
+    // The unprefixed instant-payments classes predate the straumur__ convention and may be
+    // targeted by host-page styles; keep them alongside the prefixed ones.
     <div
-      class={`instant-payments ${
-        visibleInstantPayments.length > 1 ? "instant-payments--multiple" : "instant-payments--single"
+      className={`straumur__instant-payments instant-payments ${
+        visibleInstantPayments.length > 1
+          ? "straumur__instant-payments--multiple instant-payments--multiple"
+          : "straumur__instant-payments--single instant-payments--single"
       }`}
       style={{ display: visibleInstantPayments.length === 0 ? "none" : undefined }}
     >

@@ -49,6 +49,10 @@ function isValidAdvancedConfiguration(config: StraumurWebAdvancedConfiguration):
   );
 }
 
+// Session mode has no countryCode input and the payment-methods response carries none,
+// so it is fixed to Iceland until the backend provides one.
+const SESSION_COUNTRY_CODE = "IS";
+
 function determineLocale(locale: "is" | "en" | undefined): Language {
   switch (locale) {
     case "is":
@@ -80,7 +84,7 @@ class StraumurCheckout {
       mode: isSession ? "session" : "advanced",
       sessionId: config.sessionId,
       environment: config.environment,
-      countryCode: isSession ? "IS" : config.countryCode,
+      countryCode: isSession ? SESSION_COUNTRY_CODE : config.countryCode,
       paymentFlow: isSession
         ? createSessionPaymentFlow(config.environment, config.sessionId)
         : createAdvancedPaymentFlow(config),
@@ -140,8 +144,6 @@ class StraumurCheckout {
       }
 
       this.paymentMethods = response;
-
-      this.configuration.locale = this.configuration.locale || this.paymentMethods.locale;
 
       this.renderComponent();
     } catch (error) {

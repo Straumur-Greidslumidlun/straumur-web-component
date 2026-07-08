@@ -58,7 +58,7 @@ export interface PaymentMethodsResponse {
   /**
    * Detailed list of payment methods required to generate payment forms.
    */
-  paymentMethods?: PaymentMethod[];
+  paymentMethods?: ApiPaymentMethod[];
   /**
    * List of all stored payment methods.
    */
@@ -83,7 +83,8 @@ type Issuer = {
   name: string;
 };
 
-type PaymentMethod = {
+// Named ApiPaymentMethod to avoid colliding with the PaymentMethod string union in models/constants.ts.
+type ApiPaymentMethod = {
   /**
    * Brand for the selected gift card. For example: plastix, hmclub.
    */
@@ -119,7 +120,7 @@ type PaymentMethod = {
   type: string;
 };
 
-export type StoredPaymentMethod = PaymentMethod & {
+export type StoredPaymentMethod = ApiPaymentMethod & {
   /**
    * The bank account number (without separators).
    */

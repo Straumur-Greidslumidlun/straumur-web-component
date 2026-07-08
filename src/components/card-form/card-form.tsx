@@ -38,7 +38,7 @@ type CardFormErrorField = keyof CardFormError;
 
 function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProps): h.JSX.Element | null {
   const cardElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<ICore>();
+  const adyenCheckoutRef = useRef<ICore>();
   const customCardRef = useRef<CustomCard>();
   const { i18n } = useI18n();
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
@@ -106,7 +106,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     // (destroy-style cleanup) to match the wallet components (google-pay/apple-pay buttons).
     customCardRef.current?.remove();
 
-    adyenCardRef.current = await AdyenCheckout({
+    adyenCheckoutRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
       locale: configuration.locale,
@@ -123,7 +123,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       onPaymentFailed: handlePaymentFailed,
     });
 
-    customCardRef.current = new CustomCard(adyenCardRef.current, {
+    customCardRef.current = new CustomCard(adyenCheckoutRef.current, {
       brands: schemeBrands,
       placeholders: configuration.placeholders,
       challengeWindowSize: "05",

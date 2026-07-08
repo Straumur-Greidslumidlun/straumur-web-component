@@ -14,7 +14,6 @@ import {
   UIElementProps,
 } from "@adyen/adyen-web";
 import { CANCEL } from "../../models/constants";
-import "./apple-pay-button.css";
 import LoaderIcon from "../../assets/icons/loader";
 import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
 import { createBeforeSubmitClickHandler } from "../shared/before-submit-click";
@@ -33,7 +32,7 @@ function ApplePayButton({
   onUnavailable,
 }: ApplePayButtonProps): h.JSX.Element | null {
   const applePayElementRef = useRef<HTMLDivElement>(null);
-  const adyenCardRef = useRef<ICore>();
+  const adyenCheckoutRef = useRef<ICore>();
   const applePayRef = useRef<ApplePay>();
   const {
     isPaymentMethodInitialized,
@@ -66,7 +65,7 @@ function ApplePayButton({
   }
 
   const initializeAdyenComponent = async () => {
-    adyenCardRef.current = await AdyenCheckout({
+    adyenCheckoutRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
       locale: configuration.locale,
@@ -99,7 +98,7 @@ function ApplePayButton({
       },
     };
 
-    applePayRef.current = new ApplePay(adyenCardRef.current, applePayConfiguration);
+    applePayRef.current = new ApplePay(adyenCheckoutRef.current, applePayConfiguration);
 
     applePayRef.current
       .isAvailable()
