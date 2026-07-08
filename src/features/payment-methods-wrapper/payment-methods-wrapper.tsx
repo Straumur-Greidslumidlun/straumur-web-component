@@ -1,8 +1,8 @@
-import { Fragment, h } from "preact";
+import { Fragment, h, ComponentChildren } from "preact";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 
 interface PaymentMethodsWrapperProps {
-  children: h.JSX.Element[];
+  children: ComponentChildren;
 }
 
 function PaymentMethodsWrapper({ children }: PaymentMethodsWrapperProps): h.JSX.Element | null {
