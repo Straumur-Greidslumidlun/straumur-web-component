@@ -20,10 +20,10 @@ export default defineConfig({
       reporter: ["text", "html", "lcov"],
       // Ratchet-only floor: raise these as coverage improves, never lower them.
       thresholds: {
-        lines: 78,
-        functions: 74,
-        branches: 80,
-        statements: 78,
+        lines: 83,
+        functions: 78,
+        branches: 85,
+        statements: 83,
       },
     },
   },

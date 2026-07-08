@@ -83,35 +83,56 @@ export function createSessionPaymentFlow(environment: "test" | "live", sessionId
 }
 
 export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConfiguration): PaymentFlow {
+  // Wraps whatever the host handler throws (synchronously or asynchronously) in a PaymentFlowError,
+  // so callers can rely on a single error contract.
+  function invokeHostHandler<T>(
+    invoke: (resolve: (value: T) => void, reject: (error: PaymentFlowError) => void) => void | Promise<void>,
+    resolve: (value: T) => void,
+    reject: (error: unknown) => void,
+    thrownErrorKey: TranslationKey
+  ): void {
+    const rejectWithFlowError = (error: unknown) =>
+      reject(error instanceof PaymentFlowError ? error : new PaymentFlowError(thrownErrorKey));
+
+    try {
+      Promise.resolve(invoke(resolve, reject)).catch(rejectWithFlowError);
+    } catch (error) {
+      rejectWithFlowError(error);
+    }
+  }
+
   const flow: PaymentFlow = {
     submitPayment(data) {
       return new Promise<PaymentFlowResult>((resolve, reject) => {
-        Promise.resolve(
-          configuration.onSubmit(
-            { data },
-            {
-              resolve,
-              reject: (errorMessage) => reject(new PaymentFlowError("error.failedToSubmitPayment", errorMessage)),
-            }
-          )
-        ).catch((error) =>
-          reject(error instanceof PaymentFlowError ? error : new PaymentFlowError("error.failedToSubmitPayment"))
+        invokeHostHandler(
+          (res, rej) =>
+            configuration.onSubmit(
+              { data },
+              {
+                resolve: res,
+                reject: (errorMessage) => rej(new PaymentFlowError("error.failedToSubmitPayment", errorMessage)),
+              }
+            ),
+          resolve,
+          reject,
+          "error.failedToSubmitPayment"
         );
       });
     },
     submitAdditionalDetails(data) {
       return new Promise<PaymentFlowResult>((resolve, reject) => {
-        Promise.resolve(
-          configuration.onAdditionalDetails(
-            { data },
-            {
-              resolve,
-              reject: (errorMessage) =>
-                reject(new PaymentFlowError("error.failedToSubmitPaymentDetails", errorMessage)),
-            }
-          )
-        ).catch((error) =>
-          reject(error instanceof PaymentFlowError ? error : new PaymentFlowError("error.failedToSubmitPaymentDetails"))
+        invokeHostHandler(
+          (res, rej) =>
+            configuration.onAdditionalDetails(
+              { data },
+              {
+                resolve: res,
+                reject: (errorMessage) => rej(new PaymentFlowError("error.failedToSubmitPaymentDetails", errorMessage)),
+              }
+            ),
+          resolve,
+          reject,
+          "error.failedToSubmitPaymentDetails"
         );
       });
     },
@@ -123,20 +144,18 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
   if (onDisableToken) {
     flow.disableToken = (storedPaymentMethodId) =>
       new Promise<void>((resolve, reject) => {
-        Promise.resolve(
-          onDisableToken(
-            { storedPaymentMethodId },
-            {
-              resolve,
-              reject: () => reject(new PaymentFlowError("error.failedToRemoveStoredPaymentCard")),
-            }
-          )
-        ).catch((error) =>
-          reject(
-            error instanceof PaymentFlowError
-              ? error
-              : new PaymentFlowError("error.failedToSubmitRemoveStoredPaymentCard")
-          )
+        invokeHostHandler(
+          (res, rej) =>
+            onDisableToken(
+              { storedPaymentMethodId },
+              {
+                resolve: () => res(),
+                reject: () => rej(new PaymentFlowError("error.failedToRemoveStoredPaymentCard")),
+              }
+            ),
+          resolve,
+          reject,
+          "error.failedToSubmitRemoveStoredPaymentCard"
         );
       });
   }

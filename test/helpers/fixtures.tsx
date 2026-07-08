@@ -1,10 +1,11 @@
-import { h, ComponentChildren } from "preact";
+import { h, ComponentChildren, ComponentProps } from "preact";
 import { render } from "@testing-library/preact";
+import { vi } from "vitest";
 import { PaymentMethodGroupContext } from "../../src/components/payment-method-group/payment-method-group-context";
 import { I18nProvider } from "../../src/localizations/i18n-context";
 import { I18nService } from "../../src/localizations/i18n-service";
 import { SuccessResponse } from "../../src/services/models";
-import { StraumurCheckoutConfiguration } from "../../src/models/models";
+import { StraumurCheckoutConfiguration, StraumurWebAdvancedConfiguration } from "../../src/models/models";
 import { createSessionPaymentFlow } from "../../src/flows/payment-flow";
 
 /**
@@ -63,7 +64,32 @@ export function baseConfig(overrides: Partial<StraumurCheckoutConfiguration> = {
   };
 }
 
-export function makeGroupProps(overrides: Record<string, unknown> = {}) {
+/**
+ * An INTERNAL advanced-mode configuration with sensible defaults; override any slice per test.
+ * `onSubmit`/`onAdditionalDetails` default to fresh mocks so tests can assert on the bridging.
+ */
+export function advancedConfig(
+  overrides: Partial<StraumurWebAdvancedConfiguration> = {}
+): StraumurWebAdvancedConfiguration {
+  return {
+    environment: "test",
+    clientKey: "ck",
+    countryCode: "IS",
+    paymentMethods: { paymentMethods: [], storedPaymentMethods: [] },
+    amount: { value: 1000, currency: "ISK" },
+    formattedAmount: "ISK 10",
+    merchantName: "Test Merchant",
+    enableStoreDetails: "Disabled",
+    locale: "en",
+    onSubmit: vi.fn(),
+    onAdditionalDetails: vi.fn(),
+    ...overrides,
+  };
+}
+
+type GroupProps = Omit<ComponentProps<typeof PaymentMethodGroupContext>, "children">;
+
+export function makeGroupProps(overrides: Partial<GroupProps> = {}): GroupProps {
   return {
     initialValue: null,
     isSolePaymentMethod: false,
@@ -78,12 +104,12 @@ export function makeGroupProps(overrides: Record<string, unknown> = {}) {
 /** Render UI inside the I18n + PaymentMethodGroup providers the components depend on. */
 export function renderInGroup(
   ui: ComponentChildren,
-  groupProps: Record<string, unknown> = {},
+  groupProps: Partial<GroupProps> = {},
   i18n: I18nService = new I18nService("en-US")
 ) {
   return render(
     <I18nProvider i18nService={i18n}>
-      <PaymentMethodGroupContext {...(makeGroupProps(groupProps) as any)}>{ui}</PaymentMethodGroupContext>
+      <PaymentMethodGroupContext {...makeGroupProps(groupProps)}>{ui}</PaymentMethodGroupContext>
     </I18nProvider>
   );
 }
