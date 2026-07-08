@@ -1,6 +1,6 @@
 import { h, Fragment } from "preact";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/preact";
+import { screen, waitFor, fireEvent } from "@testing-library/preact";
 
 const A = vi.hoisted(() => {
   const cap: any = { gpayAvailable: true, apayAvailable: true };
@@ -64,7 +64,10 @@ describe("GooglePayComponent gating", () => {
 
   it("renders nothing when Google Pay is configured as an instant payment", () => {
     renderInGroup(
-      <GooglePayComponent configuration={baseConfig({ instantPayments: ["googlepay"] })} paymentMethods={gpayMethods} />,
+      <GooglePayComponent
+        configuration={baseConfig({ instantPayments: ["googlepay"] })}
+        paymentMethods={gpayMethods}
+      />,
       { hasGooglePay: true }
     );
     expect(screen.queryByText("Google Pay")).toBeNull();
@@ -110,7 +113,10 @@ describe("InstantPaymentsComponent", () => {
 
   it("renders nothing when the configured instant method is not available in the response", () => {
     const { container } = renderInGroup(
-      <InstantPaymentsComponent configuration={baseConfig({ instantPayments: ["googlepay"] })} paymentMethods={gpayMethods} />,
+      <InstantPaymentsComponent
+        configuration={baseConfig({ instantPayments: ["googlepay"] })}
+        paymentMethods={gpayMethods}
+      />,
       { hasGooglePay: false }
     );
     expect(container.querySelector(".instant-payments")).toBeNull();
@@ -118,7 +124,10 @@ describe("InstantPaymentsComponent", () => {
 
   it("renders the instant-payments wrapper for a configured, available method", () => {
     const { container } = renderInGroup(
-      <InstantPaymentsComponent configuration={baseConfig({ instantPayments: ["googlepay"] })} paymentMethods={gpayMethods} />,
+      <InstantPaymentsComponent
+        configuration={baseConfig({ instantPayments: ["googlepay"] })}
+        paymentMethods={gpayMethods}
+      />,
       { hasGooglePay: true }
     );
     expect(container.querySelector(".instant-payments")).toBeTruthy();

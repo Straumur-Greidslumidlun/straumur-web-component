@@ -5,14 +5,7 @@ import { useI18n } from "../../localizations/i18n-context";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 import { Tooltip } from "../../components/tooltip/tooltip";
 import InfoIcon from "../../assets/icons/info";
-import {
-  AdyenCheckout,
-  AdyenCheckoutError,
-  CustomCard,
-  ICore,
-  UIElement,
-  UIElementProps,
-} from "@adyen/adyen-web";
+import { AdyenCheckout, AdyenCheckoutError, CustomCard, ICore, UIElement, UIElementProps } from "@adyen/adyen-web";
 import { RenderBrandIcons } from "../../utils/renderBrandIcons";
 import LoaderIcon from "../../assets/icons/loader";
 import { StoredCardComponentProps, StoredCardFormError, StoredCardFormErrorField } from "./models";
@@ -74,10 +67,6 @@ function StoredCardComponent({
       configuration.onCardValidityChanged?.(false, false);
     };
   }, [isActive, isStoredCardInitialized[storedPaymentMethod.id], registerSubmitHandler, unregisterSubmitHandler]);
-
-  if (threeDSecureActive && !isActive) {
-    return null;
-  }
 
   const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
     createAdyenPaymentHandlers({
@@ -166,6 +155,12 @@ function StoredCardComponent({
     setAskConfirmRemoveStoredCard(false);
   }, [activePaymentMethod, activeStoredPaymentMethodId]);
 
+  // Keep this guard below every hook call: returning early above a hook violates the
+  // rules of hooks and corrupts hook ordering across renders.
+  if (threeDSecureActive && !isActive) {
+    return null;
+  }
+
   function handleBoxChange() {
     setActivePaymentMethod("storedcard");
     setActiveStoredPaymentMethodId(storedPaymentMethod.id);
@@ -210,17 +205,18 @@ function StoredCardComponent({
 
   const canRemoveStoredCard = configuration.paymentFlow.disableToken !== undefined;
 
-  const headerRight = canRemoveStoredCard && isActive && isStoredCardInitialized[storedPaymentMethod.id] ? (
-    <div className="straumur__stored-card-component__remove-stored-card-button">
-      <button
-        onClick={handleAskToConfirmRemoveCard}
-        className="straumur__stored-card-component__remove-stored-card-button--text"
-        disabled={askConfirmRemoveStoredCard}
-      >
-        {i18n.t("stored-cards.removeStoredCard")}
-      </button>
-    </div>
-  ) : null;
+  const headerRight =
+    canRemoveStoredCard && isActive && isStoredCardInitialized[storedPaymentMethod.id] ? (
+      <div className="straumur__stored-card-component__remove-stored-card-button">
+        <button
+          onClick={handleAskToConfirmRemoveCard}
+          className="straumur__stored-card-component__remove-stored-card-button--text"
+          disabled={askConfirmRemoveStoredCard}
+        >
+          {i18n.t("stored-cards.removeStoredCard")}
+        </button>
+      </div>
+    ) : null;
 
   const confirmSection = (
     <div

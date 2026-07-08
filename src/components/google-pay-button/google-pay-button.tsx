@@ -42,7 +42,7 @@ function GooglePayButton({
     setThreeDSecureActive,
     threeDSecureActive,
     setActivePaymentMethod,
-    activePaymentMethod
+    activePaymentMethod,
   } = usePaymentMethodGroup();
 
   const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
@@ -57,6 +57,12 @@ function GooglePayButton({
         }
       },
     });
+
+  function handleOnError(data: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
+    if (data.name !== CANCEL) {
+      handleError({ key: "error.unknownError" });
+    }
+  }
 
   const initializeAdyenComponent = async () => {
     adyenCheckoutRef.current = await AdyenCheckout({
@@ -126,12 +132,6 @@ function GooglePayButton({
       initializeAdyenComponent();
     }
   }, [configuration]);
-
-  function handleOnError(data: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
-    if (data.name !== CANCEL) {
-      handleError({ key: "error.unknownError" });
-    }
-  }
 
   if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show google pay

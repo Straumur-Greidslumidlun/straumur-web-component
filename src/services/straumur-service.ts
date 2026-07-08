@@ -30,9 +30,7 @@ export async function setupPaymentMethods(
       resultCode: "Success",
       ...data,
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch {
     return {
       resultCode: "Error",
       error: "error.failedToInitializePaymentMethods",

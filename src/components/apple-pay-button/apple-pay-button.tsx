@@ -59,6 +59,12 @@ function ApplePayButton({
       },
     });
 
+  function handleOnError(data: AdyenCheckoutError, _?: UIElement<UIElementProps> | undefined): void {
+    if (data.name !== CANCEL) {
+      handleError({ key: "error.unknownError" });
+    }
+  }
+
   const initializeAdyenComponent = async () => {
     adyenCardRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
@@ -124,12 +130,6 @@ function ApplePayButton({
       initializeAdyenComponent();
     }
   }, [configuration]);
-
-  function handleOnError(data: AdyenCheckoutError, _?: UIElement<UIElementProps> | undefined): void {
-    if (data.name !== CANCEL) {
-      handleError({ key: "error.unknownError" });
-    }
-  }
 
   if (activePaymentMethod !== "applepay" && threeDSecureActive) {
     // if threeDSecureActive for some other payment method, do not show apple pay
