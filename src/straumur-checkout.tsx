@@ -3,12 +3,13 @@ import "./styles/main.css";
 import {
   ResultMessage,
   StraumurCheckoutConfiguration,
+  StraumurCheckoutUpdateOptions,
   StraumurWebAdvancedConfiguration,
   StraumurWebConfiguration,
   StraumurWebInternalConfiguration,
 } from "./models/models";
 import { setupPaymentMethods } from "./services/straumur-service";
-import { Language } from "./localizations/translations";
+import { normalizeLocale, PublicLocale } from "./localizations/locale";
 import StraumurCheckoutContainer from "./features/straumur-checkout-container";
 import { PaymentMethodsResponse, SuccessResponse } from "./services/models";
 import FailureIcon from "./assets/icons/failure";
@@ -48,17 +49,6 @@ function isValidAdvancedConfiguration(config: StraumurWebAdvancedConfiguration):
 // so it is fixed to Iceland until the backend provides one.
 const SESSION_COUNTRY_CODE = "IS";
 
-function determineLocale(locale: "is" | "en" | undefined): Language {
-  switch (locale) {
-    case "is":
-      return "is-IS";
-    case "en":
-      return "en-US";
-    default:
-      return "is-IS";
-  }
-}
-
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
   private advancedConfiguration: StraumurWebAdvancedConfiguration | null = null;
@@ -72,7 +62,7 @@ class StraumurCheckout {
   // (internal, used by Straumur Hosted Checkout via the IIFE bundle) is detected at runtime.
   constructor(publicConfig: StraumurWebConfiguration) {
     const config = publicConfig as StraumurWebInternalConfiguration;
-    const locale = determineLocale(config.locale);
+    const locale = normalizeLocale(config.locale);
     const isSession = isSessionConfiguration(config);
 
     this.configuration = {
@@ -272,15 +262,19 @@ class StraumurCheckout {
     }
   }
 
-  updateConfig(newConfig: Partial<Omit<StraumurCheckoutConfiguration, "mode" | "paymentFlow">>): void {
+  updateConfig(newConfig: StraumurCheckoutUpdateOptions): void {
+    const { locale, ...rest } = newConfig;
+
     this.configuration = {
       ...this.configuration,
-      ...newConfig,
+      ...rest,
+      // The public vocabulary is short codes; normalizeLocale also tolerates legacy full tags at runtime.
+      ...(locale ? { locale: normalizeLocale(locale) } : {}),
     };
 
     // Update i18n if locale or customLocalizations changed
-    if (newConfig.locale) {
-      this.i18n.setLanguage(newConfig.locale);
+    if (locale) {
+      this.i18n.setLanguage(this.configuration.locale);
     }
     if (newConfig.customLocalizations) {
       this.i18n.updateCustomLocalizations(newConfig.customLocalizations);
@@ -292,7 +286,7 @@ class StraumurCheckout {
     }
   }
 
-  setLanguage(locale: Language): void {
+  setLanguage(locale: PublicLocale): void {
     this.updateConfig({
       locale: locale,
     });

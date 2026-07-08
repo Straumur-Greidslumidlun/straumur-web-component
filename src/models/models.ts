@@ -1,4 +1,5 @@
 import { Language, TranslationKey } from "../localizations/translations";
+import { PublicLocale } from "../localizations/locale";
 import { PaymentMethod } from "./constants";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../adapter/models";
 import { PaymentMethodsResponse } from "../services/models";
@@ -9,7 +10,7 @@ type StraumurWebBaseConfiguration = {
   onPaymentCompleted?: (data: PaymentCompletedData) => void;
   onPaymentFailed?: (data: PaymentFailedData) => void;
   placeholders?: Placeholders;
-  locale?: "is" | "en";
+  locale?: PublicLocale;
   localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
   instantPayments?: UniqueInstantPayments;
   hideSubmitButton?: boolean;
@@ -148,6 +149,14 @@ export type StraumurCheckoutConfiguration = {
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];
+};
+
+// What updateConfig() accepts: internal config fields minus the immutable ones,
+// with locale in the public short-code vocabulary.
+export type StraumurCheckoutUpdateOptions = Partial<
+  Omit<StraumurCheckoutConfiguration, "mode" | "paymentFlow" | "locale">
+> & {
+  locale?: PublicLocale;
 };
 
 type PlaceholderKeys =

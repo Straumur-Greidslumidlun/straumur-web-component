@@ -114,7 +114,7 @@ const checkout = new StraumurCheckout(config);
 | Method                  | Description                                                                                        |
 | ----------------------- | -------------------------------------------------------------------------------------------------- |
 | `mount(selector)`       | Fetches the payment methods and renders the component into a CSS selector or `HTMLElement`. Async. |
-| `setLanguage(locale)`   | Switches the UI language at runtime (e.g. `"en-US"`, `"is-IS"`).                                   |
+| `setLanguage(locale)`   | Switches the UI language at runtime (`"en"` or `"is"`, same codes as the `locale` option).         |
 | `updateConfig(partial)` | Merges new configuration and re-renders.                                                           |
 | `submitDetails(result)` | Completes a redirect-based (e.g. 3‑D Secure) flow using the `redirectResult` from the return URL.  |
 | `destroy()`             | Unmounts the component and cleans up.                                                              |
@@ -133,6 +133,7 @@ provider reports a failure without one, it is delivered as `Error`.
 - `submitDetails(redirectResult)` now invokes `onPaymentCompleted` / `onPaymentFailed`.
 - Result routing now follows Adyen Web 6: a `Refused`, `Cancelled`, or `Error` outcome invokes `onPaymentFailed` (in 1.x every gateway response, including refusals, invoked `onPaymentCompleted`). If your integration branched on `resultCode` inside `onPaymentCompleted`, move the failure branches to `onPaymentFailed`.
 - `onPaymentFailed`'s argument is no longer optional — it always carries a `resultCode`.
+- Locale short codes everywhere: `setLanguage()` and `updateConfig()` now take `"en"` / `"is"` like the constructor's `locale` option. The 1.x full tags (`"en-US"` / `"is-IS"`) are still accepted at runtime but are no longer part of the public types.
 
 ## License
 

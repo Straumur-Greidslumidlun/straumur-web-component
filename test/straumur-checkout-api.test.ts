@@ -90,22 +90,36 @@ describe("StraumurCheckout locale mapping", () => {
 });
 
 describe("StraumurCheckout config updates", () => {
-  it("switches the active language via updateConfig", async () => {
+  it("switches the active language via updateConfig using the public short code", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
 
-    checkout.updateConfig({ locale: "is-IS" });
+    checkout.updateConfig({ locale: "is" });
     checkout.handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 
-  it("switches the active language via setLanguage", async () => {
+  it("switches the active language via setLanguage using the public short code", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
 
-    checkout.setLanguage("is-IS");
+    checkout.setLanguage("is");
     checkout.handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
+  });
+
+  it("tolerates the legacy full locale tags at runtime", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    // 1.x accepted "is-IS"/"en-US" here; IIFE consumers get no compile-time narrowing.
+    checkout.setLanguage("is-IS" as any);
+    checkout.handleError({ key: "error.unknownError" });
+    expect(root().textContent).toContain(is("error.unknownError"));
+
+    checkout.updateConfig({ locale: "en-US" as any });
+    checkout.handleError({ key: "error.unknownError" });
+    expect(root().textContent).toContain(en("error.unknownError"));
   });
 
   it("applies custom localizations passed to updateConfig", async () => {
