@@ -1,9 +1,11 @@
-import { h } from "preact";
-import { describe, it, expect } from "vitest";
+import { h, ComponentChildren } from "preact";
+import { useEffect } from "preact/hooks";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/preact";
 import {
   PaymentMethodGroupContext,
   usePaymentMethodGroup,
+  SubmitApi,
 } from "../src/components/payment-method-group/payment-method-group-context";
 import { makeGroupProps } from "./helpers/fixtures";
 
@@ -77,5 +79,81 @@ describe("PaymentMethodGroup context", () => {
     wrap();
     fireEvent.click(screen.getByTestId("set-tds"));
     expect(screen.getByTestId("tds").textContent).toBe("true");
+  });
+});
+
+describe("PaymentMethodGroup submit handler registry", () => {
+  function Registrar({ handler }: { handler: () => void }) {
+    const { registerSubmitHandler, unregisterSubmitHandler } = usePaymentMethodGroup();
+    useEffect(() => {
+      registerSubmitHandler(handler);
+      return () => unregisterSubmitHandler(handler);
+    }, [handler]);
+    return null;
+  }
+
+  function wrapWithApi(children: ComponentChildren) {
+    let api: SubmitApi | undefined;
+    const result = render(
+      <PaymentMethodGroupContext {...(makeGroupProps() as any)} onSubmitApiReady={(a) => (api = a)}>
+        {children}
+      </PaymentMethodGroupContext>
+    );
+    return { getApi: () => api!, unmount: result.unmount };
+  }
+
+  it("hands out a triggerSubmit api via onSubmitApiReady", () => {
+    const { getApi } = wrapWithApi(null);
+    expect(typeof getApi().triggerSubmit).toBe("function");
+  });
+
+  it("triggerSubmit calls the currently registered handler and returns true", () => {
+    const handler = vi.fn();
+    const { getApi } = wrapWithApi(<Registrar handler={handler} />);
+
+    expect(getApi().triggerSubmit()).toBe(true);
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it("triggerSubmit returns false when nothing is registered", () => {
+    const { getApi } = wrapWithApi(null);
+    expect(getApi().triggerSubmit()).toBe(false);
+  });
+
+  it("unregister only clears the handler if the identity matches, so an outgoing form can't clobber an incoming one", () => {
+    let api: SubmitApi | undefined;
+    const handlerA = vi.fn();
+    const handlerB = vi.fn();
+
+    function Scenario() {
+      const { registerSubmitHandler, unregisterSubmitHandler } = usePaymentMethodGroup();
+      useEffect(() => {
+        registerSubmitHandler(handlerA);
+        // Simulate the previously-active form's cleanup running after handlerA already took over.
+        unregisterSubmitHandler(handlerB);
+      }, []);
+      return null;
+    }
+
+    render(
+      <PaymentMethodGroupContext {...(makeGroupProps() as any)} onSubmitApiReady={(a) => (api = a)}>
+        <Scenario />
+      </PaymentMethodGroupContext>
+    );
+
+    expect(api!.triggerSubmit()).toBe(true);
+    expect(handlerA).toHaveBeenCalledTimes(1);
+    expect(handlerB).not.toHaveBeenCalled();
+  });
+
+  it("unregistering the active handler (e.g. on unmount) clears it", () => {
+    const handler = vi.fn();
+    const { getApi, unmount } = wrapWithApi(<Registrar handler={handler} />);
+    expect(getApi().triggerSubmit()).toBe(true);
+
+    unmount();
+    expect(getApi().triggerSubmit()).toBe(false);
+    // Only one call recorded from before the unmount.
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 });
