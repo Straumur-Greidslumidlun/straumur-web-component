@@ -77,16 +77,16 @@ The package also ships an IIFE build that exposes a global `StraumurWeb`:
 
 Passed to the `StraumurCheckout` constructor:
 
-| Option               | Type                              | Required | Description                                                               |
-| -------------------- | --------------------------------- | :------: | ------------------------------------------------------------------------- |
-| `sessionId`          | `string`                          |    ✅    | The session id from your `/embeddedcheckout/session` response.            |
-| `environment`        | `"test" \| "live"`                |    ✅    | Selects the Straumur staging or production backend.                       |
-| `locale`             | `"is" \| "en"`                    |          | UI language. Defaults to Icelandic (`is`).                                |
-| `onPaymentCompleted` | `(data: { resultCode }) => void`  |          | Called when the payment flow completes (see result codes below).          |
-| `onPaymentFailed`    | `(data: { resultCode }) => void`  |          | Called when the payment flow fails (see result codes below).              |
-| `instantPayments`    | `("googlepay" \| "applepay")[]`   |          | Renders the listed wallets as express buttons above the standard methods. |
-| `placeholders`       | `object`                          |          | Input placeholders — see below.                                           |
-| `localizations`      | `object`                          |          | Override built-in copy per language and key.                              |
+| Option               | Type                             | Required | Description                                                               |
+| -------------------- | -------------------------------- | :------: | ------------------------------------------------------------------------- |
+| `sessionId`          | `string`                         |    ✅    | The session id from your `/embeddedcheckout/session` response.            |
+| `environment`        | `"test" \| "live"`               |    ✅    | Selects the Straumur staging or production backend.                       |
+| `locale`             | `"is" \| "en"`                   |          | UI language. Defaults to Icelandic (`is`).                                |
+| `onPaymentCompleted` | `(data: { resultCode }) => void` |          | Called when the payment flow completes (see result codes below).          |
+| `onPaymentFailed`    | `(data: { resultCode }) => void` |          | Called when the payment flow fails (see result codes below).              |
+| `instantPayments`    | `("googlepay" \| "applepay")[]`  |          | Renders the listed wallets as express buttons above the standard methods. |
+| `placeholders`       | `object`                         |          | Input placeholders — see below.                                           |
+| `localizations`      | `object`                         |          | Override built-in copy per language and key.                              |
 
 ### `placeholders`
 
