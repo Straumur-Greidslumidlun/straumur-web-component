@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/index.ts"],
-  format: ["esm", "iife"], // ESM for modern browsers, IIFE for immediate execution
+  format: ["esm", "cjs", "iife"], // ESM + CJS for bundlers/Node, IIFE for the CDN script tag (window.StraumurWeb)
   globalName: "StraumurWeb", // for IIFE: window.StraumurWeb
   dts: true, // this allows other TypeScript projects (like merchant apps) to get type safety and autocompletion when they import your package
   injectStyle: true, // this option allows you to inject CSS styles directly into the output bundle, which is useful for web components that need styles
@@ -17,7 +17,8 @@ export default defineConfig({
   },
   outExtension({ format }) {
     if (format === "esm") return { js: ".mjs" };
-    if (format === "iife") return { js: ".js" };
+    if (format === "cjs") return { js: ".cjs" };
+    // IIFE keeps .js: unpkg/jsdelivr serve it and the backend vendors it under this name.
     return { js: ".js" };
   },
 });

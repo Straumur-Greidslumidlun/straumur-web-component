@@ -25,6 +25,11 @@ jobs:
 
       - run: npm ci
 
+      # dist/ is not committed; the artifacts are always built fresh here.
+      # npm publish additionally runs prepublishOnly (typecheck + test + build) as a safety net.
+      - name: Build
+        run: npm run build
+
       - name: Publishing pre-release
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |

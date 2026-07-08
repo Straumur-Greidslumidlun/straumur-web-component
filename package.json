@@ -4,13 +4,29 @@
   "license": "MIT",
   "homepage": "https://docs.straumur.is",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "unpkg": "dist/index.js",
+  "jsdelivr": "dist/index.js",
   "exports": {
-    "import": "./dist/index.mjs",
-    "default": "./dist/index.js"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "default": "./dist/index.mjs"
+    }
   },
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/index.mjs",
+    "./dist/index.cjs"
+  ],
   "description": "",
   "keywords": [
     "straumur",
@@ -32,6 +48,7 @@
   "scripts": {
     "dev": "tsup src/index.ts --watch",
     "build": "tsup",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
