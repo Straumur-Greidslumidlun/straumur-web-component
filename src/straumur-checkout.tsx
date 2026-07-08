@@ -10,21 +10,16 @@ import {
 import { setupPaymentMethods } from "./services/straumur-service";
 import { Language } from "./localizations/translations";
 import StraumurCheckoutContainer from "./features/straumur-checkout-container";
-import { SuccessResponse } from "./services/models";
+import { PaymentMethodsResponse, SuccessResponse } from "./services/models";
 import FailureIcon from "./assets/icons/failure";
 import LoaderIcon from "./assets/icons/loader";
 import SuccessIcon from "./assets/icons/success";
-import {
-  AdyenCheckout,
-  AdditionalDetailsData,
-  UIElement,
-  UIElementProps,
-  AdditionalDetailsActions,
-} from "@adyen/adyen-web";
+import { AdyenCheckout } from "@adyen/adyen-web";
 import { I18nProvider } from "./localizations/i18n-context";
 import { I18nService } from "./localizations/i18n-service";
 import { SubmitApi } from "./components/payment-method-group/payment-method-group-context";
-import { createAdvancedPaymentFlow, createSessionPaymentFlow, toResultMessage } from "./flows/payment-flow";
+import { createAdvancedPaymentFlow, createSessionPaymentFlow } from "./flows/payment-flow";
+import { createAdyenPaymentHandlers } from "./components/shared/create-adyen-handlers";
 import { normalizeAdvancedConfiguration } from "./services/advanced-normalizer";
 
 function isSessionConfiguration(config: StraumurWebInternalConfiguration): config is StraumurWebConfiguration {
@@ -205,24 +200,63 @@ class StraumurCheckout {
     );
   }
 
-  // selector lets a page that never called mount() (e.g. a 3DS redirect return) show the result screens
-  async submitDetails(redirectResult: string, selector?: HTMLElement | string) {
-    if (selector) {
-      this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
-    }
-
+  // Resolves what the redirect-return Adyen bootstrap needs per mode, rendering the
+  // failure screen and returning null when the context cannot be established.
+  private async resolveRedirectContext(): Promise<{
+    clientKey: string;
+    paymentMethods: PaymentMethodsResponse;
+  } | null> {
     if (this.configuration.mode === "advanced") {
       if (this.initializationFailed || !this.advancedConfiguration) {
         this.handleError({ key: "error.failedToInitializeStraumurWebComponent" });
+        return null;
+      }
+
+      return {
+        clientKey: this.advancedConfiguration.clientKey,
+        paymentMethods: this.advancedConfiguration.paymentMethods,
+      };
+    }
+
+    const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
+
+    if (response.resultCode === "Error") {
+      this.handleError({ key: response.error });
+      return null;
+    }
+
+    return { clientKey: response.clientKey, paymentMethods: response.paymentMethods };
+  }
+
+  // selector lets a page that never called mount() (e.g. a 3DS redirect return) show the result screens
+  async submitDetails(redirectResult: string, selector?: HTMLElement | string) {
+    try {
+      if (selector) {
+        this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
+      }
+
+      const redirectContext = await this.resolveRedirectContext();
+
+      if (!redirectContext) {
         return;
       }
 
+      const { handleOnSubmitAdditionalData } = createAdyenPaymentHandlers({
+        configuration: this.configuration,
+        handleSuccess: (message) => this.handleSuccess(message),
+        handleError: (message) => this.handleError(message),
+        setThreeDSecureActive: () => {},
+        dispatchResultFromAdditionalDetails: true,
+      });
+
+      // Deliberately no core-level onPaymentCompleted/onPaymentFailed here: the handler above
+      // dispatches the final result itself, and wiring both would double-fire the merchant callbacks.
       const checkout = await AdyenCheckout({
         environment: this.configuration.environment,
-        clientKey: this.advancedConfiguration.clientKey,
-        paymentMethodsResponse: this.advancedConfiguration.paymentMethods,
+        clientKey: redirectContext.clientKey,
+        paymentMethodsResponse: redirectContext.paymentMethods,
         countryCode: this.configuration.countryCode,
-        onAdditionalDetails: this.handleOnSubmitAdditionalData,
+        onAdditionalDetails: handleOnSubmitAdditionalData,
       });
 
       checkout.submitDetails({
@@ -230,58 +264,13 @@ class StraumurCheckout {
           redirectResult,
         },
       });
-
-      return;
-    }
-
-    const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
-
-    if (response.resultCode === "Error") {
-      this.handleError({ key: response.error });
-      return;
-    }
-
-    const checkout = await AdyenCheckout({
-      environment: this.configuration.environment,
-      clientKey: response.clientKey,
-      paymentMethodsResponse: response.paymentMethods,
-      countryCode: this.configuration.countryCode,
-      onAdditionalDetails: this.handleOnSubmitAdditionalData,
-    });
-
-    checkout.submitDetails({
-      details: {
-        redirectResult,
-      },
-    });
-  }
-
-  // arrow function so `this` stays bound when Adyen invokes the handler
-  private handleOnSubmitAdditionalData = async (
-    state: AdditionalDetailsData,
-    _: UIElement<UIElementProps>,
-    actions: AdditionalDetailsActions
-  ) => {
-    try {
-      const { resultCode, action, errorMessage } = await this.configuration.paymentFlow.submitAdditionalDetails(
-        state.data
-      );
-
-      actions.resolve({ resultCode, action } as Parameters<AdditionalDetailsActions["resolve"]>[0]);
-
-      if (resultCode === "Authorised") {
-        this.handleSuccess({ key: "success.paymentAuthorized" });
-        this.configuration.onPaymentCompleted?.({ resultCode });
-      } else {
-        this.handleError(errorMessage ? { text: errorMessage } : { key: "error.paymentUnsuccessful" });
-        this.configuration.onPaymentFailed?.({ resultCode });
-      }
     } catch (error) {
-      actions.reject();
-      this.handleError(toResultMessage(error, "error.failedToSubmitPaymentDetails"));
+      // Same no-throw philosophy as mount(): render the failure in-place, log for the console.
+      console.error("[StraumurCheckout] submitDetails() failed:", error);
+      this.handleError({ key: "error.failedToSubmitPaymentDetails" });
       this.configuration.onPaymentFailed?.({ resultCode: "Error" });
     }
-  };
+  }
 
   updateConfig(newConfig: Partial<Omit<StraumurCheckoutConfiguration, "mode" | "paymentFlow">>): void {
     this.configuration = {

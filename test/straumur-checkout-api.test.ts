@@ -3,7 +3,7 @@ import { waitFor } from "@testing-library/preact";
 import { translations, TranslationKey } from "../src/localizations/translations";
 
 const A = vi.hoisted(() => {
-  const cap: any = { card: [], instances: [] };
+  const cap: any = { card: [], instances: [], checkout: [], submitDetails: [] };
   class FakeCustomCard {
     mount = vi.fn();
     unmount = vi.fn();
@@ -18,7 +18,12 @@ const A = vi.hoisted(() => {
 });
 
 vi.mock("@adyen/adyen-web", () => ({
-  AdyenCheckout: vi.fn(async () => ({ submitDetails: vi.fn() })),
+  AdyenCheckout: vi.fn(async (config: any) => {
+    A.cap.checkout.push(config);
+    const submitDetails = vi.fn();
+    A.cap.submitDetails.push(submitDetails);
+    return { submitDetails };
+  }),
   CustomCard: A.FakeCustomCard,
   GooglePay: class {},
   ApplePay: class {},
@@ -57,6 +62,8 @@ beforeEach(() => {
   setup.mockResolvedValue(emptySuccess as any);
   A.cap.card.length = 0;
   A.cap.instances.length = 0;
+  A.cap.checkout.length = 0;
+  A.cap.submitDetails.length = 0;
 });
 
 describe("StraumurCheckout locale mapping", () => {
@@ -131,6 +138,72 @@ describe("StraumurCheckout.submitDetails", () => {
     await checkout.submitDetails("redirect-result");
 
     expect(root().textContent).toContain(en("error.paymentDetailsFailed"));
+  });
+
+  it("bootstraps Adyen from the session response and submits the redirect result", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+
+    await checkout.submitDetails("redirect-result", "#root");
+
+    expect(A.cap.checkout.length).toBe(1);
+    expect(A.cap.checkout[0]).toMatchObject({ clientKey: "ck", environment: "test", countryCode: "IS" });
+    // The redirect-return bootstrap must not wire core-level result callbacks — the
+    // additional-details handler dispatches the final result itself (double-fire guard).
+    expect(A.cap.checkout[0].onPaymentCompleted).toBeUndefined();
+    expect(A.cap.checkout[0].onPaymentFailed).toBeUndefined();
+    expect(A.cap.submitDetails[0]).toHaveBeenCalledWith({ details: { redirectResult: "redirect-result" } });
+  });
+
+  it("routes an authorised details result to onPaymentCompleted and the success screen", async () => {
+    const onPaymentCompleted = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentCompleted,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised" }),
+    } as any);
+
+    await checkout.submitDetails("redirect-result", "#root");
+    const actions = { resolve: vi.fn(), reject: vi.fn() };
+    await A.cap.checkout[0].onAdditionalDetails(
+      { data: { details: { redirectResult: "redirect-result" } } },
+      {},
+      actions
+    );
+
+    expect(actions.resolve).toHaveBeenCalledWith({ resultCode: "Authorised", action: undefined });
+    expect(onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Authorised" });
+    expect(root().textContent).toContain(en("success.paymentAuthorized"));
+  });
+
+  it("routes a refused details result to onPaymentFailed and the failure screen", async () => {
+    const onPaymentFailed = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentFailed,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Refused" }),
+    } as any);
+
+    await checkout.submitDetails("redirect-result", "#root");
+    await A.cap.checkout[0].onAdditionalDetails(
+      { data: { details: { redirectResult: "redirect-result" } } },
+      {},
+      { resolve: vi.fn(), reject: vi.fn() }
+    );
+
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(root().textContent).toContain(en("error.paymentUnsuccessful"));
   });
 });
 
