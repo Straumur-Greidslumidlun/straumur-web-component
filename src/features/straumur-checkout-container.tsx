@@ -18,7 +18,7 @@ interface StraumurCheckoutContainerProps {
   onSubmitApiReady?: (api: SubmitApi) => void;
 }
 
-function determineInitialState(
+export function determineInitialState(
   hasCard: boolean,
   hasGooglePay: boolean,
   hasApplePay: boolean,
