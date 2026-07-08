@@ -70,6 +70,8 @@ The card flow uses Adyen's `CustomCard` mounted onto `data-cse`-tagged spans (se
 ## Conventions
 
 - **Preact, not React.** JSX is configured with `jsxFactory: "h"` (tsconfig). Import `h` from `preact` in every `.tsx` file; import hooks from `preact/hooks`. Return type is `h.JSX.Element`.
-- **CSS** is co-located per component (`*.css`) and imported directly; tsup's `injectStyle` inlines it into the bundle. Class names use the `straumur__` BEM-ish prefix to avoid clashing with host-page styles.
+- **CSS** is co-located per component (`*.css`) and imported directly; tsup's `injectStyle` inlines it into the bundle. Class names use the `straumur__` BEM-ish prefix to avoid clashing with host-page styles. **All colors go through the `--straumur__color-*` tokens in `src/styles/main.css`** — don't hard-code hex in component CSS, or it won't respond to the theme.
+- **Theming.** `RootComponent` (`src/components/shared/status-screen.tsx`) sets `data-theme` on the widget wrapper; the `[data-theme="dark"]` block in `main.css` overrides the color tokens (scoped to the widget, never the host page). `useResolvedTheme` resolves `"system"` from `prefers-color-scheme` live. Adyen's card fields are cross-origin iframes our CSS can't reach — `getAdyenFieldStyles` (`src/utils/adyen-field-styles.ts`) passes literal per-theme colors into the `CustomCard` `styles` config; keep those values in sync with the CSS tokens.
+- **Accessibility.** Result screens announce via `role="alert"`/`role="status"`; decorative icons are `aria-hidden`. The dual-brand picker is a keyboard-operable `radiogroup`. `useFocusOnActivate` moves focus into the card container when 3DS takes over. Keep guards below all hooks (rules-of-hooks).
 - **Icons** are `.tsx` components in `src/assets/icons/` returning inline SVG.
 - `tsconfig` is strict (`noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, etc.) — unused imports/vars fail the build. Prefix intentionally-unused params with `_`.

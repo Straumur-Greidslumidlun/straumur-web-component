@@ -77,16 +77,17 @@ The package also ships an IIFE build that exposes a global `StraumurWeb`:
 
 Passed to the `StraumurCheckout` constructor:
 
-| Option               | Type                             | Required | Description                                                               |
-| -------------------- | -------------------------------- | :------: | ------------------------------------------------------------------------- |
-| `sessionId`          | `string`                         |    ✅    | The session id from your `/embeddedcheckout/session` response.            |
-| `environment`        | `"test" \| "live"`               |    ✅    | Selects the Straumur staging or production backend.                       |
-| `locale`             | `"is" \| "en"`                   |          | UI language. Defaults to Icelandic (`is`).                                |
-| `onPaymentCompleted` | `(data: { resultCode }) => void` |          | Called when the payment flow completes (see result codes below).          |
-| `onPaymentFailed`    | `(data: { resultCode }) => void` |          | Called when the payment flow fails (see result codes below).              |
-| `instantPayments`    | `("googlepay" \| "applepay")[]`  |          | Renders the listed wallets as express buttons above the standard methods. |
-| `placeholders`       | `object`                         |          | Input placeholders — see below.                                           |
-| `localizations`      | `object`                         |          | Override built-in copy per language and key.                              |
+| Option               | Type                             | Required | Description                                                                     |
+| -------------------- | -------------------------------- | :------: | ------------------------------------------------------------------------------- |
+| `sessionId`          | `string`                         |    ✅    | The session id from your `/embeddedcheckout/session` response.                  |
+| `environment`        | `"test" \| "live"`               |    ✅    | Selects the Straumur staging or production backend.                             |
+| `locale`             | `"is" \| "en"`                   |          | UI language. Defaults to Icelandic (`is`).                                      |
+| `theme`              | `"light" \| "dark" \| "system"`  |          | Color theme. `"system"` follows `prefers-color-scheme` live. Default `"light"`. |
+| `onPaymentCompleted` | `(data: { resultCode }) => void` |          | Called when the payment flow completes (see result codes below).                |
+| `onPaymentFailed`    | `(data: { resultCode }) => void` |          | Called when the payment flow fails (see result codes below).                    |
+| `instantPayments`    | `("googlepay" \| "applepay")[]`  |          | Renders the listed wallets as express buttons above the standard methods.       |
+| `placeholders`       | `object`                         |          | Input placeholders — see below.                                                 |
+| `localizations`      | `object`                         |          | Override built-in copy per language and key.                                    |
 
 ### `placeholders`
 
@@ -104,6 +105,24 @@ localizations: {
   "is-IS": { "cards.title": "Kortaupplýsingar" },
 }
 ```
+
+### Theming
+
+Set `theme` to `"light"` (default), `"dark"`, or `"system"`:
+
+```javascript
+const checkout = new StraumurCheckout({ sessionId, environment: "test", theme: "system" });
+```
+
+`"system"` follows the shopper's OS/browser `prefers-color-scheme` and switches live if they
+change it. The theme is scoped to the widget and never affects the surrounding page. Change it at
+runtime with `updateConfig({ theme: "dark" })`.
+
+## Accessibility
+
+Payment results are announced to assistive tech (`role="alert"` for failures, `role="status"` for
+success), card fields are labelled, the dual-brand selector is keyboard-operable, and focus follows
+into a 3-D Secure challenge when it takes over the widget.
 
 ## Instance methods
 
