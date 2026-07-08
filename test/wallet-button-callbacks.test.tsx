@@ -186,7 +186,7 @@ wallets.forEach(({ name, Comp, method }) => {
       await waitFor(() => expect(screen.getByTestId("success").textContent).toBe("success.paymentAuthorized"));
     });
 
-    it("fires onPaymentFailed with no argument when called without data", async () => {
+    it("fires onPaymentFailed with a synthesized Error resultCode when called without data", async () => {
       const onPaymentFailed = vi.fn();
       const { checkout } = await setup(baseConfig({ onPaymentFailed }));
 
@@ -194,7 +194,7 @@ wallets.forEach(({ name, Comp, method }) => {
         checkout.onPaymentFailed(undefined);
       });
 
-      expect(onPaymentFailed).toHaveBeenCalledWith();
+      expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
     });
 
     it("reports unavailable instead of crashing when the wallet has no configuration", async () => {

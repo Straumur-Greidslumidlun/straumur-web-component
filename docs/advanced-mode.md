@@ -53,6 +53,8 @@ const checkout = new window.StraumurWeb.StraumurCheckout({
   // Keep it synchronous when Apple Pay is offered — the payment sheet must open within the user gesture.
   onBeforeSubmit: () => validateMyForm(),
 
+  // Adyen Web 6 routing: Refused/Cancelled/Error arrive at onPaymentFailed (always with a
+  // resultCode); every other outcome (Authorised, Received, Pending, ...) at onPaymentCompleted.
   onPaymentCompleted: (data) => redirectToReturnUrl(),
   onPaymentFailed: (data) => showTryAgain(),
 });

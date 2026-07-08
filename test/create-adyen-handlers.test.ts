@@ -170,13 +170,37 @@ describe("result dispatch", () => {
     expect(options.configuration.onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Authorised" });
   });
 
-  it("shows the generic failure message for a refused payment", () => {
+  it("shows the generic failure message and routes a refused payment to onPaymentFailed", () => {
     const { handlers, options } = setup();
 
     handlers.handlePaymentCompleted({ resultCode: "Refused" } as any);
 
     expect(options.handleError).toHaveBeenCalledWith({ key: "error.paymentUnsuccessful" });
-    expect(options.configuration.onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(options.configuration.onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(options.configuration.onPaymentCompleted).not.toHaveBeenCalled();
+  });
+
+  // Adyen Web 6 semantics: Refused/Cancelled/Error are failures, everything else completes.
+  it.each([
+    ["Authorised", "onPaymentCompleted"],
+    ["Received", "onPaymentCompleted"],
+    ["Pending", "onPaymentCompleted"],
+    ["PartiallyAuthorised", "onPaymentCompleted"],
+    ["PresentToShopper", "onPaymentCompleted"],
+    ["Refused", "onPaymentFailed"],
+    ["Cancelled", "onPaymentFailed"],
+    ["Error", "onPaymentFailed"],
+  ] as const)("routes %s to %s", (resultCode, callback) => {
+    const { handlers, options } = setup();
+
+    handlers.handlePaymentCompleted({ resultCode } as any);
+
+    const expected =
+      callback === "onPaymentFailed" ? options.configuration.onPaymentFailed : options.configuration.onPaymentCompleted;
+    const other =
+      callback === "onPaymentFailed" ? options.configuration.onPaymentCompleted : options.configuration.onPaymentFailed;
+    expect(expected).toHaveBeenCalledWith({ resultCode });
+    expect(other).not.toHaveBeenCalled();
   });
 
   it("shows the host-supplied errorMessage captured during submission when the payment fails", async () => {
@@ -210,12 +234,12 @@ describe("result dispatch", () => {
     expect(options.configuration.onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
   });
 
-  it("handlePaymentFailed without data still notifies the merchant", () => {
+  it("handlePaymentFailed without data synthesizes an Error resultCode", () => {
     const { handlers, options } = setup();
 
     handlers.handlePaymentFailed();
 
-    expect(options.configuration.onPaymentFailed).toHaveBeenCalledWith();
-    expect(options.handleError).not.toHaveBeenCalled();
+    expect(options.configuration.onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
+    expect(options.handleError).toHaveBeenCalledWith({ key: "error.paymentUnsuccessful" });
   });
 });

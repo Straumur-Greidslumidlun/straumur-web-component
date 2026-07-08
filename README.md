@@ -39,7 +39,7 @@ const paymentConfiguration = {
     console.info("Payment completed", data.resultCode);
   },
   onPaymentFailed: (data) => {
-    console.info("Payment failed", data?.resultCode);
+    console.info("Payment failed", data.resultCode);
   },
   locale: "en", // "is" | "en"
   instantPayments: ["applepay", "googlepay"],
@@ -83,7 +83,7 @@ Passed to the `StraumurCheckout` constructor:
 | `environment`        | `"test" \| "live"`                |    ✅    | Selects the Straumur staging or production backend.                       |
 | `locale`             | `"is" \| "en"`                    |          | UI language. Defaults to Icelandic (`is`).                                |
 | `onPaymentCompleted` | `(data: { resultCode }) => void`  |          | Called when the payment flow completes (see result codes below).          |
-| `onPaymentFailed`    | `(data?: { resultCode }) => void` |          | Called when the payment flow fails.                                       |
+| `onPaymentFailed`    | `(data: { resultCode }) => void`  |          | Called when the payment flow fails (see result codes below).              |
 | `instantPayments`    | `("googlepay" \| "applepay")[]`   |          | Renders the listed wallets as express buttons above the standard methods. |
 | `placeholders`       | `object`                          |          | Input placeholders — see below.                                           |
 | `localizations`      | `object`                          |          | Override built-in copy per language and key.                              |
@@ -121,15 +121,18 @@ const checkout = new StraumurCheckout(config);
 
 ## Payment result codes
 
-`onPaymentCompleted` / `onPaymentFailed` receive a `resultCode` such as `Authorised`, `Refused`,
-`ChallengeShopper`, `IdentifyShopper`, `Error`, or `Cancelled`. Note that a refused payment is a
-normal completion of the flow — branch on `resultCode`, not on whether a callback fired.
+Both callbacks receive a `resultCode`. Following Adyen Web 6 semantics, `Refused`, `Cancelled`,
+and `Error` invoke `onPaymentFailed`; every other outcome (`Authorised`, `Received`, `Pending`, …)
+invokes `onPaymentCompleted`. `onPaymentFailed` always receives a `resultCode` — if the underlying
+provider reports a failure without one, it is delivered as `Error`.
 
 ## Breaking changes in v2.0.0
 
 - Removed the config field `submitDetails?: (details: any) => void` (it was never invoked). Use the `submitDetails(redirectResult)` method on the class instead.
 - `updateConfig()` accepts only the documented configuration fields.
 - `submitDetails(redirectResult)` now invokes `onPaymentCompleted` / `onPaymentFailed`.
+- Result routing now follows Adyen Web 6: a `Refused`, `Cancelled`, or `Error` outcome invokes `onPaymentFailed` (in 1.x every gateway response, including refusals, invoked `onPaymentCompleted`). If your integration branched on `resultCode` inside `onPaymentCompleted`, move the failure branches to `onPaymentFailed`.
+- `onPaymentFailed`'s argument is no longer optional — it always carries a `resultCode`.
 
 ## License
 

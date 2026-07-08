@@ -279,7 +279,7 @@ class StraumurCheckout {
     } catch (error) {
       actions.reject();
       this.handleError(toResultMessage(error, "error.failedToSubmitPaymentDetails"));
-      this.configuration.onPaymentFailed?.();
+      this.configuration.onPaymentFailed?.({ resultCode: "Error" });
     }
   };
 

@@ -7,7 +7,7 @@ import { PaymentMethodsResponse } from "../services/models";
 type StraumurWebBaseConfiguration = {
   environment: "test" | "live";
   onPaymentCompleted?: (data: PaymentCompletedData) => void;
-  onPaymentFailed?: (data?: PaymentFailedData) => void;
+  onPaymentFailed?: (data: PaymentFailedData) => void;
   placeholders?: Placeholders;
   locale?: "is" | "en";
   localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
@@ -140,7 +140,7 @@ export type StraumurCheckoutConfiguration = {
   countryCode: string;
   paymentFlow: PaymentFlow;
   onPaymentCompleted?: (data: PaymentCompletedData) => void;
-  onPaymentFailed?: (data?: PaymentFailedData) => void;
+  onPaymentFailed?: (data: PaymentFailedData) => void;
   placeholders?: Placeholders;
   locale: Language;
   customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;

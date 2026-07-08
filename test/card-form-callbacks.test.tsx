@@ -184,19 +184,21 @@ describe("CardForm payment result callbacks", () => {
     await waitFor(() => expect(screen.getByTestId("success").textContent).toBe("success.paymentAuthorized"));
   });
 
-  it("fires onPaymentCompleted and shows error on a non-authorised result", async () => {
+  it("fires onPaymentFailed and shows error on a refused result (Adyen 6 routing)", async () => {
     const onPaymentCompleted = vi.fn();
-    const { checkout } = await setup(baseConfig({ onPaymentCompleted }));
+    const onPaymentFailed = vi.fn();
+    const { checkout } = await setup(baseConfig({ onPaymentCompleted, onPaymentFailed }));
 
     await act(async () => {
       checkout.onPaymentCompleted({ resultCode: "Refused" });
     });
 
-    expect(onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(onPaymentCompleted).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByTestId("error").textContent).toBe("error.paymentUnsuccessful"));
   });
 
-  it("fires onPaymentFailed with no argument when called without data", async () => {
+  it("fires onPaymentFailed with a synthesized Error resultCode when called without data", async () => {
     const onPaymentFailed = vi.fn();
     const { checkout } = await setup(baseConfig({ onPaymentFailed }));
 
@@ -204,7 +206,7 @@ describe("CardForm payment result callbacks", () => {
       checkout.onPaymentFailed(undefined);
     });
 
-    expect(onPaymentFailed).toHaveBeenCalledWith();
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
   });
 });
 
