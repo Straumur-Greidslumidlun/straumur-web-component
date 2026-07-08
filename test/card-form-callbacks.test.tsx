@@ -246,6 +246,19 @@ describe("CardForm submit button visibility", () => {
   });
 });
 
+describe("CardForm theme", () => {
+  it("passes light field styles to the Adyen card by default", async () => {
+    const { card } = await setup();
+    expect(card.styles.base.color).toBe("#00112c");
+  });
+
+  it("passes dark field styles to the Adyen card when the theme is dark", async () => {
+    const { card } = await setup(baseConfig({ theme: "dark" }));
+    expect(card.styles.base.color).toBe("#e8edf2");
+    expect(card.styles.placeholder.color).toBe("#9aa7b5");
+  });
+});
+
 describe("CardForm onCardValidityChanged", () => {
   it("reports (false, false) while the card method isn't the active/initialized one", async () => {
     const onCardValidityChanged = vi.fn();

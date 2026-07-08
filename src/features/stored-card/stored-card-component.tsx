@@ -15,6 +15,8 @@ import { createAdyenPaymentHandlers } from "../../components/shared/create-adyen
 import { submitCardWithGate } from "../../components/shared/before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activate";
+import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
+import { getAdyenFieldStyles } from "../../utils/adyen-field-styles";
 import { toResultMessage } from "../../flows/payment-flow";
 
 function StoredCardComponent({
@@ -54,6 +56,8 @@ function StoredCardComponent({
   const isActive = isSolePaymentMethod
     ? activePaymentMethod === "storedcard"
     : activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id;
+
+  const resolvedTheme = useResolvedTheme(configuration.theme);
 
   async function handleSubmitClick(): Promise<void> {
     await submitCardWithGate(configuration.paymentFlow, () => customCardRef.current);
@@ -113,6 +117,7 @@ function StoredCardComponent({
 
     customCardRef.current = new CustomCard(adyenCheckoutRef.current, {
       brands: [storedPaymentMethod.brand!],
+      styles: getAdyenFieldStyles(resolvedTheme),
       onSubmit: handleOnSubmit,
       onConfigSuccess() {
         updateStoredCardInitialization(storedPaymentMethod.id, true);

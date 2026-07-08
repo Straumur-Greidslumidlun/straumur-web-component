@@ -15,6 +15,8 @@ import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
 import { submitCardWithGate } from "../shared/before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activate";
+import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
+import { getAdyenFieldStyles } from "../../utils/adyen-field-styles";
 
 export interface CardFormProps {
   configuration: StraumurCheckoutConfiguration;
@@ -70,6 +72,9 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     registerSubmitHandler,
     unregisterSubmitHandler,
   } = usePaymentMethodGroup();
+
+  // Adyen's card iframes can't read our CSS, so the field colors are passed in per theme.
+  const resolvedTheme = useResolvedTheme(configuration.theme);
 
   async function handleSubmitClick(): Promise<void> {
     await submitCardWithGate(configuration.paymentFlow, () => customCardRef.current);
@@ -138,6 +143,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     customCardRef.current = new CustomCard(adyenCheckoutRef.current, {
       brands: schemeBrands,
       placeholders: configuration.placeholders,
+      styles: getAdyenFieldStyles(resolvedTheme),
       challengeWindowSize: "05",
       onBinLookup: (event) => {
         if (event.supportedBrandsRaw && event.supportedBrandsRaw.length > 1) {
