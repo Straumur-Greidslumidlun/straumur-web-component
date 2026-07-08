@@ -12,7 +12,7 @@ const getPaymentMethodsMock = vi.mocked(getPaymentMethods);
 function fakeResponse(opts: { ok: boolean; contentType?: string; json?: unknown }) {
   return {
     ok: opts.ok,
-    headers: { get: (name: string) => (name === "content-type" ? opts.contentType ?? null : null) },
+    headers: { get: (name: string) => (name === "content-type" ? (opts.contentType ?? null) : null) },
     json: async () => opts.json,
   } as unknown as Response;
 }
@@ -23,9 +23,7 @@ describe("setupPaymentMethods", () => {
   });
 
   it("normalizes a successful response into a Success result", async () => {
-    getPaymentMethodsMock.mockResolvedValue(
-      fakeResponse({ ok: true, json: { clientKey: "ck", currency: "ISK" } })
-    );
+    getPaymentMethodsMock.mockResolvedValue(fakeResponse({ ok: true, json: { clientKey: "ck", currency: "ISK" } }));
 
     const result = await setupPaymentMethods("test", "session-1");
 

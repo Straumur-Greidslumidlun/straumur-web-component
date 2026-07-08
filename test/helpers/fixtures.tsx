@@ -51,9 +51,7 @@ export const storedCard = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-export function baseConfig(
-  overrides: Partial<StraumurCheckoutConfiguration> = {}
-): StraumurCheckoutConfiguration {
+export function baseConfig(overrides: Partial<StraumurCheckoutConfiguration> = {}): StraumurCheckoutConfiguration {
   return {
     mode: "session",
     sessionId: "s1",

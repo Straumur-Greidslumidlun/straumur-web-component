@@ -97,7 +97,10 @@ beforeEach(() => {
 
 describe("CardForm.handleOnSubmit", () => {
   it("posts the payment with sessionId + storePaymentMethod and resolves on Authorised", async () => {
-    createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "Authorised", action: null }) } as any);
+    createPayment.mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised", action: null }),
+    } as any);
     const { onSubmit } = await setup();
     const act1 = actions();
 
@@ -287,7 +290,10 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
   const detailsState = { data: { details: { threeDSResult: "tds-result" } } };
 
   it("posts the details with sessionId and resolves on a valid result", async () => {
-    createDetails.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "Authorised", action: null }) } as any);
+    createDetails.mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised", action: null }),
+    } as any);
     const { checkout } = await setup();
     const act1 = actions();
 

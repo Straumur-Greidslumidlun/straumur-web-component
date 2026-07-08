@@ -119,10 +119,10 @@ export interface PaymentFlow {
 export type ResultMessage = { key: TranslationKey } | { text: string };
 
 type UniqueInstantPayments =
-    | [Extract<PaymentMethod, "googlepay">]
-    | [Extract<PaymentMethod, "applepay">]
-    | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">]
-    | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
+  | [Extract<PaymentMethod, "googlepay">]
+  | [Extract<PaymentMethod, "applepay">]
+  | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">]
+  | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
 
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {
@@ -143,12 +143,7 @@ export type StraumurCheckoutConfiguration = {
 };
 
 type PlaceholderKeys =
-  | "cardNumber"
-  | "expiryDate"
-  | "expiryMonth"
-  | "expiryYear"
-  | "securityCodeThreeDigits"
-  | "securityCodeFourDigits";
+  "cardNumber" | "expiryDate" | "expiryMonth" | "expiryYear" | "securityCodeThreeDigits" | "securityCodeFourDigits";
 
 // Partial makes all records optional so we can have a configuration without placeholders
 // Record creates a type with keys of type PlaceholderKeys and values of type string

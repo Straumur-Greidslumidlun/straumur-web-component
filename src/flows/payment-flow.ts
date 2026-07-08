@@ -94,7 +94,9 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
               reject: (errorMessage) => reject(new PaymentFlowError("error.failedToSubmitPayment", errorMessage)),
             }
           )
-        ).catch((error) => reject(error instanceof PaymentFlowError ? error : new PaymentFlowError("error.failedToSubmitPayment")));
+        ).catch((error) =>
+          reject(error instanceof PaymentFlowError ? error : new PaymentFlowError("error.failedToSubmitPayment"))
+        );
       });
     },
     submitAdditionalDetails(data) {
@@ -108,7 +110,9 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
                 reject(new PaymentFlowError("error.failedToSubmitPaymentDetails", errorMessage)),
             }
           )
-        ).catch((error) => reject(error instanceof PaymentFlowError ? error : new PaymentFlowError("error.failedToSubmitPaymentDetails")));
+        ).catch((error) =>
+          reject(error instanceof PaymentFlowError ? error : new PaymentFlowError("error.failedToSubmitPaymentDetails"))
+        );
       });
     },
     beforeSubmit: configuration.onBeforeSubmit,
@@ -127,7 +131,13 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
               reject: () => reject(new PaymentFlowError("error.failedToRemoveStoredPaymentCard")),
             }
           )
-        ).catch((error) => reject(error instanceof PaymentFlowError ? error : new PaymentFlowError("error.failedToSubmitRemoveStoredPaymentCard")));
+        ).catch((error) =>
+          reject(
+            error instanceof PaymentFlowError
+              ? error
+              : new PaymentFlowError("error.failedToSubmitRemoveStoredPaymentCard")
+          )
+        );
       });
   }
 

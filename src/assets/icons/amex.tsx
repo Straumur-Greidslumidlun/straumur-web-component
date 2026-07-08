@@ -5,13 +5,7 @@ interface AmexIconProps {
 }
 
 const AmexIcon = ({ opacity = 1 }: AmexIconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 40 26"
-    width="40"
-    height="26"
-    opacity={opacity}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 26" width="40" height="26" opacity={opacity}>
     <path fill="#016FD0" d="M0 26h40V0H0v26z" />
     <path
       fill="#fff"

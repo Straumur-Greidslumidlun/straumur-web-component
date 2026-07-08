@@ -63,9 +63,7 @@ beforeEach(() => {
 
 describe("StraumurCheckoutContainer rendering", () => {
   it("renders a sole card form (no chooser) when card is the only method", () => {
-    const { container } = renderCheckout(
-      makePaymentMethods({ paymentMethods: { paymentMethods: [scheme()] } })
-    );
+    const { container } = renderCheckout(makePaymentMethods({ paymentMethods: { paymentMethods: [scheme()] } }));
     expect(screen.getByText("Card number")).toBeTruthy();
     expect(radios(container).length).toBe(0);
   });

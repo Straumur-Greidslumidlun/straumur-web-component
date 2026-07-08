@@ -39,9 +39,7 @@ function InstantPaymentsComponent({
     payment === "googlepay" ? hasGooglePay : hasApplePay
   );
 
-  const visibleInstantPayments = finalAvailableInstantPayments.filter(
-    (payment) => !unavailableMethods.has(payment)
-  );
+  const visibleInstantPayments = finalAvailableInstantPayments.filter((payment) => !unavailableMethods.has(payment));
 
   if (finalAvailableInstantPayments.length === 0) {
     return null;

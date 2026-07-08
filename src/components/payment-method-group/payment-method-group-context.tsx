@@ -1,12 +1,6 @@
 import { h } from "preact";
 import { createContext, ComponentChildren } from "preact";
-import {
-  useState,
-  useContext,
-  useCallback,
-  useRef,
-  useLayoutEffect,
-} from "preact/hooks";
+import { useState, useContext, useCallback, useRef, useLayoutEffect } from "preact/hooks";
 import { PaymentMethod } from "../../models/constants";
 import { ResultMessage } from "../../models/models";
 
@@ -20,15 +14,9 @@ type PaymentMethodContextType = {
   activeStoredPaymentMethodId: string | null;
   setActiveStoredPaymentMethodId: (value: string) => void;
   isPaymentMethodInitialized: Record<PaymentMethod, boolean>;
-  updatePaymentMethodInitialization: (
-    paymentMethod: PaymentMethod,
-    isInitialized: boolean,
-  ) => void;
+  updatePaymentMethodInitialization: (paymentMethod: PaymentMethod, isInitialized: boolean) => void;
   isStoredCardInitialized: Record<string, boolean>;
-  updateStoredCardInitialization: (
-    storedPaymentMethod: string,
-    isInitialized: boolean,
-  ) => void;
+  updateStoredCardInitialization: (storedPaymentMethod: string, isInitialized: boolean) => void;
   handleSuccess: (success: ResultMessage) => void;
   success: ResultMessage | null;
   handleError: (error: ResultMessage) => void;
@@ -44,9 +32,7 @@ type PaymentMethodContextType = {
   unregisterSubmitHandler: (handler: () => void) => void;
 };
 
-const PaymentMethodContext = createContext<
-  PaymentMethodContextType | undefined
->(undefined);
+const PaymentMethodContext = createContext<PaymentMethodContextType | undefined>(undefined);
 
 const defaultIsInitialized: Record<PaymentMethod, boolean> = {
   card: false,
@@ -104,32 +90,22 @@ export const PaymentMethodGroupContext = ({
   useLayoutEffect(() => {
     onSubmitApiReady?.({ triggerSubmit });
   }, []);
-  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] =
-    useState<string | null>(null);
+  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] = useState<string | null>(null);
   const [threeDSecureActive, setThreeDSecureActive] = useState<boolean>(false);
-  const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] =
-    useState(defaultIsInitialized);
-  const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<
-    Record<string, boolean>
-  >({});
+  const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = useState(defaultIsInitialized);
+  const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<Record<string, boolean>>({});
 
   const [success, setSuccess] = useState<ResultMessage | null>(null);
   const [error, setError] = useState<ResultMessage | null>(null);
 
-  const updatePaymentMethodInitialization = (
-    paymentMethod: PaymentMethod,
-    isInitialized: boolean,
-  ) => {
+  const updatePaymentMethodInitialization = (paymentMethod: PaymentMethod, isInitialized: boolean) => {
     setIsPaymentMethodInitialized((prevState) => ({
       ...prevState,
       [paymentMethod]: isInitialized,
     }));
   };
 
-  const updateStoredCardInitialization = (
-    storedPaymentMethod: string,
-    isInitialized: boolean,
-  ) => {
+  const updateStoredCardInitialization = (storedPaymentMethod: string, isInitialized: boolean) => {
     setIsStoredCardInitialized((prevState) => ({
       ...prevState,
       [storedPaymentMethod]: isInitialized,
@@ -178,9 +154,7 @@ export const PaymentMethodGroupContext = ({
 export const usePaymentMethodGroup = (): PaymentMethodContextType => {
   const context = useContext(PaymentMethodContext);
   if (context === undefined) {
-    throw new Error(
-      "usePaymentMethodGroup must be used within a PaymentMethodGroup",
-    );
+    throw new Error("usePaymentMethodGroup must be used within a PaymentMethodGroup");
   }
   return context as PaymentMethodContextType;
 };

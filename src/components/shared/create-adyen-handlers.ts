@@ -32,8 +32,7 @@ export interface AdyenPaymentHandlers {
 }
 
 export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions): AdyenPaymentHandlers {
-  const { configuration, handleSuccess, handleError, setThreeDSecureActive, enrichSubmitData, onSubmitStart } =
-    options;
+  const { configuration, handleSuccess, handleError, setThreeDSecureActive, enrichSubmitData, onSubmitStart } = options;
 
   // Buyer-friendly failure message from the host (advanced mode). Set on submit, shown when the payment fails.
   let failureMessage: string | undefined;
@@ -80,9 +79,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     actions: AdditionalDetailsActions
   ) {
     try {
-      const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitAdditionalDetails(
-        state.data
-      );
+      const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitAdditionalDetails(state.data);
 
       failureMessage = errorMessage;
 

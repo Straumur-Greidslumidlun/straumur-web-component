@@ -105,9 +105,7 @@ describe("CardForm render-guard hook stability", () => {
     await waitFor(() => expect(screen.queryByText("Card number")).toBeNull());
 
     // No hook-order / render errors should have been logged during the transition.
-    const hookErrors = errorSpy.mock.calls.filter((args) =>
-      String(args[0]).toLowerCase().includes("hook")
-    );
+    const hookErrors = errorSpy.mock.calls.filter((args) => String(args[0]).toLowerCase().includes("hook"));
     expect(hookErrors).toEqual([]);
   });
 });

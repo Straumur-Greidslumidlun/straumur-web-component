@@ -77,16 +77,16 @@ The package also ships an IIFE build that exposes a global `StraumurWeb`:
 
 Passed to the `StraumurCheckout` constructor:
 
-| Option               | Type                                      | Required | Description                                                                 |
-| -------------------- | ----------------------------------------- | :------: | --------------------------------------------------------------------------- |
-| `sessionId`          | `string`                                  |    ✅    | The session id from your `/embeddedcheckout/session` response.              |
-| `environment`        | `"test" \| "live"`                        |    ✅    | Selects the Straumur staging or production backend.                         |
-| `locale`             | `"is" \| "en"`                            |          | UI language. Defaults to Icelandic (`is`).                                  |
-| `onPaymentCompleted` | `(data: { resultCode }) => void`          |          | Called when the payment flow completes (see result codes below).           |
-| `onPaymentFailed`    | `(data?: { resultCode }) => void`         |          | Called when the payment flow fails.                                         |
-| `instantPayments`    | `("googlepay" \| "applepay")[]`           |          | Renders the listed wallets as express buttons above the standard methods.  |
-| `placeholders`       | `object`                                  |          | Input placeholders — see below.                                            |
-| `localizations`      | `object`                                  |          | Override built-in copy per language and key.                               |
+| Option               | Type                              | Required | Description                                                               |
+| -------------------- | --------------------------------- | :------: | ------------------------------------------------------------------------- |
+| `sessionId`          | `string`                          |    ✅    | The session id from your `/embeddedcheckout/session` response.            |
+| `environment`        | `"test" \| "live"`                |    ✅    | Selects the Straumur staging or production backend.                       |
+| `locale`             | `"is" \| "en"`                    |          | UI language. Defaults to Icelandic (`is`).                                |
+| `onPaymentCompleted` | `(data: { resultCode }) => void`  |          | Called when the payment flow completes (see result codes below).          |
+| `onPaymentFailed`    | `(data?: { resultCode }) => void` |          | Called when the payment flow fails.                                       |
+| `instantPayments`    | `("googlepay" \| "applepay")[]`   |          | Renders the listed wallets as express buttons above the standard methods. |
+| `placeholders`       | `object`                          |          | Input placeholders — see below.                                           |
+| `localizations`      | `object`                          |          | Override built-in copy per language and key.                              |
 
 ### `placeholders`
 
@@ -111,13 +111,13 @@ localizations: {
 const checkout = new StraumurCheckout(config);
 ```
 
-| Method                     | Description                                                                                          |
-| -------------------------- | -------------------------------------------------------------------------------------------------- |
-| `mount(selector)`          | Fetches the payment methods and renders the component into a CSS selector or `HTMLElement`. Async.  |
-| `setLanguage(locale)`      | Switches the UI language at runtime (e.g. `"en-US"`, `"is-IS"`).                                    |
-| `updateConfig(partial)`    | Merges new configuration and re-renders.                                                            |
-| `submitDetails(result)`    | Completes a redirect-based (e.g. 3‑D Secure) flow using the `redirectResult` from the return URL.   |
-| `destroy()`                | Unmounts the component and cleans up.                                                               |
+| Method                  | Description                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| `mount(selector)`       | Fetches the payment methods and renders the component into a CSS selector or `HTMLElement`. Async. |
+| `setLanguage(locale)`   | Switches the UI language at runtime (e.g. `"en-US"`, `"is-IS"`).                                   |
+| `updateConfig(partial)` | Merges new configuration and re-renders.                                                           |
+| `submitDetails(result)` | Completes a redirect-based (e.g. 3‑D Secure) flow using the `redirectResult` from the return URL.  |
+| `destroy()`             | Unmounts the component and cleans up.                                                              |
 
 ## Payment result codes
 

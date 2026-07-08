@@ -1,14 +1,7 @@
 import { Fragment, h } from "preact";
 import { useRef, useState, useEffect, StateUpdater, Dispatch } from "preact/hooks";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
-import {
-  AdyenCheckout,
-  AdyenCheckoutError,
-  CustomCard,
-  ICore,
-  UIElement,
-  UIElementProps,
-} from "@adyen/adyen-web";
+import { AdyenCheckout, AdyenCheckoutError, CustomCard, ICore, UIElement, UIElementProps } from "@adyen/adyen-web";
 import { useI18n } from "../../localizations/i18n-context";
 import { Tooltip } from "../tooltip/tooltip";
 import InfoIcon from "../../assets/icons/info";
@@ -93,8 +86,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   // Computed defensively (optional chaining + fallback) because it runs on every render,
   // ahead of the render guards below. Keeping every hook unconditional satisfies the Rules
   // of Hooks; initializeAdyenComponent is only ever invoked while the card method is active.
-  const schemeBrands =
-    paymentMethods.paymentMethods?.paymentMethods?.find((x) => x.type === "scheme")?.brands ?? [];
+  const schemeBrands = paymentMethods.paymentMethods?.paymentMethods?.find((x) => x.type === "scheme")?.brands ?? [];
 
   const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
     createAdyenPaymentHandlers({

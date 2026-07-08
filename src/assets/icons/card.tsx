@@ -1,13 +1,7 @@
 import { h } from "preact";
 
 const CardIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="40"
-    height="26"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" viewBox="0 0 24 24" fill="none">
     <path d="M24 11H0V7H24V11Z" fill="#002649" />
     <path
       opacity="0.4"

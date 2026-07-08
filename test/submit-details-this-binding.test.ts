@@ -73,10 +73,7 @@ describe("StraumurCheckout.submitDetails onAdditionalDetails binding", () => {
 
     // With the bug, `this` is undefined and the call throws before reaching the request.
     expect(thrown).toBeNull();
-    expect(createDetailsRequest).toHaveBeenCalledWith(
-      "test",
-      expect.objectContaining({ sessionId: "sess-123" })
-    );
+    expect(createDetailsRequest).toHaveBeenCalledWith("test", expect.objectContaining({ sessionId: "sess-123" }));
     expect(actions.resolve).toHaveBeenCalledWith(expect.objectContaining({ resultCode: "Authorised" }));
     expect(actions.reject).not.toHaveBeenCalled();
   });

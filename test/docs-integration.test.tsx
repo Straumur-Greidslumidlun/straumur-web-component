@@ -94,9 +94,7 @@ describe("Documented integration (new StraumurCheckout(...).mount())", () => {
     // ...the card form is rendered...
     expect(screen.getByText("Card number")).toBeTruthy();
     // ...and both configured wallets appear in the instant-payments strip.
-    await waitFor(() =>
-      expect(document.querySelector(".instant-payments")).toBeTruthy()
-    );
+    await waitFor(() => expect(document.querySelector(".instant-payments")).toBeTruthy());
 
     // The loader placeholder is gone (real content mounted).
     expect(document.querySelector("#component-container")!.textContent).not.toBe("");

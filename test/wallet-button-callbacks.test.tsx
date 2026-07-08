@@ -110,7 +110,10 @@ wallets.forEach(({ name, Comp, method }) => {
     }
 
     it("posts the payment with sessionId and resolves on Authorised", async () => {
-      createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "Authorised", action: null }) } as any);
+      createPayment.mockResolvedValue({
+        ok: true,
+        json: async () => ({ resultCode: "Authorised", action: null }),
+      } as any);
       const { onSubmit } = await setup();
       const act1 = actions();
 

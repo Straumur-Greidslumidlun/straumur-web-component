@@ -160,8 +160,6 @@ describe("Stored card removal", () => {
       fireEvent.click(screen.getByText("Yes, remove"));
     });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("error").textContent).toBe("error.failedToRemoveStoredPaymentCard")
-    );
+    await waitFor(() => expect(screen.getByTestId("error").textContent).toBe("error.failedToRemoveStoredPaymentCard"));
   });
 });
