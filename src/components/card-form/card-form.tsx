@@ -12,6 +12,8 @@ import { RenderDualBrandComponent, DualBrandConfiguration } from "../render-dual
 import { StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
 import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
+import { submitCardWithGate } from "../shared/before-submit-click";
+import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 
 export interface CardFormProps {
   configuration: StraumurCheckoutConfiguration;
@@ -62,10 +64,15 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    isObscuredByThreeDS,
     hasCard,
     registerSubmitHandler,
     unregisterSubmitHandler,
   } = usePaymentMethodGroup();
+
+  async function handleSubmitClick(): Promise<void> {
+    await submitCardWithGate(configuration.paymentFlow, () => customCardRef.current);
+  }
 
   useEffect(() => {
     const isActive = activePaymentMethod === "card" && isPaymentMethodInitialized.card;
@@ -99,6 +106,10 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
         storePaymentMethod: storePaymentMethodRef.current,
       }),
     });
+
+  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
+    handleError({ key: "error.unknownError" });
+  }
 
   const initializeAdyenComponent = async () => {
     // Fully tear down any previous instance before re-initializing (e.g. on locale change),
@@ -207,10 +218,10 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     }
   }, [configuration, activePaymentMethod]);
 
-  useEffect(() => {
-    if (customCardRef.current && isPaymentMethodInitialized.card) {
-      // Most of the time we will change configuration only to update locale, and that's not possible through .update() -> https://github.com/Adyen/adyen-web/issues/2407
-      // So we need to reinitialize the component.
+  useAdyenLocaleReinit(
+    configuration,
+    () => Boolean(customCardRef.current && isPaymentMethodInitialized.card),
+    () => {
       initializeAdyenComponent();
       setFormErrors({
         encryptedCardNumber: { visible: false, message: undefined },
@@ -218,7 +229,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
         encryptedSecurityCode: { visible: false, message: undefined },
       });
     }
-  }, [configuration]);
+  );
 
   useEffect(() => {
     storePaymentMethodRef.current = storePaymentMethod;
@@ -232,25 +243,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     setStorePaymentMethod(event.currentTarget.checked);
   }
 
-  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
-    handleError({ key: "error.unknownError" });
-  }
-
-  async function handleSubmitClick() {
-    if (!customCardRef.current) return;
-
-    const { beforeSubmit } = configuration.paymentFlow;
-
-    if (beforeSubmit && !(await beforeSubmit())) {
-      return;
-    }
-
-    customCardRef.current!.submit();
-  }
-
   // Render guards live below all hooks so hook order is identical on every render.
-  if (!hasCard || (activePaymentMethod !== "card" && threeDSecureActive)) {
-    // If 3-D Secure is active for another payment method, do not show the card form.
+  if (!hasCard || isObscuredByThreeDS("card")) {
     return null;
   }
 

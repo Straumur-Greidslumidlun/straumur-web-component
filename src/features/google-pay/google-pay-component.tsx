@@ -16,7 +16,7 @@ interface GooglePayComponentProps {
 
 function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponentProps): h.JSX.Element | null {
   const { i18n } = useI18n();
-  const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive, isSolePaymentMethod, hasGooglePay } =
+  const { activePaymentMethod, setActivePaymentMethod, isObscuredByThreeDS, isSolePaymentMethod, hasGooglePay } =
     usePaymentMethodGroup();
   const [isUnavailable, setIsUnavailable] = useState(false);
 
@@ -28,7 +28,7 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
     return null;
   }
 
-  if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
+  if (isObscuredByThreeDS("googlepay")) {
     return null;
   }
 

@@ -12,6 +12,8 @@ import { StoredCardComponentProps, StoredCardFormError, StoredCardFormErrorField
 import WarningIcon from "../../assets/icons/warning";
 import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
 import { createAdyenPaymentHandlers } from "../../components/shared/create-adyen-handlers";
+import { submitCardWithGate } from "../../components/shared/before-submit-click";
+import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { toResultMessage } from "../../flows/payment-flow";
 
 function StoredCardComponent({
@@ -52,6 +54,10 @@ function StoredCardComponent({
     ? activePaymentMethod === "storedcard"
     : activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id;
 
+  async function handleSubmitClick(): Promise<void> {
+    await submitCardWithGate(configuration.paymentFlow, () => customCardRef.current);
+  }
+
   useEffect(() => {
     const ready = isActive && isStoredCardInitialized[storedPaymentMethod.id];
     if (!ready) {
@@ -82,6 +88,10 @@ function StoredCardComponent({
         },
       }),
     });
+
+  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined) {
+    handleError({ key: "error.unknownError" });
+  }
 
   const initializeAdyenComponent = async () => {
     adyenCheckoutRef.current = await AdyenCheckout({
@@ -143,14 +153,14 @@ function StoredCardComponent({
     }
   }, [configuration, isActive]);
 
-  useEffect(() => {
-    if (customCardRef.current && isStoredCardInitialized[activeStoredPaymentMethodId!]) {
-      // Most of the time we will change configuration only to update locale, and that's not possible through .update() -> https://github.com/Adyen/adyen-web/issues/2407
-      // So we need to reinitialize the component.
+  useAdyenLocaleReinit(
+    configuration,
+    () => Boolean(customCardRef.current && isStoredCardInitialized[activeStoredPaymentMethodId!]),
+    () => {
       initializeAdyenComponent();
       setFormErrors({ encryptedSecurityCode: { visible: false, message: undefined } });
     }
-  }, [configuration]);
+  );
 
   useEffect(() => {
     setAskConfirmRemoveStoredCard(false);
@@ -158,6 +168,8 @@ function StoredCardComponent({
 
   // Keep this guard below every hook call: returning early above a hook violates the
   // rules of hooks and corrupts hook ordering across renders.
+  // Deliberately NOT isObscuredByThreeDS("storedcard"): several stored-card components can be
+  // mounted at once, so the one running the 3DS challenge is matched by card id via isActive.
   if (threeDSecureActive && !isActive) {
     return null;
   }
@@ -186,22 +198,6 @@ function StoredCardComponent({
     } catch (error) {
       handleError(toResultMessage(error, "error.failedToSubmitRemoveStoredPaymentCard"));
     }
-  }
-
-  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined) {
-    handleError({ key: "error.unknownError" });
-  }
-
-  async function handleSubmitClick() {
-    if (!customCardRef.current) return;
-
-    const { beforeSubmit } = configuration.paymentFlow;
-
-    if (beforeSubmit && !(await beforeSubmit())) {
-      return;
-    }
-
-    customCardRef.current!.submit();
   }
 
   const canRemoveStoredCard = configuration.paymentFlow.disableToken !== undefined;

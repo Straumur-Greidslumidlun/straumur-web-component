@@ -10,6 +10,7 @@ import {
 } from "@adyen/adyen-web";
 import { AdvancedSubmitState, ResultMessage, StraumurCheckoutConfiguration, toResultCode } from "../../models/models";
 import { toResultMessage } from "../../flows/payment-flow";
+import { runBeforeSubmit } from "./before-submit-click";
 
 export interface AdyenPaymentHandlersOptions {
   configuration: StraumurCheckoutConfiguration;
@@ -46,7 +47,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
 
     const { paymentFlow } = configuration;
 
-    if (paymentFlow.beforeSubmit && !(await paymentFlow.beforeSubmit())) {
+    if (!(await runBeforeSubmit(paymentFlow))) {
       actions.reject();
       return;
     }

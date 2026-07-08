@@ -17,6 +17,7 @@ import { CANCEL } from "../../models/constants";
 import LoaderIcon from "../../assets/icons/loader";
 import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
 import { createBeforeSubmitClickHandler } from "../shared/before-submit-click";
+import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 
 interface ApplePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
@@ -41,6 +42,7 @@ function ApplePayButton({
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    isObscuredByThreeDS,
     setActivePaymentMethod,
     activePaymentMethod,
   } = usePaymentMethodGroup();
@@ -121,17 +123,16 @@ function ApplePayButton({
     }
   }, [configuration]);
 
-  useEffect(() => {
-    if (applePayRef.current && isPaymentMethodInitialized.applepay) {
+  useAdyenLocaleReinit(
+    configuration,
+    () => Boolean(applePayRef.current && isPaymentMethodInitialized.applepay),
+    () => {
       applePayRef.current!.remove();
-      // Most of the time we will change configuration only to update locale, and that's not possible through .update() -> https://github.com/Adyen/adyen-web/issues/2407
-      // So we need to reinitialize the component.
       initializeAdyenComponent();
     }
-  }, [configuration]);
+  );
 
-  if (activePaymentMethod !== "applepay" && threeDSecureActive) {
-    // if threeDSecureActive for some other payment method, do not show apple pay
+  if (isObscuredByThreeDS("applepay")) {
     return null;
   }
 

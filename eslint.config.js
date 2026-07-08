@@ -19,6 +19,10 @@ export default tseslint.config(
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_|^h$|^Fragment$" },
       ],
       "@typescript-eslint/no-explicit-any": "warn",
+      // Adyen handler factories are called during render and capture refs in closures that only
+      // run at event time (submit/click). The refs rule cannot see when the closure runs and
+      // flags these as render-time reads — a false positive for this architecture.
+      "react-hooks/refs": "off",
     },
   },
   {

@@ -12,10 +12,10 @@ import PaymentMethodItem from "../../components/payment-method-item/payment-meth
 function CardComponent({ configuration, paymentMethods }: CardComponentProps): h.JSX.Element | null {
   const { i18n } = useI18n();
   const [brandHidden, setBrandHidden] = useState<BrandHidden[]>([]);
-  const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive, isSolePaymentMethod, hasCard } =
+  const { activePaymentMethod, setActivePaymentMethod, isObscuredByThreeDS, isSolePaymentMethod, hasCard } =
     usePaymentMethodGroup();
 
-  if (!hasCard || (activePaymentMethod !== "card" && threeDSecureActive)) {
+  if (!hasCard || isObscuredByThreeDS("card")) {
     return null;
   }
 

@@ -17,6 +17,7 @@ import { CANCEL } from "../../models/constants";
 import LoaderIcon from "../../assets/icons/loader";
 import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
 import { createBeforeSubmitClickHandler } from "../shared/before-submit-click";
+import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 
 interface GooglePayButtonProps {
   configuration: StraumurCheckoutConfiguration;
@@ -41,6 +42,7 @@ function GooglePayButton({
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    isObscuredByThreeDS,
     setActivePaymentMethod,
     activePaymentMethod,
   } = usePaymentMethodGroup();
@@ -124,17 +126,16 @@ function GooglePayButton({
     }
   }, [configuration]);
 
-  useEffect(() => {
-    if (googlePayRef.current && isPaymentMethodInitialized.googlepay) {
+  useAdyenLocaleReinit(
+    configuration,
+    () => Boolean(googlePayRef.current && isPaymentMethodInitialized.googlepay),
+    () => {
       googlePayRef.current!.remove();
-      // Most of the time we will change configuration only to update locale, and that's not possible through .update() -> https://github.com/Adyen/adyen-web/issues/2407
-      // So we need to reinitialize the component.
       initializeAdyenComponent();
     }
-  }, [configuration]);
+  );
 
-  if (activePaymentMethod !== "googlepay" && threeDSecureActive) {
-    // if threeDSecureActive for some other payment method, do not show google pay
+  if (isObscuredByThreeDS("googlepay")) {
     return null;
   }
 

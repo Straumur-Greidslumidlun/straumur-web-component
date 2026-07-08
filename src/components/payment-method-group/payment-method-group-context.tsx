@@ -31,6 +31,12 @@ type PaymentMethodContextType = {
   error: ResultMessage | null;
   threeDSecureActive: boolean;
   setThreeDSecureActive: (value: boolean) => void;
+  /**
+   * True while a 3DS challenge run by ANOTHER payment method takes over the widget —
+   * the asking component must render nothing. Components matching a specific stored card
+   * additionally check their own card id (see stored-card-component).
+   */
+  isObscuredByThreeDS: (method: PaymentMethod) => boolean;
   isSolePaymentMethod: boolean;
   hasCard: boolean;
   hasGooglePay: boolean;
@@ -120,6 +126,11 @@ export const PaymentMethodGroupContext = ({
     }));
   };
 
+  const isObscuredByThreeDS = useCallback(
+    (method: PaymentMethod): boolean => threeDSecureActive && activePaymentMethod !== method,
+    [threeDSecureActive, activePaymentMethod]
+  );
+
   const handleError = (error: ResultMessage) => {
     setError(error);
   };
@@ -145,6 +156,7 @@ export const PaymentMethodGroupContext = ({
         error,
         threeDSecureActive,
         setThreeDSecureActive,
+        isObscuredByThreeDS,
         isSolePaymentMethod,
         hasCard,
         hasGooglePay,
