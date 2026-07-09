@@ -120,7 +120,7 @@
   align-items: center;
   border: 1px solid var(--straumur__color-transparent);
   border-radius: var(--straumur__border-radius-s);
-  font-size: 1rem;
+  font-size: 16px;
   height: 48px;
   outline: none;
   padding-left: var(--straumur__space-lg);
@@ -157,13 +157,20 @@
   gap: var(--straumur__space-5xlg);
 }
 
+/* Tighten the field gap on a narrow widget (keyed on widget width, not viewport). */
+@container straumur (max-width: 380px) {
+  .straumur__stored-card-component__form--field-wrapper {
+    gap: var(--straumur__space-md);
+  }
+}
+
 .straumur__stored-card-component__submit-button {
   background: var(--straumur__color-primary);
   border: none;
   border-radius: var(--straumur__border-radius-s);
   color: var(--straumur__color-white);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 16px;
   height: 40px;
   outline: none;
   padding: 0 var(--straumur__space-xxlg);

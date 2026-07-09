@@ -68,7 +68,7 @@
   font-family: inherit;
   border: 1px solid var(--straumur__color-transparent);
   border-radius: var(--straumur__border-radius-s);
-  font-size: 1rem;
+  font-size: 16px;
   height: 48px;
   outline: none;
   padding-left: var(--straumur__space-lg);
@@ -96,13 +96,22 @@
   gap: var(--straumur__space-5xlg);
 }
 
+/* On a narrow widget, tighten the expiry/CVC and dual-brand gaps so the two columns aren't cramped
+   (keyed on the widget's own width via the straumur container, not the viewport). */
+@container straumur (max-width: 380px) {
+  .straumur__card-component__form--field-wrapper,
+  .straumur__card-component__dual-branding {
+    gap: var(--straumur__space-md);
+  }
+}
+
 .straumur__card-component__submit-button {
   background: var(--straumur__color-primary);
   border: none;
   border-radius: var(--straumur__border-radius-s);
   color: var(--straumur__color-white);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 16px;
   height: 40px;
   outline: none;
   padding: 0 var(--straumur__space-xxlg);

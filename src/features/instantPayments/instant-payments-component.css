@@ -8,7 +8,9 @@
   grid-template-columns: 1fr;
 }
 
-@media (max-width: 527px) {
+/* Stack the wallet buttons when the WIDGET (not the viewport) is too narrow for two side by side,
+   so they lay out correctly no matter what host container they're embedded in. */
+@container straumur (max-width: 460px) {
   .instant-payments {
     grid-template-columns: 1fr;
   }

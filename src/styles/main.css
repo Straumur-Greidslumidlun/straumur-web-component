@@ -58,6 +58,11 @@
   font-family: "AkzidenzGroteskPro", sans-serif;
   max-width: 676px;
   min-width: 320px;
+  /* Establish a query container so descendants can respond to the WIDGET's own width, not the
+     viewport. This is an embeddable widget — its width is set by the host container, so viewport
+     @media is the wrong tool (a narrow host column on a wide screen would never match). Use
+     @container (name: straumur) in component CSS instead. */
+  container: straumur / inline-size;
 }
 
 /*
@@ -109,7 +114,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 300px;
+  /* min-height, not a fixed height, so a long localized error/message can't clip. */
+  min-height: 300px;
   background-color: var(--straumur__color-white);
   border-radius: var(--straumur__border-radius-xxlg);
 }

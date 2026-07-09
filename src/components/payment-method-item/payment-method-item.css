@@ -83,7 +83,7 @@
 
 .straumur__payment-method-item--title {
   color: var(--straumur__color-text);
-  font-size: 1rem;
+  font-size: 16px;
   user-select: none;
 }
 
