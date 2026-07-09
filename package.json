@@ -23,6 +23,7 @@
     }
   },
   "sideEffects": [
+    "**/*.css",
     "./dist/index.js",
     "./dist/index.mjs",
     "./dist/index.cjs"
