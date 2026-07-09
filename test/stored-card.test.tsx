@@ -163,3 +163,16 @@ describe("Stored card removal", () => {
     await waitFor(() => expect(screen.getByTestId("error").textContent).toBe("error.failedToRemoveStoredPaymentCard"));
   });
 });
+
+describe("Stored card theme", () => {
+  it("passes light field styles to the Adyen card by default", async () => {
+    await setup();
+    expect(A.cap.card[0].styles.base.color).toBe("#00112c");
+  });
+
+  it("passes dark field styles to the Adyen card when the theme is dark", async () => {
+    await setup(baseConfig({ theme: "dark" }));
+    expect(A.cap.card[0].styles.base.color).toBe("#e8edf2");
+    expect(A.cap.card[0].styles.placeholder.color).toBe("#9aa7b5");
+  });
+});

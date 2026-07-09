@@ -246,6 +246,17 @@ describe("CardForm submit button visibility", () => {
   });
 });
 
+describe("CardForm accessibility", () => {
+  it("labels each secure card field as a named group for screen readers", async () => {
+    await setup();
+    // The visible <label> can't associate with a secure iframe via htmlFor, so each field
+    // mount span carries role="group" + a localized aria-label instead.
+    expect(screen.getByRole("group", { name: "Card number" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Expiry date" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Security code" })).toBeTruthy();
+  });
+});
+
 describe("CardForm theme", () => {
   it("passes light field styles to the Adyen card by default", async () => {
     const { card } = await setup();
