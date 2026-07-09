@@ -118,6 +118,27 @@ const checkout = new StraumurCheckout({ sessionId, environment: "test", theme: "
 change it. The theme is scoped to the widget and never affects the surrounding page. Change it at
 runtime with `updateConfig({ theme: "dark" })`.
 
+#### Overriding the colors
+
+The widget's colors are CSS custom properties, so you can override any of them. Scope your rule
+under your own container element (the one you pass to `mount()`) — that gives it higher specificity
+than the built-in styles, so your values win without needing `!important`:
+
+```css
+/* Customize the dark theme (target [data-theme="dark"]); drop it to customize light. */
+#component-container .straumur__root-component[data-theme="dark"] {
+  --straumur__color-white: #101418; /* surfaces / backgrounds */
+  --straumur__color-text: #f5f7fa; /* body text */
+  --straumur__color-primary: #f5f7fa; /* buttons and accents */
+  --straumur__color-secondary: #9aa7b5; /* muted text */
+  --straumur__color-border: #2b323b; /* borders */
+}
+```
+
+The full set of tokens is defined in `src/styles/main.css`. Note: the card number / expiry / CVC
+inputs are rendered inside Adyen's secure iframes, which CSS custom properties cannot reach — their
+text colors are set internally and won't follow a heavily customized palette.
+
 ## Accessibility
 
 Payment results are announced to assistive tech (`role="alert"` for failures, `role="status"` for
