@@ -51,7 +51,8 @@
 
   --apple-pay-button-width: 100%;
   --apple-pay-button-height: 48px;
-  --apple-pay-button-border-radius: 4px;
+  /* Match the card submit button / inputs radius instead of a lone 4px. */
+  --apple-pay-button-border-radius: var(--straumur__border-radius-s);
 }
 
 .straumur__root-component {

@@ -93,16 +93,8 @@
 .straumur__card-component__form--field-wrapper {
   display: flex;
   width: 100%;
-  gap: var(--straumur__space-5xlg);
-}
-
-/* On a narrow widget, tighten the expiry/CVC and dual-brand gaps so the two columns aren't cramped
-   (keyed on the widget's own width via the straumur container, not the viewport). */
-@container straumur (max-width: 380px) {
-  .straumur__card-component__form--field-wrapper,
-  .straumur__card-component__dual-branding {
-    gap: var(--straumur__space-md);
-  }
+  /* Standard intra-row gap between paired controls (matches wallets + dual-brand). */
+  gap: var(--straumur__space-lg);
 }
 
 .straumur__card-component__submit-button {
@@ -200,7 +192,7 @@
 .straumur__card-component__dual-branding {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--straumur__space-5xlg);
+  gap: var(--straumur__space-lg);
 }
 
 .straumur__card-component__dual-branding--logo {

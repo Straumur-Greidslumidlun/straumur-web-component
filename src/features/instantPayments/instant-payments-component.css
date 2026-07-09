@@ -1,6 +1,7 @@
 .instant-payments {
   display: grid;
-  gap: var(--straumur__space-md);
+  /* Standard intra-row gap between paired controls (matches the card expiry/CVC row). */
+  gap: var(--straumur__space-lg);
   grid-template-columns: 1fr 1fr;
 }
 
@@ -9,8 +10,10 @@
 }
 
 /* Stack the wallet buttons when the WIDGET (not the viewport) is too narrow for two side by side,
-   so they lay out correctly no matter what host container they're embedded in. */
-@container straumur (max-width: 460px) {
+   so they lay out correctly no matter what host container they're embedded in.
+   Derivation: a wallet button reads comfortably down to ~200px; two of them plus the 12px gap
+   need ~412px, so below ~420px stacking wins. */
+@container straumur (max-width: 420px) {
   .instant-payments {
     grid-template-columns: 1fr;
   }

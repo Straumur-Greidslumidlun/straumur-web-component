@@ -154,14 +154,8 @@
 .straumur__stored-card-component__form--field-wrapper {
   display: flex;
   width: 100%;
-  gap: var(--straumur__space-5xlg);
-}
-
-/* Tighten the field gap on a narrow widget (keyed on widget width, not viewport). */
-@container straumur (max-width: 380px) {
-  .straumur__stored-card-component__form--field-wrapper {
-    gap: var(--straumur__space-md);
-  }
+  /* Standard intra-row gap between paired controls. */
+  gap: var(--straumur__space-lg);
 }
 
 .straumur__stored-card-component__submit-button {
