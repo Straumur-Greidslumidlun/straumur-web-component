@@ -19,12 +19,14 @@ import { createDetailsRequest } from "./adapter/straumur-adapter";
 import SuccessIcon from "./assets/icons/success";
 import { I18nProvider } from "./localizations/i18n-context";
 import { I18nService } from "./localizations/i18n-service";
+import { SubmitApi } from "./components/payment-method-group/payment-method-group-context";
 
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
   private paymentMethods: SuccessResponse | null = null;
   private mountElement: HTMLElement | null = null;
   private i18n: I18nService;
+  private submitApi: SubmitApi | null = null;
 
   constructor(config: StraumurWebConfiguration) {
     this.configuration = {
@@ -93,7 +95,13 @@ class StraumurCheckout {
             this.renderComponent();
           }}
         >
-          <StraumurCheckoutContainer configuration={this.configuration} paymentMethods={this.paymentMethods!} />
+          <StraumurCheckoutContainer
+            configuration={this.configuration}
+            paymentMethods={this.paymentMethods!}
+            onSubmitApiReady={(api) => {
+              this.submitApi = api;
+            }}
+          />
         </I18nProvider>
       </RootComponent>,
       this.mountElement
@@ -219,6 +227,29 @@ class StraumurCheckout {
       render(null, this.mountElement);
       this.mountElement = null;
     }
+    this.submitApi = null;
+  }
+
+  submitCard(): boolean {
+    if (!this.mountElement) {
+      console.warn("[StraumurCheckout] submitCard() called before the component was mounted.");
+      return false;
+    }
+
+    if (!this.submitApi) {
+      console.warn("[StraumurCheckout] submitCard() called but the component is not ready yet.");
+      return false;
+    }
+
+    const triggered = this.submitApi.triggerSubmit();
+
+    if (!triggered) {
+      console.warn(
+        "[StraumurCheckout] submitCard() called but no card-type payment method is currently active and initialized."
+      );
+    }
+
+    return triggered;
   }
 }
 

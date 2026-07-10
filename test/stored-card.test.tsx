@@ -101,6 +101,18 @@ describe("Stored card submit", () => {
   });
 });
 
+describe("Stored card submit button visibility", () => {
+  it("renders the internal submit button by default", async () => {
+    await setup();
+    expect(screen.getByText(paymentMethods.formattedAmount)).toBeTruthy();
+  });
+
+  it("hides the internal submit button when hideSubmitButton is true", async () => {
+    await setup(baseConfig({ hideSubmitButton: true }));
+    expect(screen.queryByText(paymentMethods.formattedAmount)).toBeNull();
+  });
+});
+
 describe("Stored card removal", () => {
   it("removes the card from the list on a successful disable-token response", async () => {
     disableToken.mockResolvedValue({ ok: true, json: async () => ({ success: true }) } as any);

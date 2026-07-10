@@ -1,5 +1,5 @@
 import { h, ComponentChildren } from "preact";
-import { PaymentMethodGroupContext } from "./payment-method-group-context";
+import { PaymentMethodGroupContext, SubmitApi } from "./payment-method-group-context";
 import "./payment-method-group.css";
 import { PaymentMethod } from "../../models/constants";
 
@@ -11,6 +11,7 @@ interface PaymentMethodGroupProps {
   hasGooglePay: boolean;
   hasApplePay: boolean;
   hasStoredPaymentMethods: boolean;
+  onSubmitApiReady?: (api: SubmitApi) => void;
 }
 
 function PaymentMethodGroup({
@@ -21,6 +22,7 @@ function PaymentMethodGroup({
   hasGooglePay,
   hasApplePay,
   hasStoredPaymentMethods,
+  onSubmitApiReady,
 }: PaymentMethodGroupProps): h.JSX.Element | null {
   return (
     <PaymentMethodGroupContext
@@ -30,6 +32,7 @@ function PaymentMethodGroup({
       hasGooglePay={hasGooglePay}
       hasApplePay={hasApplePay}
       hasStoredPaymentMethods={hasStoredPaymentMethods}
+      onSubmitApiReady={onSubmitApiReady}
     >
       <div className="straumur__payment-method-group">{children}</div>
     </PaymentMethodGroupContext>

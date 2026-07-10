@@ -55,6 +55,8 @@ function StoredCardComponent({
     setThreeDSecureActive,
     threeDSecureActive,
     isSolePaymentMethod,
+    registerSubmitHandler,
+    unregisterSubmitHandler,
   } = usePaymentMethodGroup();
 
   // In sole mode there is only one stored card, so being the active payment method is enough.
@@ -62,6 +64,22 @@ function StoredCardComponent({
   const isActive = isSolePaymentMethod
     ? activePaymentMethod === "storedcard"
     : activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id;
+
+  useEffect(() => {
+    const ready = isActive && isStoredCardInitialized[storedPaymentMethod.id];
+    if (!ready) {
+      // Nothing selected yet, or a different payment method is active - tell the
+      // host explicitly so a custom submit button can default to disabled.
+      configuration.onCardValidityChanged?.(false, false);
+      return;
+    }
+
+    registerSubmitHandler(handleSubmitClick);
+    return () => {
+      unregisterSubmitHandler(handleSubmitClick);
+      configuration.onCardValidityChanged?.(false, false);
+    };
+  }, [isActive, isStoredCardInitialized[storedPaymentMethod.id], registerSubmitHandler, unregisterSubmitHandler]);
 
   if (threeDSecureActive && !isActive) {
     return null;
@@ -109,6 +127,7 @@ function StoredCardComponent({
       },
       onAllValid: (event) => {
         setPayButtonDisabled(!event.allValid);
+        configuration.onCardValidityChanged?.(event.allValid, true);
       },
       placeholders: configuration.placeholders,
       challengeWindowSize: "05", // looks like not working
@@ -411,13 +430,15 @@ function StoredCardComponent({
             </div>
           </div>
 
-          <button
-            className="straumur__stored-card-component__submit-button"
-            disabled={payButtonDisabled}
-            onClick={handleSubmitClick}
-          >
-            {paymentMethods.formattedAmount}
-          </button>
+          {!configuration.hideSubmitButton && (
+            <button
+              className="straumur__stored-card-component__submit-button"
+              disabled={payButtonDisabled}
+              onClick={handleSubmitClick}
+            >
+              {paymentMethods.formattedAmount}
+            </button>
+          )}
         </div>
       </div>
     </PaymentMethodItem>

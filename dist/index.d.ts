@@ -83,6 +83,9 @@ type StraumurWebConfiguration = {
     locale?: "is" | "en";
     localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
     instantPayments?: UniqueInstantPayments;
+    hideSubmitButton?: boolean;
+    onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+    allowedPaymentMethods?: PaymentMethod[];
 };
 type ResultCode = "AuthenticationFinished" | "AuthenticationNotRequired" | "Authorised" | "Cancelled" | "ChallengeShopper" | "Error" | "IdentifyShopper" | "PartiallyAuthorised" | "Pending" | "PresentToShopper" | "Received" | "RedirectShopper" | "Refused";
 type PaymentCompletedData = {
@@ -101,6 +104,9 @@ type StraumurCheckoutConfiguration = {
     locale: Language;
     customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
     instantPayments?: UniqueInstantPayments;
+    hideSubmitButton?: boolean;
+    onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+    allowedPaymentMethods?: PaymentMethod[];
 };
 type PlaceholderKeys = "cardNumber" | "expiryDate" | "expiryMonth" | "expiryYear" | "securityCodeThreeDigits" | "securityCodeFourDigits";
 type Placeholders = Partial<Record<PlaceholderKeys, string>>;
@@ -110,6 +116,7 @@ declare class StraumurCheckout {
     private paymentMethods;
     private mountElement;
     private i18n;
+    private submitApi;
     constructor(config: StraumurWebConfiguration);
     mount(selector: HTMLElement | string): Promise<void>;
     private renderComponent;
@@ -120,6 +127,7 @@ declare class StraumurCheckout {
     updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void;
     setLanguage(locale: Language): void;
     destroy(): void;
+    submitCard(): boolean;
 }
 
 export { StraumurCheckout };

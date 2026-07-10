@@ -225,6 +225,60 @@ describe("CardForm CustomCard callbacks", () => {
   });
 });
 
+describe("CardForm submit button visibility", () => {
+  it("renders the internal submit button by default", async () => {
+    await setup();
+    expect(screen.getByText(paymentMethods.formattedAmount)).toBeTruthy();
+  });
+
+  it("hides the internal submit button when hideSubmitButton is true", async () => {
+    await setup(baseConfig({ hideSubmitButton: true }));
+    expect(screen.queryByText(paymentMethods.formattedAmount)).toBeNull();
+  });
+});
+
+describe("CardForm onCardValidityChanged", () => {
+  it("reports (false, false) while the card method isn't the active/initialized one", async () => {
+    const onCardValidityChanged = vi.fn();
+    render(
+      <I18nProvider i18nService={new I18nService("en-US")}>
+        <PaymentMethodGroupContext
+          initialValue={null}
+          isSolePaymentMethod={false}
+          hasCard={true}
+          hasGooglePay={false}
+          hasApplePay={false}
+          hasStoredPaymentMethods={false}
+        >
+          <CardForm
+            configuration={baseConfig({ onCardValidityChanged })}
+            paymentMethods={paymentMethods}
+            onBrandHidden={() => {}}
+          />
+        </PaymentMethodGroupContext>
+      </I18nProvider>
+    );
+
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, false));
+  });
+
+  it("reports (isValid, true) once the card form is active and Adyen reports validity", async () => {
+    const onCardValidityChanged = vi.fn();
+    const { card } = await setup(baseConfig({ onCardValidityChanged }));
+    onCardValidityChanged.mockClear();
+
+    await act(async () => {
+      card.onAllValid({ allValid: true });
+    });
+    expect(onCardValidityChanged).toHaveBeenCalledWith(true, true);
+
+    await act(async () => {
+      card.onAllValid({ allValid: false });
+    });
+    expect(onCardValidityChanged).toHaveBeenCalledWith(false, true);
+  });
+});
+
 describe("CardForm additional details (3-D Secure continuation)", () => {
   const detailsState = { data: { details: { threeDSResult: "tds-result" } } };
 
