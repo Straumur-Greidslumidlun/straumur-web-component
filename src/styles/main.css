@@ -57,6 +57,10 @@
 
 .straumur__root-component {
   font-family: "AkzidenzGroteskPro", sans-serif;
+  /* Self-contained base text color per theme, so text (e.g. the floating field labels, which set
+     no color of their own) doesn't inherit an unpredictable color from the host page — and is
+     readable in dark mode instead of dark-on-dark. */
+  color: var(--straumur__color-text);
   max-width: 676px;
   min-width: 320px;
   /* Establish a query container so descendants can respond to the WIDGET's own width, not the
