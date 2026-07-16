@@ -84,6 +84,10 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         onSubmit: handleOnSubmit,
         onClick: createBeforeSubmitClickHandler(configuration.paymentFlow),
         buttonSizeMode: "fill",
+        // px — Adyen draws the Google Pay button, so its radius can't come from CSS. Keep this in
+        // sync with --straumur__border-radius-s (8px), matching the card submit button / inputs
+        // and the Apple Pay button (--apple-pay-button-border-radius).
+        buttonRadius: 8,
         configuration: {
           ...walletConfig,
           merchantName: paymentMethods.merchantName,
