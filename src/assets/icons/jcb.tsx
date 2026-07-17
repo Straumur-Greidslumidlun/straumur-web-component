@@ -5,7 +5,7 @@ interface JcbIconProps {
 }
 
 const JcbIcon = ({ opacity = 1 }: JcbIconProps) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" fill="none" viewBox="0 0 40 26" opacity={opacity}>
+  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="19.5" fill="none" viewBox="0 0 40 26" opacity={opacity}>
     <g clip-path="url(#a)">
       <path fill="#fff" d="M0 0h40v26H0V0Z" />
       <path fill="#fff" d="M36.6 20.66a5.22 5.22 0 0 1-5.22 5.22H3V5.22A5.22 5.22 0 0 1 8.22 0H36.6v20.66Z" />

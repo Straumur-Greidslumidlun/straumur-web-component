@@ -1,6 +1,6 @@
 import { Language, TranslationKey } from "../localizations/translations";
 import { PublicLocale } from "../localizations/locale";
-import { PaymentMethod } from "./constants";
+import { PaymentMethod, PaymentMethodOrder } from "./constants";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../adapter/models";
 import { PaymentMethodsResponse } from "../services/models";
 
@@ -17,16 +17,43 @@ type StraumurWebBaseConfiguration = {
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];
   /**
-   * Color theme for the widget. "system" follows the shopper's OS/browser preference
-   * (`prefers-color-scheme`) and updates live if it changes. Defaults to "light".
+   * Top-to-bottom order of the payment-method options. Tokens: "card", "storedcard", "googlepay",
+   * "applepay", and "instantpayments" (the express wallet row). A wallet listed in `instantPayments`
+   * renders only inside the "instantpayments" slot, never standalone, so its standalone token here is
+   * effectively ignored. Any available method you omit is appended in the default order. Defaults to
+   * ["instantpayments", "storedcard", "card", "googlepay", "applepay"].
    */
-  theme?: Theme;
+  orderPaymentMethods?: PaymentMethodOrder[];
+  /**
+   * Color theme for the widget. Accepts a mode ("light" | "dark" | "system"), or a
+   * {@link ThemeConfiguration} object to also override the wallet button styling. "system" follows
+   * the shopper's OS/browser preference (`prefers-color-scheme`) and updates live if it changes.
+   * Defaults to "light".
+   */
+  theme?: Theme | ThemeConfiguration;
 };
 
 export type Theme = "light" | "dark" | "system";
 
 /** The resolved theme actually applied to the DOM ("system" collapses to one of these). */
 export type ResolvedTheme = "light" | "dark";
+
+/** Google Pay button style override: "white" = light button, "dark" = black button. */
+export type GooglePayButtonTheme = "dark" | "white";
+
+/** Apple Pay button style override: "light" = white button, "dark" = black button. */
+export type ApplePayButtonTheme = "dark" | "light";
+
+/**
+ * Object form of `theme`: the widget color mode plus optional per-wallet button overrides.
+ * When an override is omitted the wallet button follows the mode — a light widget gets a
+ * light/white button, a dark widget gets a black one.
+ */
+export type ThemeConfiguration = {
+  theme: Theme;
+  googlePayButtonTheme?: GooglePayButtonTheme;
+  applePayButtonTheme?: ApplePayButtonTheme;
+};
 
 // the public configuration (session mode): the component loads everything itself from the Straumur API using the sessionId
 export type StraumurWebConfiguration = StraumurWebBaseConfiguration & {
@@ -159,7 +186,10 @@ export type StraumurCheckoutConfiguration = {
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];
+  orderPaymentMethods?: PaymentMethodOrder[];
   theme: Theme;
+  googlePayButtonTheme?: GooglePayButtonTheme;
+  applePayButtonTheme?: ApplePayButtonTheme;
 };
 
 // What updateConfig() accepts: internal config fields minus the immutable ones,

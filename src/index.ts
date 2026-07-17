@@ -5,4 +5,9 @@ export type {
   PaymentFailedData,
   ResultCode,
   Placeholders,
+  Theme,
+  ThemeConfiguration,
+  GooglePayButtonTheme,
+  ApplePayButtonTheme,
 } from "./models/models";
+export type { PaymentMethod, PaymentMethodOrder } from "./models/constants";

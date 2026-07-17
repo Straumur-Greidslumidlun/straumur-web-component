@@ -12,13 +12,15 @@ import {
   UIElementProps,
 } from "@adyen/adyen-web";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
-import { StraumurCheckoutConfiguration } from "../../models/models";
+import { ResolvedTheme, StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
 import { CANCEL } from "../../models/constants";
 import LoaderIcon from "../../assets/icons/loader";
 import { AdyenPaymentHandlers, createAdyenPaymentHandlers } from "./create-adyen-handlers";
 import { createBeforeSubmitClickHandler } from "./before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
+import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
+import { resolveApplePayButtonColor, resolveGooglePayButtonColor } from "../../utils/wallet-button-theme";
 
 export type WalletMethod = "applepay" | "googlepay";
 
@@ -40,6 +42,7 @@ interface WalletContext {
   paymentMethods: SuccessResponse;
   walletConfig: WalletMerchantConfig;
   handleOnSubmit: AdyenPaymentHandlers["handleOnSubmit"];
+  resolvedTheme: ResolvedTheme;
 }
 
 interface WalletDescriptor {
@@ -52,7 +55,7 @@ interface WalletDescriptor {
 const WALLETS: Record<WalletMethod, WalletDescriptor> = {
   applepay: {
     loadingClassName: "straumur__apple-pay-button__loading",
-    createElement(core, { configuration, paymentMethods, walletConfig, handleOnSubmit }) {
+    createElement(core, { configuration, paymentMethods, walletConfig, handleOnSubmit, resolvedTheme }) {
       const applePayConfiguration: ApplePayConfiguration = {
         amount: {
           value: paymentMethods.minorUnitsAmount,
@@ -61,6 +64,8 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         environment: configuration.environment,
         onSubmit: handleOnSubmit,
         onClick: createBeforeSubmitClickHandler(configuration.paymentFlow),
+        // Follows the widget theme (light → white-outline, dark → black); overridable via applePayButtonTheme.
+        buttonColor: resolveApplePayButtonColor(resolvedTheme, configuration.applePayButtonTheme),
         configuration: {
           ...walletConfig,
           merchantName: paymentMethods.merchantName,
@@ -72,7 +77,7 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
   },
   googlepay: {
     loadingClassName: "straumur__google-pay-button__loading",
-    createElement(core, { configuration, paymentMethods, walletConfig, handleOnSubmit }) {
+    createElement(core, { configuration, paymentMethods, walletConfig, handleOnSubmit, resolvedTheme }) {
       const googlePayConfiguration: GooglePayConfiguration = {
         amount: {
           value: paymentMethods.minorUnitsAmount,
@@ -83,6 +88,8 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         environment: configuration.environment,
         onSubmit: handleOnSubmit,
         onClick: createBeforeSubmitClickHandler(configuration.paymentFlow),
+        // Follows the widget theme (light → white, dark → black); overridable via googlePayButtonTheme.
+        buttonColor: resolveGooglePayButtonColor(resolvedTheme, configuration.googlePayButtonTheme),
         buttonSizeMode: "fill",
         // px — Adyen draws the Google Pay button, so its radius can't come from CSS. Keep this in
         // sync with --straumur__border-radius-lg (12px), matching the payment-method "card box"
@@ -108,6 +115,7 @@ function WalletButton({
   onUnavailable,
 }: WalletButtonProps): h.JSX.Element | null {
   const wallet = WALLETS[method];
+  const resolvedTheme = useResolvedTheme(configuration.theme);
   const walletElementRef = useRef<HTMLDivElement>(null);
   const adyenCheckoutRef = useRef<ICore>();
   const walletRef = useRef<WalletElement>();
@@ -182,6 +190,7 @@ function WalletButton({
       paymentMethods,
       walletConfig,
       handleOnSubmit,
+      resolvedTheme,
     });
 
     walletRef.current

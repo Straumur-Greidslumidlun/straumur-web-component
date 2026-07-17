@@ -25,17 +25,24 @@ interface RenderBrandIconsProps {
   limit?: number;
 }
 
-export function RenderBrandIcons({ brands, brandHidden = [], limit = 3 }: RenderBrandIconsProps): h.JSX.Element {
+// Preferred display order for the most common card brands; anything not listed is appended after
+// these, keeping the order the backend sent them in (Array.prototype.sort is stable).
+const BRAND_DISPLAY_ORDER = ["visa", "mc", "maestro", "amex", "jcb", "cup"];
+
+const brandRank = (brand: string): number => {
+  const index = BRAND_DISPLAY_ORDER.indexOf(brand);
+
+  return index === -1 ? BRAND_DISPLAY_ORDER.length : index;
+};
+
+export function RenderBrandIcons({ brands, brandHidden = [], limit = 4 }: RenderBrandIconsProps): h.JSX.Element {
   const isWidth380 = useMediaQuery("(max-width: 380px)");
   const isWidth335 = useMediaQuery("(max-width: 335px)");
   const widthLimit = isWidth335 ? 1 : isWidth380 ? 2 : limit;
 
-  const brandToShow = brands.filter((brand) => {
-    const { brand: brandName } = brand;
-    const hidden = brandHidden.some((x) => x.brand === brandName);
-
-    return !hidden;
-  });
+  const brandToShow = brands
+    .filter((brand) => !brandHidden.some((x) => x.brand === brand.brand))
+    .sort((a, b) => brandRank(a.brand) - brandRank(b.brand));
 
   return (
     <Fragment>

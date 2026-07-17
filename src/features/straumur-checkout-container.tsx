@@ -9,7 +9,8 @@ import PaymentMethodGroup from "../components/payment-method-group/payment-metho
 import ResultComponent from "./result-component/result-component";
 import PaymentMethodsWrapper from "./payment-methods-wrapper/payment-methods-wrapper";
 import InstantPaymentsComponent from "./instantPayments/instant-payments-component";
-import { PaymentMethod } from "../models/constants";
+import { PaymentMethod, PaymentMethodOrder } from "../models/constants";
+import { resolvePaymentMethodOrder } from "../utils/payment-method-order";
 import { SubmitApi } from "../components/payment-method-group/payment-method-group-context";
 
 interface StraumurCheckoutContainerProps {
@@ -67,6 +68,22 @@ function StraumurCheckoutContainer({
     configuration.instantPayments
   );
 
+  // Each component self-guards on availability and instant-vs-standalone; the order only controls
+  // which slot renders where. A wallet in instantPayments returns null from its standalone slot.
+  const componentsBySlot: Record<PaymentMethodOrder, h.JSX.Element> = {
+    instantpayments: (
+      <InstantPaymentsComponent key="instantpayments" configuration={configuration} paymentMethods={paymentMethods} />
+    ),
+    storedcard: (
+      <StoredCardContainerComponent key="storedcard" configuration={configuration} paymentMethods={paymentMethods} />
+    ),
+    card: <CardComponent key="card" configuration={configuration} paymentMethods={paymentMethods} />,
+    googlepay: <GooglePayComponent key="googlepay" configuration={configuration} paymentMethods={paymentMethods} />,
+    applepay: <ApplePayComponent key="applepay" configuration={configuration} paymentMethods={paymentMethods} />,
+  };
+
+  const order = resolvePaymentMethodOrder(configuration.orderPaymentMethods);
+
   return (
     <PaymentMethodGroup
       initialValue={initialPaymentMethod}
@@ -77,13 +94,7 @@ function StraumurCheckoutContainer({
       hasStoredPaymentMethods={hasStoredPaymentMethods}
       onSubmitApiReady={onSubmitApiReady}
     >
-      <PaymentMethodsWrapper>
-        <InstantPaymentsComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <StoredCardContainerComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <CardComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <GooglePayComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <ApplePayComponent configuration={configuration} paymentMethods={paymentMethods} />
-      </PaymentMethodsWrapper>
+      <PaymentMethodsWrapper>{order.map((slot) => componentsBySlot[slot])}</PaymentMethodsWrapper>
 
       <ResultComponent />
     </PaymentMethodGroup>

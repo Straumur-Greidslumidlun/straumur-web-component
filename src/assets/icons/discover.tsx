@@ -5,7 +5,7 @@ interface DiscoverIconProps {
 }
 
 const DiscoverIcon = ({ opacity = 1 }: DiscoverIconProps) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" fill="none" viewBox="0 0 40 26" opacity={opacity}>
+  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="19.5" fill="none" viewBox="0 0 40 26" opacity={opacity}>
     <path fill="#fff" d="M0 0h40v26H0z" />
     <g clip-path="url(#a)">
       <g clip-path="url(#b)">

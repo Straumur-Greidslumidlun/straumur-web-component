@@ -5,7 +5,7 @@ interface CupIconProps {
 }
 
 const CupIcon = ({ opacity = 1 }: CupIconProps) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 26" width="40" height="26" opacity={opacity}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 26" width="30" height="19.5" opacity={opacity}>
     <rect width="45.3" height="27" x="-3.3" y="-.79" fill="#fff" rx="2.82" />
     <path
       fill="#01798a"

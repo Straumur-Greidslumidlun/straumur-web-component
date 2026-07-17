@@ -126,6 +126,24 @@ wallets.forEach(({ name, Comp, method }) => {
       expect(act1.reject).not.toHaveBeenCalled();
     });
 
+    it("gives the wallet a light button for the light theme", async () => {
+      await setup(baseConfig({ theme: "light" }));
+      // Google Pay uses plain white; Apple Pay uses white-outline so it stays visible on white.
+      expect(A.cap.wallet[0].buttonColor).toBe(method === "googlepay" ? "white" : "white-outline");
+    });
+
+    it("gives the wallet a black button for the dark theme", async () => {
+      await setup(baseConfig({ theme: "dark" }));
+      expect(A.cap.wallet[0].buttonColor).toBe("black");
+    });
+
+    it("respects an explicit wallet button theme override", async () => {
+      const override =
+        method === "googlepay" ? { googlePayButtonTheme: "dark" as const } : { applePayButtonTheme: "dark" as const };
+      await setup(baseConfig({ theme: "light", ...override }));
+      expect(A.cap.wallet[0].buttonColor).toBe("black");
+    });
+
     it("marks itself active when submitted as an instant payment", async () => {
       createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "Authorised" }) } as any);
       const { onSubmit } = await setup(baseConfig(), true);

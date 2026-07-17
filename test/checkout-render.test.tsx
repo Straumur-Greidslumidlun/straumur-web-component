@@ -91,6 +91,35 @@ describe("StraumurCheckoutContainer rendering", () => {
     expect(screen.getByText("Card payment")).toBeTruthy();
   });
 
+  it("renders standalone payment methods in the configured order", () => {
+    const { container } = renderCheckout(
+      makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(), googlePayMethod(), applePayMethod()] } }),
+      baseConfig({ orderPaymentMethods: ["googlepay", "card", "applepay"] })
+    );
+
+    const titles = Array.from(container.querySelectorAll(".straumur__payment-method-item--title")).map(
+      (x) => x.textContent
+    );
+    expect(titles).toEqual(["Google Pay", "Card payment", "Apple Pay"]);
+  });
+
+  it("keeps a configured instant-payment wallet out of the standalone order (instantpayments example)", async () => {
+    const { container } = renderCheckout(
+      makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(), googlePayMethod(), applePayMethod()] } }),
+      baseConfig({
+        orderPaymentMethods: ["card", "googlepay", "instantpayments"],
+        instantPayments: ["googlepay", "applepay"],
+      })
+    );
+
+    await waitFor(() => expect(container.querySelector(".instant-payments")).toBeTruthy());
+    // googlepay + applepay live only in the instant strip, never as standalone chooser rows...
+    expect(screen.queryByText("Google Pay")).toBeNull();
+    expect(screen.queryByText("Apple Pay")).toBeNull();
+    // ...and card still renders as a standard method.
+    expect(screen.getByText("Card number")).toBeTruthy();
+  });
+
   it("moves a configured wallet into the instant-payments strip and keeps card as the standard method", async () => {
     const { container } = renderCheckout(
       makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(), googlePayMethod()] } }),

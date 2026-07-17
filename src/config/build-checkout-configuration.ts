@@ -1,8 +1,12 @@
 import {
+  ApplePayButtonTheme,
+  GooglePayButtonTheme,
   StraumurCheckoutConfiguration,
   StraumurWebAdvancedConfiguration,
   StraumurWebConfiguration,
   StraumurWebInternalConfiguration,
+  Theme,
+  ThemeConfiguration,
 } from "../models/models";
 import { createAdvancedPaymentFlow, createSessionPaymentFlow } from "../flows/payment-flow";
 import { normalizeLocale } from "../localizations/locale";
@@ -15,6 +19,24 @@ const SESSION_COUNTRY_CODE = "IS";
 
 export function isSessionConfiguration(config: StraumurWebInternalConfiguration): config is StraumurWebConfiguration {
   return typeof config.sessionId === "string" && config.sessionId.length > 0;
+}
+
+// The public `theme` accepts either a bare mode or a ThemeConfiguration object; flatten both into
+// the internal fields, defaulting the mode to "light".
+function normalizeTheme(theme: Theme | ThemeConfiguration | undefined): {
+  theme: Theme;
+  googlePayButtonTheme?: GooglePayButtonTheme;
+  applePayButtonTheme?: ApplePayButtonTheme;
+} {
+  if (typeof theme === "object") {
+    return {
+      theme: theme.theme ?? "light",
+      googlePayButtonTheme: theme.googlePayButtonTheme,
+      applePayButtonTheme: theme.applePayButtonTheme,
+    };
+  }
+
+  return { theme: theme ?? "light" };
 }
 
 // the union only protects TypeScript consumers — IIFE consumers get no compile-time checking
@@ -53,6 +75,7 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
   const config = publicConfig as StraumurWebInternalConfiguration;
   const locale = normalizeLocale(config.locale);
   const isSession = isSessionConfiguration(config);
+  const themeConfig = normalizeTheme(config.theme);
 
   const configuration: StraumurCheckoutConfiguration = {
     mode: isSession ? "session" : "advanced",
@@ -71,7 +94,10 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     hideSubmitButton: config.hideSubmitButton,
     onCardValidityChanged: config.onCardValidityChanged,
     allowedPaymentMethods: config.allowedPaymentMethods,
-    theme: config.theme ?? "light",
+    orderPaymentMethods: config.orderPaymentMethods,
+    theme: themeConfig.theme,
+    googlePayButtonTheme: themeConfig.googlePayButtonTheme,
+    applePayButtonTheme: themeConfig.applePayButtonTheme,
   };
 
   if (isSession) {

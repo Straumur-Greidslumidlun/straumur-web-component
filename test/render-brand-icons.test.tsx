@@ -41,4 +41,26 @@ describe("RenderBrandIcons", () => {
     // 5 brands, limit 3 -> "+2" overflow.
     expect(screen.getByText("+2")).toBeTruthy();
   });
+
+  it("shows up to four brands before overflowing by default", () => {
+    render(<RenderBrandIcons brands={asBrands(["visa", "mc", "maestro", "amex", "jcb"])} />);
+    // 5 brands, default limit 4 -> "+1" overflow.
+    expect(screen.getByText("+1")).toBeTruthy();
+  });
+
+  it("orders known brands by the preferred sequence, pushing unknown brands to the end", () => {
+    const { container } = render(<RenderBrandIcons brands={asBrands(["mystery", "amex", "visa"])} />);
+    const children = Array.from(container.children);
+    // Preferred order is visa, mc, maestro, amex, jcb, cup, then anything unlisted.
+    expect(children[0].tagName.toLowerCase()).toBe("svg"); // visa
+    expect(children[1].tagName.toLowerCase()).toBe("svg"); // amex
+    expect(children[2].textContent).toBe("mystery"); // unknown, last
+  });
+
+  it("keeps the original order among unlisted brands (stable sort)", () => {
+    const { container } = render(<RenderBrandIcons brands={asBrands(["zeta", "alpha"])} />);
+    const children = Array.from(container.children);
+    expect(children[0].textContent).toBe("zeta");
+    expect(children[1].textContent).toBe("alpha");
+  });
 });
