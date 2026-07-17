@@ -310,6 +310,15 @@ describe("CardForm onCardValidityChanged", () => {
     });
     expect(onCardValidityChanged).toHaveBeenCalledWith(false, true);
   });
+
+  it("reports (false, true) as soon as the card becomes active, so a custom submit button can appear disabled", async () => {
+    const onCardValidityChanged = vi.fn();
+    await setup(baseConfig({ onCardValidityChanged }));
+
+    // Fires on activation (before any onAllValid), so a host's hidden-internal-button setup can
+    // reveal its external button immediately rather than waiting for the first validity event.
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
+  });
 });
 
 describe("CardForm additional details (3-D Secure continuation)", () => {

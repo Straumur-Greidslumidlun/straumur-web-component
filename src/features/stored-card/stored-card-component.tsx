@@ -73,6 +73,9 @@ function StoredCardComponent({
     }
 
     registerSubmitHandler(handleSubmitClick);
+    // Signal "active but not yet valid" on activation so a host's custom submit button can appear
+    // (disabled) right away. onAllValid then updates the valid state as the shopper fills the CVC.
+    configuration.onCardValidityChanged?.(false, true);
     return () => {
       unregisterSubmitHandler(handleSubmitClick);
       configuration.onCardValidityChanged?.(false, false);
@@ -329,7 +332,7 @@ function StoredCardComponent({
                     aria-label={i18n.t("stored-cards.securityCode3Digits")}
                   >
                     <div className="straumur__stored-card-component__form--wrapper--label--info">
-                      <Tooltip content={i18n.t("stored-cards.securityCode3DigitsInfo")}>
+                      <Tooltip content={i18n.t("stored-cards.securityCode3DigitsInfo")} placement="top">
                         <InfoIcon />
                       </Tooltip>
                     </div>

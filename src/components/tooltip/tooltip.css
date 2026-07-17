@@ -4,11 +4,21 @@
   padding: var(--straumur__space-s);
   border-radius: var(--straumur__border-radius-s);
   right: 40%;
-  top: 100%;
   width: max-content;
   color: var(--straumur__color-white);
   background-color: var(--straumur__color-primary);
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Opens downward (default) — used where there is room below, e.g. the brand-overflow indicator. */
+.straumur__tooltip__content--bottom {
+  top: 100%;
+}
+
+/* Opens upward — used inside overflow:hidden containers (the card form) where a downward tooltip
+   would be clipped by the box, especially now that the submit button no longer adds height below. */
+.straumur__tooltip__content--top {
+  bottom: 100%;
 }

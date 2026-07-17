@@ -90,6 +90,9 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     }
 
     registerSubmitHandler(handleSubmitClick);
+    // Signal "active but not yet valid" on activation so a host's custom submit button can appear
+    // (disabled) right away. onAllValid then updates the valid state as the shopper fills fields.
+    configuration.onCardValidityChanged?.(false, true);
     return () => {
       unregisterSubmitHandler(handleSubmitClick);
       configuration.onCardValidityChanged?.(false, false);
@@ -362,7 +365,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                   </span>
                 )}
                 <div className="straumur__card-component__form--wrapper--label--info">
-                  <Tooltip content={<span>{i18n.t("cards.securityCode3DigitsInfo")}</span>}>
+                  <Tooltip content={<span>{i18n.t("cards.securityCode3DigitsInfo")}</span>} placement="top">
                     <InfoIcon />
                   </Tooltip>
                 </div>
