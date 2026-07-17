@@ -43,6 +43,22 @@ describe("buildCheckoutConfiguration", () => {
     ).toBe("dark");
   });
 
+  it("propagates hideSubmitButton, onCardValidityChanged, and allowedPaymentMethods to the internal config", () => {
+    const onCardValidityChanged = vi.fn();
+
+    const result = buildCheckoutConfiguration({
+      sessionId: "s1",
+      environment: "test",
+      hideSubmitButton: true,
+      onCardValidityChanged,
+      allowedPaymentMethods: ["card", "googlepay"],
+    });
+
+    expect(result.configuration.hideSubmitButton).toBe(true);
+    expect(result.configuration.onCardValidityChanged).toBe(onCardValidityChanged);
+    expect(result.configuration.allowedPaymentMethods).toEqual(["card", "googlepay"]);
+  });
+
   it("detects a valid advanced configuration and normalizes its payment methods", () => {
     const config = advancedConfig({ countryCode: "DE", amount: { value: 2500, currency: "EUR" }, locale: "en" });
 

@@ -68,6 +68,9 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     locale,
     customLocalizations: config.localizations,
     instantPayments: config.instantPayments,
+    hideSubmitButton: config.hideSubmitButton,
+    onCardValidityChanged: config.onCardValidityChanged,
+    allowedPaymentMethods: config.allowedPaymentMethods,
     theme: config.theme ?? "light",
   };
 
