@@ -319,6 +319,23 @@ describe("CardForm onCardValidityChanged", () => {
     // reveal its external button immediately rather than waiting for the first validity event.
     await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
   });
+
+  it("reports (false, false) when a 3DS challenge starts, so the custom submit button hides", async () => {
+    createPayment.mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "ChallengeShopper", action: { type: "threeDS2" } }),
+    } as any);
+    const onCardValidityChanged = vi.fn();
+    const { onSubmit } = await setup(baseConfig({ onCardValidityChanged }));
+    onCardValidityChanged.mockClear();
+
+    await act(async () => {
+      await onSubmit(submitState, {}, actions());
+    });
+
+    // The card is no longer "active" while the challenge takes over the container.
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, false));
+  });
 });
 
 describe("CardForm additional details (3-D Secure continuation)", () => {

@@ -64,10 +64,12 @@ function StoredCardComponent({
   }
 
   useEffect(() => {
-    const ready = isActive && isStoredCardInitialized[storedPaymentMethod.id];
+    // Treat the stored card as inactive while a 3DS challenge is showing: it takes over the card
+    // container, so a host's external submit button must not stay visible/clickable during it.
+    const ready = isActive && isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive;
     if (!ready) {
-      // Nothing selected yet, or a different payment method is active - tell the
-      // host explicitly so a custom submit button can default to disabled.
+      // Nothing selected yet, a different method is active, or 3DS is in progress - tell the host
+      // explicitly so a custom submit button hides (and defaults to disabled when it reappears).
       configuration.onCardValidityChanged?.(false, false);
       return;
     }
@@ -80,7 +82,13 @@ function StoredCardComponent({
       unregisterSubmitHandler(handleSubmitClick);
       configuration.onCardValidityChanged?.(false, false);
     };
-  }, [isActive, isStoredCardInitialized[storedPaymentMethod.id], registerSubmitHandler, unregisterSubmitHandler]);
+  }, [
+    isActive,
+    isStoredCardInitialized[storedPaymentMethod.id],
+    threeDSecureActive,
+    registerSubmitHandler,
+    unregisterSubmitHandler,
+  ]);
 
   const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
     createAdyenPaymentHandlers({

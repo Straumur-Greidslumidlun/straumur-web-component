@@ -81,10 +81,12 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   }
 
   useEffect(() => {
-    const isActive = activePaymentMethod === "card" && isPaymentMethodInitialized.card;
+    // Treat the card as inactive while a 3DS challenge is showing: it takes over the card container,
+    // so a host's external submit button must not stay visible/clickable during the challenge.
+    const isActive = activePaymentMethod === "card" && isPaymentMethodInitialized.card && !threeDSecureActive;
     if (!isActive) {
-      // Nothing selected yet, or a different payment method is active - tell the
-      // host explicitly so a custom submit button can default to disabled.
+      // Nothing selected yet, a different method is active, or 3DS is in progress - tell the host
+      // explicitly so a custom submit button hides (and defaults to disabled when it reappears).
       configuration.onCardValidityChanged?.(false, false);
       return;
     }
@@ -97,7 +99,13 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       unregisterSubmitHandler(handleSubmitClick);
       configuration.onCardValidityChanged?.(false, false);
     };
-  }, [activePaymentMethod, isPaymentMethodInitialized.card, registerSubmitHandler, unregisterSubmitHandler]);
+  }, [
+    activePaymentMethod,
+    isPaymentMethodInitialized.card,
+    threeDSecureActive,
+    registerSubmitHandler,
+    unregisterSubmitHandler,
+  ]);
 
   // Computed defensively (optional chaining + fallback) because it runs on every render,
   // ahead of the render guards below. Keeping every hook unconditional satisfies the Rules
