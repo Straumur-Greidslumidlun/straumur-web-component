@@ -2,11 +2,13 @@ import { h } from "preact";
 
 interface MaestroIconProps {
   opacity?: number;
+  /** Dark-theme reversed mark: drop the white background; the interlocking circles work on dark. */
+  reversed?: boolean;
 }
 
-const MaestroIcon = ({ opacity = 1 }: MaestroIconProps) => (
+const MaestroIcon = ({ opacity = 1, reversed = false }: MaestroIconProps) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="30" height="19.5" fill="none" viewBox="0 0 40 26" opacity={opacity}>
-    <path fill="#fff" d="M0 0h40v26H0z" />
+    {!reversed && <path fill="#fff" d="M0 0h40v26H0z" />}
     <path fill="#7773B4" d="M16.13 19.29h7.74V6.7h-7.74v12.58z" />
     <path
       fill="#EA1D25"

@@ -15,7 +15,8 @@ export function getAdyenFieldStyles(theme: ResolvedTheme) {
   if (theme === "dark") {
     return {
       base: { color: "#e8edf2" },
-      placeholder: { color: "#9aa7b5" },
+      // Lighter than the palette's -secondary so the placeholder stays legible on the dark input.
+      placeholder: { color: "#aab4bf" },
       error: { color: "#e08a8a" },
     };
   }

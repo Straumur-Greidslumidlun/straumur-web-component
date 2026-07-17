@@ -8,10 +8,12 @@ import { BrandHidden, RenderBrandIcons } from "../../utils/renderBrandIcons";
 import { CardComponentProps } from "./models";
 import CardForm from "../../components/card-form/card-form";
 import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
+import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
 
 function CardComponent({ configuration, paymentMethods }: CardComponentProps): h.JSX.Element | null {
   const { i18n } = useI18n();
   const [brandHidden, setBrandHidden] = useState<BrandHidden[]>([]);
+  const resolvedTheme = useResolvedTheme(configuration.theme);
   const { activePaymentMethod, setActivePaymentMethod, isObscuredByThreeDS, isSolePaymentMethod, hasCard } =
     usePaymentMethodGroup();
 
@@ -34,7 +36,7 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
       onChange={() => setActivePaymentMethod("card")}
       headerRight={
         <span className="straumur__card-component--brands">
-          <RenderBrandIcons brands={brands} brandHidden={brandHidden} />
+          <RenderBrandIcons brands={brands} brandHidden={brandHidden} theme={resolvedTheme} />
         </span>
       }
     >

@@ -19,6 +19,10 @@
   --straumur__color-white: #ffffff;
   --straumur__color-transparent: transparent;
 
+  /* Always-light backing for brand-logo "chips" (networks with no reversed mark keep their
+     multicolor logo on a light field on every theme). Intentionally NOT overridden in dark. */
+  --straumur__color-brand-chip: #ffffff;
+
   /* Role tokens for colors that were previously hard-coded in component CSS.
      Kept as variables so the dark theme below can override them in one place. */
   --straumur__color-text: #00112c;
@@ -97,7 +101,11 @@
   --straumur__color-cosmos-blue-delta: #3a424d;
   --straumur__color-cosmos-blue-gamma: #262d36;
 
-  --straumur__color-white: #1e232b;
+  /* Near-black surface so the black Google Pay / Apple Pay buttons (which can only be black or
+     white — no custom color) blend into the widget instead of reading as mismatched rectangles.
+     The input fields stay at --straumur__color-secondary-gamma, one step lighter, so they read as
+     a subtly elevated layer. If the black wallet buttons ever look edgeless, nudge this lighter. */
+  --straumur__color-white: #0d0f13;
 
   --straumur__color-text: #e8edf2;
   --straumur__color-border: #3a424d;
@@ -112,6 +120,17 @@
 
 .straumur__render-brand-icons__overflow {
   color: var(--straumur__color-secondary);
+}
+
+/* Light rounded tile behind a brand logo that has no reversed variant (JCB / Diners / UnionPay),
+   so its multicolor mark keeps a light field and gains a defined edge on the dark surface. Only
+   rendered on the dark theme (see RenderBrandIcon), so it needs no light-theme rule. */
+.straumur__brand-chip {
+  display: inline-flex;
+  background: var(--straumur__color-brand-chip);
+  border: 1px solid var(--straumur__color-border);
+  border-radius: var(--straumur__border-radius-xxs);
+  overflow: hidden;
 }
 
 .straumur__component {

@@ -266,6 +266,7 @@ function StoredCardComponent({
               brandFullName: storedPaymentMethod.name,
             },
           ]}
+          theme={resolvedTheme}
         />
       }
       title={`•••• ${storedPaymentMethod.lastFour}`}

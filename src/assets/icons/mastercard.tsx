@@ -2,11 +2,13 @@ import { h } from "preact";
 
 interface MasterCardIconProps {
   opacity?: number;
+  /** Dark-theme reversed mark: drop the white background; the interlocking circles work on dark. */
+  reversed?: boolean;
 }
 
-const MasterCardIcon = ({ opacity = 1 }: MasterCardIconProps) => (
+const MasterCardIcon = ({ opacity = 1, reversed = false }: MasterCardIconProps) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="30" height="19.5" viewBox="0 0 40 26" opacity={opacity}>
-    <path fill="#fff" d="M0 0h40v26H0z" />
+    {!reversed && <path fill="#fff" d="M0 0h40v26H0z" />}
     <path fill="#F06022" d="M16.13 19.29h7.74V6.7h-7.74v12.58z" />
     <path
       fill="#EA1D25"

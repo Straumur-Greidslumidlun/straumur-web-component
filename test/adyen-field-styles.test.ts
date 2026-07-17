@@ -13,7 +13,7 @@ describe("getAdyenFieldStyles", () => {
     const styles = getAdyenFieldStyles("dark");
     // Text must be light so it is legible on the dark field background.
     expect(styles.base.color).toBe("#e8edf2");
-    expect(styles.placeholder.color).toBe("#9aa7b5");
+    expect(styles.placeholder.color).toBe("#aab4bf");
     expect(styles.error.color).toBe("#e08a8a");
   });
 });

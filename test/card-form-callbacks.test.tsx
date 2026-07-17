@@ -266,7 +266,7 @@ describe("CardForm theme", () => {
   it("passes dark field styles to the Adyen card when the theme is dark", async () => {
     const { card } = await setup(baseConfig({ theme: "dark" }));
     expect(card.styles.base.color).toBe("#e8edf2");
-    expect(card.styles.placeholder.color).toBe("#9aa7b5");
+    expect(card.styles.placeholder.color).toBe("#aab4bf");
   });
 });
 
