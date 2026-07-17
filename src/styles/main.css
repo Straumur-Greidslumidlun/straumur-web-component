@@ -51,8 +51,9 @@
 
   --apple-pay-button-width: 100%;
   --apple-pay-button-height: 48px;
-  /* Match the card submit button / inputs radius instead of a lone 4px. */
-  --apple-pay-button-border-radius: var(--straumur__border-radius-s);
+  /* Match the payment-method "card box" radius (border-radius-lg) so the express wallet buttons
+     are consistent with the tiles they sit alongside. Kept in sync with Google Pay's buttonRadius. */
+  --apple-pay-button-border-radius: var(--straumur__border-radius-lg);
 }
 
 .straumur__root-component {
