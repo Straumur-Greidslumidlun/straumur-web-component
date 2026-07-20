@@ -79,3 +79,49 @@ describe("determineInitialState", () => {
     });
   });
 });
+
+describe("determineInitialState — openDefaultPaymentMethod", () => {
+  it("opens the requested standalone wallet in multi-method mode", () => {
+    expect(determineInitialState(true, true, false, 0, undefined, "googlepay")).toEqual({
+      initialPaymentMethod: "googlepay",
+      isSolePaymentMethod: false,
+    });
+  });
+
+  it("opens a stored card when firstStoredCard is requested and saved cards exist", () => {
+    expect(determineInitialState(true, false, false, 2, undefined, "firstStoredCard")).toEqual({
+      initialPaymentMethod: "storedcard",
+      isSolePaymentMethod: false,
+    });
+  });
+
+  it("opens nothing when the requested wallet is an instant payment", () => {
+    // gpay is instant (not standalone); card + standalone applepay keep it multi-method.
+    expect(determineInitialState(true, true, true, 0, ["googlepay"], "googlepay")).toEqual({
+      initialPaymentMethod: null,
+      isSolePaymentMethod: false,
+    });
+  });
+
+  it("opens nothing when firstStoredCard is requested but no cards are saved", () => {
+    expect(determineInitialState(true, true, false, 0, undefined, "firstStoredCard")).toEqual({
+      initialPaymentMethod: null,
+      isSolePaymentMethod: false,
+    });
+  });
+
+  it("opens nothing when the requested method is unavailable and there is no card", () => {
+    // gpay is instant (not standalone), no card; applepay + a stored card keep it multi-method.
+    expect(determineInitialState(false, true, true, 1, ["googlepay"], "googlepay")).toEqual({
+      initialPaymentMethod: null,
+      isSolePaymentMethod: false,
+    });
+  });
+
+  it("ignores openDefaultPaymentMethod in sole mode", () => {
+    expect(determineInitialState(true, false, false, 0, undefined, "googlepay")).toEqual({
+      initialPaymentMethod: "card",
+      isSolePaymentMethod: true,
+    });
+  });
+});

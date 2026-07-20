@@ -120,6 +120,28 @@ describe("StraumurCheckoutContainer rendering", () => {
     expect(screen.getByText("Card number")).toBeTruthy();
   });
 
+  it("opens the requested payment method on load (openDefaultPaymentMethod)", () => {
+    renderCheckout(
+      makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(), googlePayMethod()] } }),
+      baseConfig({ openDefaultPaymentMethod: "googlepay" })
+    );
+
+    const gpayRadio = screen.getByText("Google Pay").closest("label")?.querySelector('input[type="radio"]');
+    expect((gpayRadio as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("opens the first stored card when openDefaultPaymentMethod is firstStoredCard", () => {
+    renderCheckout(
+      makePaymentMethods({
+        paymentMethods: { paymentMethods: [scheme()], storedPaymentMethods: [storedCard()] },
+      }),
+      baseConfig({ openDefaultPaymentMethod: "firstStoredCard" })
+    );
+
+    const storedRadio = screen.getByText("•••• 1234").closest("label")?.querySelector('input[type="radio"]');
+    expect((storedRadio as HTMLInputElement).checked).toBe(true);
+  });
+
   it("moves a configured wallet into the instant-payments strip and keeps card as the standard method", async () => {
     const { container } = renderCheckout(
       makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(), googlePayMethod()] } }),

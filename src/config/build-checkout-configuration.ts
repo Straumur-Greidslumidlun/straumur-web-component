@@ -95,6 +95,7 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     onCardValidityChanged: config.onCardValidityChanged,
     allowedPaymentMethods: config.allowedPaymentMethods,
     orderPaymentMethods: config.orderPaymentMethods,
+    openDefaultPaymentMethod: config.openDefaultPaymentMethod,
     theme: themeConfig.theme,
     googlePayButtonTheme: themeConfig.googlePayButtonTheme,
     applePayButtonTheme: themeConfig.applePayButtonTheme,

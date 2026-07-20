@@ -10,4 +10,4 @@ export type {
   GooglePayButtonTheme,
   ApplePayButtonTheme,
 } from "./models/models";
-export type { PaymentMethod, PaymentMethodOrder } from "./models/constants";
+export type { PaymentMethod, PaymentMethodOrder, OpenDefaultPaymentMethod } from "./models/constants";

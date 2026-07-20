@@ -58,6 +58,7 @@ const defaultIsInitialized: Record<PaymentMethod, boolean> = {
 export const PaymentMethodGroupContext = ({
   children,
   initialValue,
+  initialStoredPaymentMethodId = null,
   isSolePaymentMethod,
   hasCard,
   hasGooglePay,
@@ -67,6 +68,7 @@ export const PaymentMethodGroupContext = ({
 }: {
   children: ComponentChildren;
   initialValue: PaymentMethod | null;
+  initialStoredPaymentMethodId?: string | null;
   isSolePaymentMethod: boolean;
   hasCard: boolean;
   hasGooglePay: boolean;
@@ -104,7 +106,9 @@ export const PaymentMethodGroupContext = ({
   useLayoutEffect(() => {
     onSubmitApiReady?.({ triggerSubmit });
   }, []);
-  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] = useState<string | null>(null);
+  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] = useState<string | null>(
+    initialStoredPaymentMethodId
+  );
   const [threeDSecureActive, setThreeDSecureActive] = useState<boolean>(false);
   const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = useState(defaultIsInitialized);
   const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<Record<string, boolean>>({});

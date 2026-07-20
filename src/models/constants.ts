@@ -6,6 +6,13 @@ export type PaymentMethod = "card" | "storedcard" | "googlepay" | "applepay";
  */
 export type PaymentMethodOrder = PaymentMethod | "instantpayments";
 
+/**
+ * Which payment method to open (expand) on load via `openDefaultPaymentMethod`. "firstStoredCard"
+ * opens the first saved card. Ignored (nothing pre-opened, chooser stays collapsed) when the
+ * requested method isn't available (e.g. a wallet that's in `instantPayments`, or no saved cards).
+ */
+export type OpenDefaultPaymentMethod = "card" | "firstStoredCard" | "googlepay" | "applepay";
+
 export const NETWORK_ERROR = "NETWORK_ERROR";
 export const CANCEL = "CANCEL";
 export const IMPLEMENTATION_ERROR = "IMPLEMENTATION_ERROR";

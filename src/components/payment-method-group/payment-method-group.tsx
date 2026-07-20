@@ -6,6 +6,7 @@ import { PaymentMethod } from "../../models/constants";
 interface PaymentMethodGroupProps {
   children: ComponentChildren;
   initialValue: PaymentMethod | null;
+  initialStoredPaymentMethodId?: string | null;
   isSolePaymentMethod: boolean;
   hasCard: boolean;
   hasGooglePay: boolean;
@@ -17,6 +18,7 @@ interface PaymentMethodGroupProps {
 function PaymentMethodGroup({
   children,
   initialValue,
+  initialStoredPaymentMethodId,
   isSolePaymentMethod,
   hasCard,
   hasGooglePay,
@@ -27,6 +29,7 @@ function PaymentMethodGroup({
   return (
     <PaymentMethodGroupContext
       initialValue={initialValue}
+      initialStoredPaymentMethodId={initialStoredPaymentMethodId}
       isSolePaymentMethod={isSolePaymentMethod}
       hasCard={hasCard}
       hasGooglePay={hasGooglePay}

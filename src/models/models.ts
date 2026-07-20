@@ -1,6 +1,6 @@
 import { Language, TranslationKey } from "../localizations/translations";
 import { PublicLocale } from "../localizations/locale";
-import { PaymentMethod, PaymentMethodOrder } from "./constants";
+import { OpenDefaultPaymentMethod, PaymentMethod, PaymentMethodOrder } from "./constants";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../adapter/models";
 import { PaymentMethodsResponse } from "../services/models";
 
@@ -24,6 +24,13 @@ type StraumurWebBaseConfiguration = {
    * ["instantpayments", "storedcard", "card", "googlepay", "applepay"].
    */
   orderPaymentMethods?: PaymentMethodOrder[];
+  /**
+   * Which payment method to open (expand) on load: "card", "firstStoredCard", "googlepay" or
+   * "applepay". If that method isn't available — a wallet that's in `instantPayments`, or
+   * "firstStoredCard" with no saved cards — it's ignored and no method is pre-opened (the chooser
+   * stays collapsed). Omit for the same collapsed default.
+   */
+  openDefaultPaymentMethod?: OpenDefaultPaymentMethod;
   /**
    * Color theme for the widget. Accepts a mode ("light" | "dark" | "system"), or a
    * {@link ThemeConfiguration} object to also override the wallet button styling. "system" follows
@@ -187,6 +194,7 @@ export type StraumurCheckoutConfiguration = {
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];
   orderPaymentMethods?: PaymentMethodOrder[];
+  openDefaultPaymentMethod?: OpenDefaultPaymentMethod;
   theme: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
