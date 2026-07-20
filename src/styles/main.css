@@ -30,6 +30,7 @@
   --straumur__color-warning-text: #775d00;
   --straumur__color-warning-bg: #fff7db;
   --straumur__color-danger-text: #d03e00;
+  --straumur__color-success: #1f9d57;
 
   --straumur__border-radius-xxs: 4px;
   --straumur__border-radius-xs: 6px;
@@ -112,6 +113,7 @@
   --straumur__color-warning-text: #e6c766;
   --straumur__color-warning-bg: #2f2a17;
   --straumur__color-danger-text: #f0895f;
+  --straumur__color-success: #3fd98a;
 }
 
 .straumur__component * {
@@ -138,11 +140,26 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--straumur__space-5xlg);
+  padding: var(--straumur__space-6xlg);
   width: 100%;
   /* min-height, not a fixed height, so a long localized error/message can't clip. */
   min-height: 300px;
   background-color: var(--straumur__color-white);
   border-radius: var(--straumur__border-radius-xxlg);
+}
+
+/* Success/failure message under the result icon (shared by the in-widget result screen and the
+   imperative status screen). Constrained width so a longer message wraps to a couple of centered
+   rows instead of one wide line; padding keeps it off the widget edges. */
+.straumur__result-message {
+  max-width: 320px;
+  margin: 0;
+  padding: 0 var(--straumur__space-4xlg);
+  text-align: center;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--straumur__color-text);
 }
 
 .js-iframe {

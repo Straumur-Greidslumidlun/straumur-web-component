@@ -25,7 +25,7 @@ function ResultComponent(): h.JSX.Element | null {
           </span>
           {/* role="alert" announces the failure to screen readers assertively (a declined payment
               was previously silent). */}
-          <p className="straumur__result-component__error--message" role="alert">
+          <p className="straumur__result-component__error--message straumur__result-message" role="alert">
             {renderMessage(error)}
           </p>
         </Fragment>
@@ -36,7 +36,7 @@ function ResultComponent(): h.JSX.Element | null {
           <span aria-hidden="true">
             <SuccessIcon />
           </span>
-          <p className="straumur__result-component__success--message" role="status">
+          <p className="straumur__result-component__success--message straumur__result-message" role="status">
             {renderMessage(success)}
           </p>
         </Fragment>

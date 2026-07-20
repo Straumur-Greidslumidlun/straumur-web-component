@@ -3,6 +3,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--straumur__space-5xlg);
+  padding: var(--straumur__space-6xlg);
   width: 100%;
   min-height: 300px;
   background-color: var(--straumur__color-white);

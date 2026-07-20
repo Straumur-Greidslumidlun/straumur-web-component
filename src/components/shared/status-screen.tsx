@@ -45,7 +45,9 @@ export function StatusScreen({
       <div className="straumur__component">
         <span aria-hidden="true">{variant === "success" ? <SuccessIcon /> : <FailureIcon />}</span>
         {/* Failure is announced assertively (role="alert"); success politely (role="status"). */}
-        <p role={variant === "success" ? "status" : "alert"}>{"key" in message ? i18n.t(message.key) : message.text}</p>
+        <p className="straumur__result-message" role={variant === "success" ? "status" : "alert"}>
+          {"key" in message ? i18n.t(message.key) : message.text}
+        </p>
       </div>
     </RootComponent>
   );
