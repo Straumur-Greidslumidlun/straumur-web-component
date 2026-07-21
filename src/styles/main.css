@@ -67,7 +67,10 @@
      no color of their own) doesn't inherit an unpredictable color from the host page — and is
      readable in dark mode instead of dark-on-dark. */
   color: var(--straumur__color-text);
-  max-width: 676px;
+  /* Fill the host container (down to a 320px floor). The embedding container controls the width —
+     e.g. the hosted checkout's card column — so the widget stretches to it rather than capping at a
+     fixed max. (Note: in a very wide container the card form and the Google Pay / Apple Pay buttons
+     stretch full-width; constrain the host container if a narrower checkout look is wanted.) */
   min-width: 320px;
   /* Establish a query container so descendants can respond to the WIDGET's own width, not the
      viewport. This is an embeddable widget — its width is set by the host container, so viewport
