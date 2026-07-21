@@ -117,7 +117,8 @@
 }
 
 .straumur__card-component__submit-button:disabled {
-  background: var(--straumur__color-secondary);
+  background: var(--straumur__color-gray-epsilon);
+  color: var(--straumur__color-secondary);
   border: 1px solid var(--straumur__color-border);
   cursor: not-allowed;
 }
