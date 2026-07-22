@@ -154,4 +154,27 @@ describe("StraumurCheckoutContainer rendering", () => {
     // ...and Google Pay is NOT shown as a standard chooser row.
     expect(screen.queryByText("Google Pay")).toBeNull();
   });
+
+  it("shows a single master loader until the active method is ready, then reveals the form", async () => {
+    const { container } = renderCheckout(makePaymentMethods({ paymentMethods: { paymentMethods: [scheme()] } }));
+
+    // One master loader up front; the methods are rendered but hidden behind it.
+    expect(container.querySelector(".straumur__master-loader")).toBeTruthy();
+    expect(container.querySelector(".straumur__methods--loading")).toBeTruthy();
+
+    // Once the card initializes, the loader is gone and the methods are revealed.
+    await waitFor(() => expect(container.querySelector(".straumur__master-loader")).toBeNull());
+    expect(container.querySelector(".straumur__methods--loading")).toBeNull();
+  });
+
+  it("keeps the master loader until the wallets finish initializing too", async () => {
+    const { container } = renderCheckout(
+      makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(), googlePayMethod(), applePayMethod()] } }),
+      baseConfig({ openDefaultPaymentMethod: "card" })
+    );
+
+    expect(container.querySelector(".straumur__master-loader")).toBeTruthy();
+    // Reveals only after card + both wallets have initialized.
+    await waitFor(() => expect(container.querySelector(".straumur__master-loader")).toBeNull());
+  });
 });
