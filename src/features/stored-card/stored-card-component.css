@@ -162,7 +162,7 @@
   background: var(--straumur__color-primary);
   border: none;
   border-radius: var(--straumur__border-radius-s);
-  color: var(--straumur__color-white);
+  color: var(--straumur__color-on-primary);
   cursor: pointer;
   font-size: 16px;
   height: 40px;

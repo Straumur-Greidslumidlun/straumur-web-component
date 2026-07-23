@@ -23,6 +23,13 @@
      multicolor logo on a light field on every theme). Intentionally NOT overridden in dark. */
   --straumur__color-brand-chip: #ffffff;
 
+  /* Foreground color for content sitting ON the primary color (submit-button label). Defaults to
+     the white token via var() indirection, so it stays theme-aware (resolves to the dark theme's
+     white at use time) with no dark-theme override needed here. A host embedding the widget can
+     override this token (alongside --straumur__color-primary) to theme the button with its own
+     palette — e.g. a light brand primary needs a dark label for contrast. */
+  --straumur__color-on-primary: var(--straumur__color-white);
+
   /* Role tokens for colors that were previously hard-coded in component CSS.
      Kept as variables so the dark theme below can override them in one place. */
   --straumur__color-text: #00112c;
