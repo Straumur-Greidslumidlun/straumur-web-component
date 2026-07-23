@@ -233,7 +233,9 @@ function WalletButton({
       <div
         ref={walletElementRef}
         style={{
-          height: threeDSecureActive ? "600px" : "auto",
+          // Fixed 48px (matching the Apple Pay button height) so Google Pay and Apple Pay render at
+          // the same height — an "auto" height let a shorter wallet leave a few px of dead space below.
+          height: threeDSecureActive ? "600px" : "48px",
           minWidth: threeDSecureActive ? "350px" : "auto",
           position: isPaymentMethodInitialized[method] ? "static" : "absolute",
         }}

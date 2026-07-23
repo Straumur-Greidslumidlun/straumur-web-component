@@ -2,18 +2,19 @@
   display: grid;
   /* Standard intra-row gap between paired controls (matches the card expiry/CVC row). */
   gap: var(--straumur__space-lg);
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr) (not plain 1fr) keeps the two wallet buttons exactly equal width even when
+     Google Pay's content is wider (e.g. the 3-preview-card variant) — it fits the column instead
+     of widening it past Apple Pay. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .instant-payments--single {
   grid-template-columns: 1fr;
 }
 
-/* Stack the wallet buttons when the WIDGET (not the viewport) is too narrow for two side by side,
-   so they lay out correctly no matter what host container they're embedded in.
-   Derivation: a wallet button reads comfortably down to ~200px; two of them plus the 12px gap
-   need ~412px, so below ~420px stacking wins. */
-@container straumur (max-width: 420px) {
+/* Stack the wallets once the WIDGET is under 500px, so they sit side by side only at a full-width
+   (~500px) column and stack on anything narrower — independent of the host container/viewport. */
+@container straumur (max-width: 499px) {
   .instant-payments {
     grid-template-columns: 1fr;
   }
