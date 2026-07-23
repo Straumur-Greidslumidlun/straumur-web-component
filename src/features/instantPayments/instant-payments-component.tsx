@@ -17,7 +17,7 @@ function InstantPaymentsComponent({
   configuration,
   paymentMethods,
 }: InstantPaymentsComponentProps): h.JSX.Element | null {
-  const { hasGooglePay, hasApplePay } = usePaymentMethodGroup();
+  const { hasGooglePay, hasApplePay, threeDSecureActive } = usePaymentMethodGroup();
   const [unavailableMethods, setUnavailableMethods] = useState<Set<string>>(new Set());
 
   const handleUnavailable = (method: string) => {
@@ -50,7 +50,10 @@ function InstantPaymentsComponent({
     // targeted by host-page styles; keep them alongside the prefixed ones.
     <div
       className={`straumur__instant-payments instant-payments ${
-        visibleInstantPayments.length > 1
+        // During a 3DS challenge only the active wallet renders (the other is obscured); force the
+        // single-column layout so its challenge iframe fills the full widget width like the card
+        // flow, instead of staying trapped in a half-width two-column grid cell.
+        visibleInstantPayments.length > 1 && !threeDSecureActive
           ? "straumur__instant-payments--multiple instant-payments--multiple"
           : "straumur__instant-payments--single instant-payments--single"
       }`}

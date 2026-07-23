@@ -90,6 +90,9 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         onClick: createBeforeSubmitClickHandler(configuration.paymentFlow),
         // Follows the widget theme (light → white, dark → black); overridable via googlePayButtonTheme.
         buttonColor: resolveGooglePayButtonColor(resolvedTheme, configuration.googlePayButtonTheme),
+        // "plain" renders only the Google Pay mark (no "Pay"/"Buy with" text), matching the
+        // Apple Pay button which sits beside it.
+        buttonType: "plain",
         buttonSizeMode: "fill",
         // px — Adyen draws the Google Pay button, so its radius can't come from CSS. Keep this in
         // sync with --straumur__border-radius-lg (12px), matching the payment-method "card box"
@@ -233,10 +236,14 @@ function WalletButton({
       <div
         ref={walletElementRef}
         style={{
-          // Fixed 48px (matching the Apple Pay button height) so Google Pay and Apple Pay render at
-          // the same height — an "auto" height let a shorter wallet leave a few px of dead space below.
-          height: threeDSecureActive ? "600px" : "48px",
-          minWidth: threeDSecureActive ? "350px" : "auto",
+          // Button tile: fixed 48px (matching the Apple Pay button height) so Google Pay and Apple
+          // Pay render at the same height — an "auto" height let a shorter wallet leave a few px of
+          // dead space below.
+          // 3DS challenge: drop the fixed height/min-width and go full width so the Adyen challenge
+          // iframe (min-height:400px, height:inherit) governs the size — identical to the card flow,
+          // which mounts the same challenge into an auto-height, full-width container.
+          height: threeDSecureActive ? undefined : "48px",
+          width: threeDSecureActive ? "100%" : undefined,
           position: isPaymentMethodInitialized[method] ? "static" : "absolute",
         }}
       />
