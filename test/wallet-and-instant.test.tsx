@@ -133,6 +133,30 @@ describe("InstantPaymentsComponent", () => {
     expect(container.querySelector(".instant-payments")).toBeTruthy();
   });
 
+  it("drops a wallet that reports unavailable at runtime, collapsing its cell", async () => {
+    // Both wallets are present in the response (so both mount and run isAvailable), but Apple Pay
+    // rejects at runtime. The strip must unmount the Apple Pay element rather than leave an empty
+    // fixed-height cell behind, and fall back to the single-column layout.
+    A.cap.apayAvailable = false;
+    const bothMethods = makePaymentMethods({
+      paymentMethods: { paymentMethods: [googlePayMethod(), applePayMethod()] },
+    });
+    const { container } = renderInGroup(
+      <InstantPaymentsComponent
+        configuration={baseConfig({ instantPayments: ["googlepay", "applepay"] })}
+        paymentMethods={bothMethods}
+      />,
+      { hasGooglePay: true, hasApplePay: true }
+    );
+
+    const wrapper = container.querySelector(".instant-payments")!;
+    await waitFor(() => {
+      // Only the available (Google Pay) wallet element survives; the Apple Pay cell is gone.
+      expect(wrapper.querySelectorAll(":scope > div").length).toBe(1);
+      expect(wrapper.className).toContain("instant-payments--single");
+    });
+  });
+
   it("filters out invalid entries and keeps only available wallets", () => {
     const bothMethods = makePaymentMethods({
       paymentMethods: { paymentMethods: [googlePayMethod(), applePayMethod()] },

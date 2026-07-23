@@ -56,7 +56,11 @@ function InstantPaymentsComponent({
       }`}
       style={{ display: visibleInstantPayments.length === 0 ? "none" : undefined }}
     >
-      {finalAvailableInstantPayments.map((paymentMethod) => {
+      {/* Render the visible (available) wallets only. Every wallet still mounts on first render
+          (visibleInstantPayments starts equal to finalAvailableInstantPayments) so isAvailable()
+          runs; a wallet that reports unavailable is dropped here and unmounts, collapsing its cell
+          instead of leaving an empty fixed-height (48px) button behind. */}
+      {visibleInstantPayments.map((paymentMethod) => {
         if (paymentMethod === "googlepay") {
           return (
             <GooglePayButton
