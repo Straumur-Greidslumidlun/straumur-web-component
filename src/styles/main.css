@@ -77,6 +77,11 @@
      @media is the wrong tool (a narrow host column on a wide screen would never match). Use
      @container (name: straumur) in component CSS instead. */
   container: straumur / inline-size;
+  /* Suppress the mobile tap-highlight (the blue/grey flash Android/iOS paint over a tapped element)
+     on the widget's custom tap targets — payment-method tiles, stored-card tiles, buttons. This
+     property inherits, so setting it on the root covers every descendant; the tiles/buttons provide
+     their own :hover/:checked/:active feedback. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /*
