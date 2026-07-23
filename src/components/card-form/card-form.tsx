@@ -404,7 +404,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                     : ""
                 }`}
               >
-                <CheckmarkIcon />
+                {/* Sits on the primary-colored checked fill, so use the on-primary (contrast) color. */}
+                <CheckmarkIcon color="var(--straumur__color-on-primary)" />
               </div>
             </div>
             <input

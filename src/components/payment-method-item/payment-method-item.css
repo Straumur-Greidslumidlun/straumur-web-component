@@ -68,7 +68,7 @@
 .straumur__payment-method-item__radio-selector:checked
   + .straumur__payment-method-item__content
   .straumur__payment-method-item--circle {
-  background: var(--straumur__color-blue-beta);
+  background: var(--straumur__color-primary);
   border-color: var(--straumur__color-transparent);
 }
 
@@ -76,7 +76,7 @@
   + .straumur__payment-method-item__content
   .straumur__payment-method-item--circle::after {
   transform: translate(-50%, -50%) scale(1);
-  background: var(--straumur__color-primary);
+  background: var(--straumur__color-on-primary);
   height: var(--straumur__space-md);
   width: var(--straumur__space-md);
 }

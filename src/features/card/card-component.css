@@ -159,7 +159,7 @@
 }
 
 .straumur__card-component__form--wrapper--label-checkbox--checkmark--checked {
-  background-color: var(--straumur__color-blue-beta);
+  background-color: var(--straumur__color-primary);
 }
 
 .straumur__card-component__form--wrapper--label-checkbox--checkmark--icon {
