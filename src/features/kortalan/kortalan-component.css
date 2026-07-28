@@ -1,0 +1,25 @@
+.straumur__kortalan-component__submit-button {
+  background: var(--straumur__color-primary);
+  border: none;
+  border-radius: var(--straumur__border-radius-s);
+  color: var(--straumur__color-on-primary);
+  cursor: pointer;
+  font-size: 16px;
+  height: 40px;
+  outline: none;
+  padding: 0 var(--straumur__space-xxlg);
+  transition: background 0.2s ease-out;
+  width: 100%;
+}
+
+.straumur__kortalan-component__submit-button:hover {
+  background: var(--straumur__color-primary);
+  border: 1px solid var(--straumur__color-border);
+}
+
+.straumur__kortalan-component__submit-button:disabled {
+  background: var(--straumur__color-gray-epsilon);
+  color: var(--straumur__color-secondary);
+  border: 1px solid var(--straumur__color-border);
+  cursor: not-allowed;
+}

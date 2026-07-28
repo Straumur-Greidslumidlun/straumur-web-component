@@ -12,6 +12,7 @@ describe("resolvePaymentMethodOrder", () => {
       "googlepay",
       "instantpayments",
       "storedcard",
+      "kortalan",
       "applepay",
     ]);
   });
@@ -21,6 +22,7 @@ describe("resolvePaymentMethodOrder", () => {
       "card",
       "instantpayments",
       "storedcard",
+      "kortalan",
       "googlepay",
       "applepay",
     ]);

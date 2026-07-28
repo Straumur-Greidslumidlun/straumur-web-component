@@ -74,6 +74,7 @@ async function setup(config = baseConfig()) {
         hasCard={true}
         hasGooglePay={false}
         hasApplePay={false}
+        hasKortalan={false}
         hasStoredPaymentMethods={false}
       >
         <Probe />
@@ -281,6 +282,7 @@ describe("CardForm onCardValidityChanged", () => {
           hasCard={true}
           hasGooglePay={false}
           hasApplePay={false}
+          hasKortalan={false}
           hasStoredPaymentMethods={false}
         >
           <CardForm

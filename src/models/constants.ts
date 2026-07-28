@@ -1,4 +1,4 @@
-export type PaymentMethod = "card" | "storedcard" | "googlepay" | "applepay";
+export type PaymentMethod = "card" | "storedcard" | "googlepay" | "applepay" | "kortalan";
 
 /**
  * A slot in the rendered payment-method list: a standalone method, or "instantpayments" for the

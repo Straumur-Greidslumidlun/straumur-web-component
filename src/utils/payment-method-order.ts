@@ -6,6 +6,7 @@ export const DEFAULT_PAYMENT_METHOD_ORDER: PaymentMethodOrder[] = [
   "instantpayments",
   "storedcard",
   "card",
+  "kortalan",
   "googlepay",
   "applepay",
 ];

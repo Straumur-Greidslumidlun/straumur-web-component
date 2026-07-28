@@ -1,31 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 /**
- * Regression test for the `onAdditionalDetails` callback losing its `this` binding.
- *
- * `StraumurCheckout.submitDetails` passes `this.handleOnSubmitAdditionalData` to Adyen
- * unbound. Adyen invokes it as a detached function, so `this` is undefined and every
- * `this.configuration` / `this.handleError` access throws. This test captures the callback
- * Adyen is given, invokes it the same way Adyen would (detached), and asserts it works.
+ * The redirect return (submitDetails) must complete WITHOUT the Adyen SDK or a clientKey, so a
+ * native-only terminal (e.g. Kortalán) can finish its payment. It posts /additional-details
+ * directly through the flow, carrying the per-attempt reference the backend routes on.
  */
 
-const adyenConfigs: any[] = [];
+const adyenCalls: any[] = [];
 
 vi.mock("@adyen/adyen-web", () => ({
   AdyenCheckout: vi.fn(async (config: any) => {
-    adyenConfigs.push(config);
+    adyenCalls.push(config);
     return { submitDetails: vi.fn() };
   }),
   CustomCard: vi.fn(),
-}));
-
-vi.mock("../src/services/straumur-service", () => ({
-  setupPaymentMethods: vi.fn(async () => ({
-    resultCode: "Success",
-    clientKey: "ck",
-    locale: "en-US",
-    paymentMethods: { paymentMethods: [], storedPaymentMethods: [] },
-  })),
 }));
 
 vi.mock("../src/adapter/straumur-adapter", () => ({
@@ -41,40 +29,29 @@ vi.mock("../src/adapter/straumur-adapter", () => ({
 import StraumurCheckout from "../src/straumur-checkout";
 import { createDetailsRequest } from "../src/adapter/straumur-adapter";
 
-describe("StraumurCheckout.submitDetails onAdditionalDetails binding", () => {
+describe("StraumurCheckout.submitDetails without Adyen (native-only redirect return)", () => {
   beforeEach(() => {
-    adyenConfigs.length = 0;
+    adyenCalls.length = 0;
     vi.mocked(createDetailsRequest).mockClear();
     document.body.innerHTML = '<div id="root"></div>';
   });
 
-  it("invokes the details request with the session id when Adyen calls the callback detached", async () => {
-    const checkout = new StraumurCheckout({ sessionId: "sess-123", environment: "test" });
-    await checkout.mount("#root");
+  it("posts the details directly and never constructs an Adyen checkout", async () => {
+    const onPaymentCompleted = vi.fn();
+    const checkout = new StraumurCheckout({ sessionId: "sess-123", environment: "test", onPaymentCompleted });
 
-    await checkout.submitDetails("redirect-result-abc");
+    await checkout.submitDetails("redirect-result-abc", "pcr-9", "#root");
 
-    // Adyen received exactly one checkout config carrying the callback.
-    expect(adyenConfigs).toHaveLength(1);
-    const onAdditionalDetails = adyenConfigs[0].onAdditionalDetails;
-    expect(typeof onAdditionalDetails).toBe("function");
-
-    // Simulate Adyen invoking it as a plain (detached) function reference.
-    const detached = onAdditionalDetails;
-    const state = { data: { details: { redirectResult: "redirect-result-abc" } } };
-    const actions = { resolve: vi.fn(), reject: vi.fn() };
-
-    let thrown: unknown = null;
-    try {
-      await detached(state, {}, actions);
-    } catch (e) {
-      thrown = e;
-    }
-
-    // With the bug, `this` is undefined and the call throws before reaching the request.
-    expect(thrown).toBeNull();
-    expect(createDetailsRequest).toHaveBeenCalledWith("test", expect.objectContaining({ sessionId: "sess-123" }));
-    expect(actions.resolve).toHaveBeenCalledWith(expect.objectContaining({ resultCode: "Authorised" }));
-    expect(actions.reject).not.toHaveBeenCalled();
+    expect(createDetailsRequest).toHaveBeenCalledWith(
+      "test",
+      expect.objectContaining({
+        sessionId: "sess-123",
+        paymentCheckoutReference: "pcr-9",
+        details: { redirectResult: "redirect-result-abc" },
+      })
+    );
+    // No clientKey was ever needed — the Adyen SDK must not be constructed on the redirect return.
+    expect(adyenCalls).toHaveLength(0);
+    expect(onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Authorised" });
   });
 });

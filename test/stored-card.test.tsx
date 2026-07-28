@@ -68,6 +68,7 @@ async function setup(config = baseConfig()) {
         hasCard={false}
         hasGooglePay={false}
         hasApplePay={false}
+        hasKortalan={false}
         hasStoredPaymentMethods={true}
       >
         <Probe />

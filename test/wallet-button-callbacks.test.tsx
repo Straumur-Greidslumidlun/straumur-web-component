@@ -92,6 +92,7 @@ wallets.forEach(({ name, Comp, method }) => {
             hasCard={false}
             hasGooglePay={true}
             hasApplePay={true}
+            hasKortalan={false}
             hasStoredPaymentMethods={false}
           >
             <Probe />
@@ -229,6 +230,7 @@ wallets.forEach(({ name, Comp, method }) => {
             hasCard={false}
             hasGooglePay={true}
             hasApplePay={true}
+            hasKortalan={false}
             hasStoredPaymentMethods={false}
           >
             <Comp

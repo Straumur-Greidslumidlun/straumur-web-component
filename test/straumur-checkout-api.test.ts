@@ -199,28 +199,27 @@ describe("StraumurCheckout.destroy", () => {
 });
 
 describe("StraumurCheckout.submitDetails", () => {
-  it("renders an error when payment-method setup fails", async () => {
+  it("posts the redirect result and paymentCheckoutReference directly, without bootstrapping Adyen", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
-    await checkout.mount("#root");
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised" }),
+    } as any);
 
-    setup.mockResolvedValueOnce({ resultCode: "Error", error: "error.paymentDetailsFailed" } as any);
-    await checkout.submitDetails("redirect-result");
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
 
-    expect(root().textContent).toContain(en("error.paymentDetailsFailed"));
-  });
-
-  it("bootstraps Adyen from the session response and submits the redirect result", async () => {
-    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
-
-    await checkout.submitDetails("redirect-result", "#root");
-
-    expect(A.cap.checkout.length).toBe(1);
-    expect(A.cap.checkout[0]).toMatchObject({ clientKey: "ck", environment: "test", countryCode: "IS" });
-    // The redirect-return bootstrap must not wire core-level result callbacks — the
-    // additional-details handler dispatches the final result itself (double-fire guard).
-    expect(A.cap.checkout[0].onPaymentCompleted).toBeUndefined();
-    expect(A.cap.checkout[0].onPaymentFailed).toBeUndefined();
-    expect(A.cap.submitDetails[0]).toHaveBeenCalledWith({ details: { redirectResult: "redirect-result" } });
+    // The redirect return goes straight to /additional-details through the flow, carrying the
+    // per-attempt reference the backend routes on — no Adyen SDK, so a native-only terminal works too.
+    expect(createDetailsRequest).toHaveBeenCalledWith(
+      "test",
+      expect.objectContaining({
+        sessionId: "s1",
+        paymentCheckoutReference: "pcr-1",
+        details: { redirectResult: "redirect-result" },
+      })
+    );
+    expect(A.cap.checkout.length).toBe(0);
   });
 
   it("routes an authorised details result to onPaymentCompleted and the success screen", async () => {
@@ -237,15 +236,8 @@ describe("StraumurCheckout.submitDetails", () => {
       json: async () => ({ resultCode: "Authorised" }),
     } as any);
 
-    await checkout.submitDetails("redirect-result", "#root");
-    const actions = { resolve: vi.fn(), reject: vi.fn() };
-    await A.cap.checkout[0].onAdditionalDetails(
-      { data: { details: { redirectResult: "redirect-result" } } },
-      {},
-      actions
-    );
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
 
-    expect(actions.resolve).toHaveBeenCalledWith({ resultCode: "Authorised", action: undefined });
     expect(onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Authorised" });
     expect(root().textContent).toContain(en("success.paymentAuthorized"));
   });
@@ -264,15 +256,27 @@ describe("StraumurCheckout.submitDetails", () => {
       json: async () => ({ resultCode: "Refused" }),
     } as any);
 
-    await checkout.submitDetails("redirect-result", "#root");
-    await A.cap.checkout[0].onAdditionalDetails(
-      { data: { details: { redirectResult: "redirect-result" } } },
-      {},
-      { resolve: vi.fn(), reject: vi.fn() }
-    );
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
 
     expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
     expect(root().textContent).toContain(en("error.paymentUnsuccessful"));
+  });
+
+  it("shows the failure screen and notifies the host when the details request fails", async () => {
+    const onPaymentFailed = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentFailed,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({ ok: false } as any);
+
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
+    expect(root().textContent).toContain(en("error.failedToSubmitPaymentDetails"));
   });
 });
 

@@ -161,15 +161,20 @@ describe("advanced mode: onSubmit bridging", () => {
 });
 
 describe("advanced mode: submitDetails (3DS redirect return)", () => {
-  it("bootstraps Adyen from the advanced configuration and submits the redirect result", async () => {
-    const checkout = construct(advancedConfig({ clientKey: "ck-adv" }));
+  it("routes the redirect result through the host's onAdditionalDetails without bootstrapping Adyen", async () => {
+    const onAdditionalDetails = vi.fn((_state, actions) => actions.resolve({ resultCode: "Authorised" }));
+    const checkout = construct(advancedConfig({ onAdditionalDetails, clientKey: "ck-adv" }));
 
-    await checkout.submitDetails("redirect-blob", "#component-container");
+    await checkout.submitDetails("redirect-blob", "pcr-adv", "#component-container");
 
+    // Advanced mode hands the continuation (with the per-attempt reference) to the host handler; the
+    // component never fetches and never constructs an Adyen checkout for the redirect return.
+    expect(onAdditionalDetails).toHaveBeenCalledWith(
+      { data: { paymentCheckoutReference: "pcr-adv", details: { redirectResult: "redirect-blob" } } },
+      expect.anything()
+    );
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(A.cap.checkout.length).toBe(1);
-    expect(A.cap.checkout[0]).toMatchObject({ clientKey: "ck-adv", environment: "test", countryCode: "IS" });
-    expect(A.cap.submitDetails[0]).toHaveBeenCalledWith({ details: { redirectResult: "redirect-blob" } });
+    expect(A.cap.checkout.length).toBe(0);
   });
 
   it("routes the additional details through the host's onAdditionalDetails and shows success", async () => {
@@ -177,20 +182,8 @@ describe("advanced mode: submitDetails (3DS redirect return)", () => {
     const onPaymentCompleted = vi.fn();
     const checkout = construct(advancedConfig({ onAdditionalDetails, onPaymentCompleted, locale: "en" }));
 
-    await checkout.submitDetails("redirect-blob", "#component-container");
+    await checkout.submitDetails("redirect-blob", "pcr-adv", "#component-container");
 
-    const actions = { resolve: vi.fn(), reject: vi.fn() };
-    await A.cap.checkout[0].onAdditionalDetails(
-      { data: { details: { redirectResult: "redirect-blob" } } },
-      {},
-      actions
-    );
-
-    expect(onAdditionalDetails).toHaveBeenCalledWith(
-      { data: { details: { redirectResult: "redirect-blob" } } },
-      expect.anything()
-    );
-    expect(actions.resolve).toHaveBeenCalledWith({ resultCode: "Authorised", action: undefined });
     expect(await screen.findByText("Payment authorized")).toBeTruthy();
     expect(onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Authorised" });
   });
@@ -202,12 +195,7 @@ describe("advanced mode: submitDetails (3DS redirect return)", () => {
     const onPaymentFailed = vi.fn();
     const checkout = construct(advancedConfig({ onAdditionalDetails, onPaymentFailed, locale: "en" }));
 
-    await checkout.submitDetails("redirect-blob", "#component-container");
-    await A.cap.checkout[0].onAdditionalDetails(
-      { data: { details: { redirectResult: "redirect-blob" } } },
-      {},
-      { resolve: vi.fn(), reject: vi.fn() }
-    );
+    await checkout.submitDetails("redirect-blob", "pcr-adv", "#component-container");
 
     expect(await screen.findByText("3DS verification failed")).toBeTruthy();
     expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
@@ -216,7 +204,7 @@ describe("advanced mode: submitDetails (3DS redirect return)", () => {
   it("shows the failure screen when called on an invalid advanced configuration", async () => {
     const checkout = construct(advancedConfig({ clientKey: "" }));
 
-    await checkout.submitDetails("redirect-blob", "#component-container");
+    await checkout.submitDetails("redirect-blob", "pcr-adv", "#component-container");
 
     expect(A.cap.checkout.length).toBe(0);
     expect(await screen.findByText("Failed to initialize Straumur Web component")).toBeTruthy();

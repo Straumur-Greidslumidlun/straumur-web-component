@@ -11,6 +11,7 @@ interface PaymentMethodGroupProps {
   hasCard: boolean;
   hasGooglePay: boolean;
   hasApplePay: boolean;
+  hasKortalan: boolean;
   hasStoredPaymentMethods: boolean;
   onSubmitApiReady?: (api: SubmitApi) => void;
 }
@@ -23,6 +24,7 @@ function PaymentMethodGroup({
   hasCard,
   hasGooglePay,
   hasApplePay,
+  hasKortalan,
   hasStoredPaymentMethods,
   onSubmitApiReady,
 }: PaymentMethodGroupProps): h.JSX.Element | null {
@@ -34,6 +36,7 @@ function PaymentMethodGroup({
       hasCard={hasCard}
       hasGooglePay={hasGooglePay}
       hasApplePay={hasApplePay}
+      hasKortalan={hasKortalan}
       hasStoredPaymentMethods={hasStoredPaymentMethods}
       onSubmitApiReady={onSubmitApiReady}
     >

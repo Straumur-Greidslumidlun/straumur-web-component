@@ -111,7 +111,9 @@ function StoredCardComponent({
 
   const initializeAdyenComponent = async () => {
     adyenCheckoutRef.current = await AdyenCheckout({
-      clientKey: paymentMethods.clientKey,
+      // This Adyen bootstrap only runs for a stored card, which means Adyen methods are present and
+      // the backend returned a clientKey.
+      clientKey: paymentMethods.clientKey!,
       environment: configuration.environment,
       locale: configuration.locale,
       countryCode: configuration.countryCode,

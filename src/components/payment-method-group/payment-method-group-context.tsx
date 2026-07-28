@@ -41,6 +41,7 @@ type PaymentMethodContextType = {
   hasCard: boolean;
   hasGooglePay: boolean;
   hasApplePay: boolean;
+  hasKortalan: boolean;
   hasStoredPaymentMethods: boolean;
   registerSubmitHandler: (handler: SubmitHandler) => void;
   unregisterSubmitHandler: (handler: SubmitHandler) => void;
@@ -53,6 +54,7 @@ const defaultIsInitialized: Record<PaymentMethod, boolean> = {
   storedcard: false,
   googlepay: false,
   applepay: false,
+  kortalan: false,
 };
 
 export const PaymentMethodGroupContext = ({
@@ -63,6 +65,7 @@ export const PaymentMethodGroupContext = ({
   hasCard,
   hasGooglePay,
   hasApplePay,
+  hasKortalan,
   hasStoredPaymentMethods,
   onSubmitApiReady,
 }: {
@@ -73,6 +76,7 @@ export const PaymentMethodGroupContext = ({
   hasCard: boolean;
   hasGooglePay: boolean;
   hasApplePay: boolean;
+  hasKortalan: boolean;
   hasStoredPaymentMethods: boolean;
   onSubmitApiReady?: (api: SubmitApi) => void;
 }): h.JSX.Element => {
@@ -165,6 +169,7 @@ export const PaymentMethodGroupContext = ({
         hasCard,
         hasGooglePay,
         hasApplePay,
+        hasKortalan,
         hasStoredPaymentMethods,
         registerSubmitHandler,
         unregisterSubmitHandler,

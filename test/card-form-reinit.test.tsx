@@ -58,6 +58,7 @@ function tree(configuration: any) {
         hasCard={true}
         hasGooglePay={false}
         hasApplePay={false}
+        hasKortalan={false}
         hasStoredPaymentMethods={false}
       >
         <CardForm configuration={configuration} paymentMethods={paymentMethods} onBrandHidden={() => {}} />

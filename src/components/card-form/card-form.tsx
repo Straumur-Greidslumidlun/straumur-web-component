@@ -135,7 +135,9 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     customCardRef.current?.remove();
 
     adyenCheckoutRef.current = await AdyenCheckout({
-      clientKey: paymentMethods.clientKey,
+      // This Adyen bootstrap only runs when a card method exists, which means Adyen methods are
+      // present and the backend returned a clientKey.
+      clientKey: paymentMethods.clientKey!,
       environment: configuration.environment,
       locale: configuration.locale,
       countryCode: configuration.countryCode,

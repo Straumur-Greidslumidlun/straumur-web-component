@@ -17,6 +17,7 @@ import {
 } from "../../models/models";
 import { toResultMessage } from "../../flows/payment-flow";
 import { runBeforeSubmit } from "./before-submit-click";
+import { dispatchFinalResult } from "./dispatch-final-result";
 
 export interface AdyenPaymentHandlersOptions {
   configuration: StraumurCheckoutConfiguration;
@@ -45,9 +46,6 @@ export interface AdyenPaymentHandlers {
   handlePaymentFailed: (data?: PaymentFailedData, element?: UIElement<UIElementProps>) => void;
 }
 
-// Merchant callbacks follow Adyen Web 6 semantics: these resultCodes are failures.
-const FAILED_RESULT_CODES: readonly ResultCode[] = ["Refused", "Cancelled", "Error"];
-
 export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions): AdyenPaymentHandlers {
   const {
     configuration,
@@ -62,23 +60,8 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
   // Buyer-friendly failure message from the host (advanced mode). Set on submit, shown when the payment fails.
   let failureMessage: string | undefined;
 
-  function failureResultMessage(): ResultMessage {
-    return failureMessage ? { text: failureMessage } : { key: "error.paymentUnsuccessful" };
-  }
-
-  function dispatchFinalResult(resultCode: ResultCode): void {
-    // The built-in screens keep their own rule: the success screen only for Authorised.
-    if (resultCode === "Authorised") {
-      handleSuccess({ key: "success.paymentAuthorized" });
-    } else {
-      handleError(failureResultMessage());
-    }
-
-    if (FAILED_RESULT_CODES.includes(resultCode)) {
-      configuration.onPaymentFailed?.({ resultCode });
-    } else {
-      configuration.onPaymentCompleted?.({ resultCode });
-    }
+  function dispatchResult(resultCode: ResultCode): void {
+    dispatchFinalResult(resultCode, { configuration, handleSuccess, handleError, failureMessage });
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
@@ -126,7 +109,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       actions.resolve({ resultCode, action } as Parameters<AdditionalDetailsActions["resolve"]>[0]);
 
       if (dispatchResultFromAdditionalDetails) {
-        dispatchFinalResult(resultCode);
+        dispatchResult(resultCode);
       }
     } catch (error) {
       actions.reject();
@@ -139,13 +122,13 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
   }
 
   function handlePaymentCompleted(data: PaymentCompletedData, _?: UIElement<UIElementProps> | undefined): void {
-    dispatchFinalResult(toResultCode(data.resultCode));
+    dispatchResult(toResultCode(data.resultCode));
   }
 
   function handlePaymentFailed(data?: PaymentFailedData | undefined, _?: UIElement<UIElementProps> | undefined): void {
     // Adyen occasionally reports failure without a payload; synthesize one so the
     // merchant callback always receives a resultCode.
-    dispatchFinalResult(data ? toResultCode(data.resultCode) : "Error");
+    dispatchResult(data ? toResultCode(data.resultCode) : "Error");
   }
 
   return { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed };

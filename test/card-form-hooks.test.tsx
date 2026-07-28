@@ -76,6 +76,7 @@ function tree() {
         hasCard={true}
         hasGooglePay={true}
         hasApplePay={false}
+        hasKortalan={false}
         hasStoredPaymentMethods={false}
       >
         <Controls />

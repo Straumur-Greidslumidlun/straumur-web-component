@@ -4,6 +4,7 @@ import { SuccessResponse } from "../services/models";
 import CardComponent from "./card/card-component";
 import GooglePayComponent from "./google-pay/google-pay-component";
 import ApplePayComponent from "./apple-pay/apple-pay-component";
+import KortalanComponent from "./kortalan/kortalan-component";
 import StoredCardContainerComponent from "./stored-card/stored-card-container-component";
 import PaymentMethodGroup from "../components/payment-method-group/payment-method-group";
 import ResultComponent from "./result-component/result-component";
@@ -23,6 +24,7 @@ export function determineInitialState(
   hasCard: boolean,
   hasGooglePay: boolean,
   hasApplePay: boolean,
+  hasKortalan: boolean,
   storedCount: number,
   instantPayments: StraumurCheckoutConfiguration["instantPayments"],
   openDefaultPaymentMethod?: OpenDefaultPaymentMethod
@@ -30,7 +32,8 @@ export function determineInitialState(
   const gpayInStandard = hasGooglePay && !instantPayments?.some((x) => x === "googlepay");
   const apayInStandard = hasApplePay && !instantPayments?.some((x) => x === "applepay");
 
-  const totalOptions = storedCount + (hasCard ? 1 : 0) + (gpayInStandard ? 1 : 0) + (apayInStandard ? 1 : 0);
+  const totalOptions =
+    storedCount + (hasCard ? 1 : 0) + (gpayInStandard ? 1 : 0) + (apayInStandard ? 1 : 0) + (hasKortalan ? 1 : 0);
 
   // Exactly one option: auto-select it and hide the chooser (sole mode).
   if (totalOptions === 1) {
@@ -38,6 +41,7 @@ export function determineInitialState(
     if (hasCard) return { initialPaymentMethod: "card", isSolePaymentMethod: true };
     if (gpayInStandard) return { initialPaymentMethod: "googlepay", isSolePaymentMethod: true };
     if (apayInStandard) return { initialPaymentMethod: "applepay", isSolePaymentMethod: true };
+    if (hasKortalan) return { initialPaymentMethod: "kortalan", isSolePaymentMethod: true };
     return { initialPaymentMethod: null, isSolePaymentMethod: false };
   }
 
@@ -70,6 +74,7 @@ function StraumurCheckoutContainer({
   const hasCard = methods.some((x) => x.type === "scheme") && isAllowed("card");
   const hasGooglePay = methods.some((x) => x.type === "googlepay") && isAllowed("googlepay");
   const hasApplePay = methods.some((x) => x.type === "applepay") && isAllowed("applepay");
+  const hasKortalan = methods.some((x) => x.type === "kortalan") && isAllowed("kortalan");
   const storedCount = isAllowed("storedcard") ? stored.length : 0;
   const hasStoredPaymentMethods = storedCount > 0;
 
@@ -77,6 +82,7 @@ function StraumurCheckoutContainer({
     hasCard,
     hasGooglePay,
     hasApplePay,
+    hasKortalan,
     storedCount,
     configuration.instantPayments,
     configuration.openDefaultPaymentMethod
@@ -98,6 +104,7 @@ function StraumurCheckoutContainer({
       <StoredCardContainerComponent key="storedcard" configuration={configuration} paymentMethods={paymentMethods} />
     ),
     card: <CardComponent key="card" configuration={configuration} paymentMethods={paymentMethods} />,
+    kortalan: <KortalanComponent key="kortalan" configuration={configuration} paymentMethods={paymentMethods} />,
     googlepay: <GooglePayComponent key="googlepay" configuration={configuration} paymentMethods={paymentMethods} />,
     applepay: <ApplePayComponent key="applepay" configuration={configuration} paymentMethods={paymentMethods} />,
   };
@@ -112,6 +119,7 @@ function StraumurCheckoutContainer({
       hasCard={hasCard}
       hasGooglePay={hasGooglePay}
       hasApplePay={hasApplePay}
+      hasKortalan={hasKortalan}
       hasStoredPaymentMethods={hasStoredPaymentMethods}
       onSubmitApiReady={onSubmitApiReady}
     >

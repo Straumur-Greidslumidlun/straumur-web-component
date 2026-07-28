@@ -97,6 +97,7 @@ export function makeGroupProps(overrides: Partial<GroupProps> = {}): GroupProps 
     hasCard: false,
     hasGooglePay: false,
     hasApplePay: false,
+    hasKortalan: false,
     hasStoredPaymentMethods: false,
     ...overrides,
   };
