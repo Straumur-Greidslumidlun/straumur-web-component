@@ -23,6 +23,10 @@ export function toResultMessage(error: unknown, fallbackKey: TranslationKey): Re
 }
 
 export function createSessionPaymentFlow(environment: "test" | "live", sessionId: string): PaymentFlow {
+  // Remembered from the /payment response so a native (in-component) 3DS continuation can auto-attach it to
+  // /details. A redirect continuation supplies it explicitly via submitDetails instead.
+  let capturedPaymentCheckoutReference: string | undefined;
+
   return {
     async submitPayment(data) {
       const body: ICreatePaymentBody = { ...data, sessionId };
@@ -37,6 +41,8 @@ export function createSessionPaymentFlow(environment: "test" | "live", sessionId
 
       const response = await fetchResponse.json();
 
+      capturedPaymentCheckoutReference = response.paymentCheckoutReference ?? capturedPaymentCheckoutReference;
+
       // ResultCode should never be empty.
       if (!response.resultCode) {
         throw new PaymentFlowError("error.paymentFailed");
@@ -45,7 +51,11 @@ export function createSessionPaymentFlow(environment: "test" | "live", sessionId
       return { resultCode: response.resultCode, action: response.action };
     },
     async submitAdditionalDetails(data) {
-      const body: ICreateDetailsBody = { ...data, sessionId };
+      const body: ICreateDetailsBody = {
+        ...data,
+        paymentCheckoutReference: data.paymentCheckoutReference ?? capturedPaymentCheckoutReference,
+        sessionId,
+      };
 
       const fetchResponse = await createDetailsRequest(environment, body);
 
@@ -101,6 +111,10 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
     }
   }
 
+  // Captured from the host's onSubmit resolve (the host made the /payment call, so only it sees the
+  // reference). Reused to auto-attach on a native (in-component) 3DS /details; redirect passes it explicitly.
+  let capturedPaymentCheckoutReference: string | undefined;
+
   const flow: PaymentFlow = {
     submitPayment(data) {
       return new Promise<PaymentFlowResult>((resolve, reject) => {
@@ -109,7 +123,10 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
             configuration.onSubmit(
               { data },
               {
-                resolve: res,
+                resolve: (result) => {
+                  capturedPaymentCheckoutReference = result.paymentCheckoutReference ?? capturedPaymentCheckoutReference;
+                  res(result);
+                },
                 reject: (errorMessage) => rej(new PaymentFlowError("error.failedToSubmitPayment", errorMessage)),
               }
             ),
@@ -124,7 +141,12 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
         invokeHostHandler(
           (res, rej) =>
             configuration.onAdditionalDetails(
-              { data },
+              {
+                data: {
+                  ...data,
+                  paymentCheckoutReference: data.paymentCheckoutReference ?? capturedPaymentCheckoutReference,
+                },
+              },
               {
                 resolve: res,
                 reject: (errorMessage) => rej(new PaymentFlowError("error.failedToSubmitPaymentDetails", errorMessage)),

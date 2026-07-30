@@ -143,6 +143,12 @@ export type PaymentFlowResult = {
    * instead of the generic localized one (advanced mode only).
    */
   errorMessage?: string;
+  /**
+   * The per-attempt reference from the /payment response. In advanced mode the host surfaces it here so the
+   * component can auto-attach it to a native (in-component) 3DS /details continuation. Redirect continuations
+   * pass it explicitly via submitDetails instead.
+   */
+  paymentCheckoutReference?: string;
 };
 
 export type AdvancedPaymentActions = {
