@@ -67,6 +67,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    paymentInProgress,
+    setPaymentInProgress,
     isObscuredByThreeDS,
     hasCard,
     registerSubmitHandler,
@@ -118,6 +120,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       handleSuccess,
       handleError,
       setThreeDSecureActive,
+      setPaymentInProgress,
       enrichSubmitData: (data) => ({
         ...data,
         storePaymentMethod: storePaymentMethodRef.current,
@@ -423,7 +426,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
         {!configuration.hideSubmitButton && (
           <button
             className="straumur__card-component__submit-button"
-            disabled={payButtonDisabled}
+            disabled={payButtonDisabled || paymentInProgress}
             onClick={handleSubmitClick}
           >
             {paymentMethods.minorUnitsAmount === 0 ? i18n.t("cards.saveCardDetails") : paymentMethods.formattedAmount}

@@ -44,6 +44,8 @@ function KortalanComponent({ configuration }: KortalanComponentProps): h.JSX.Ele
     hasKortalan,
     handleSuccess,
     handleError,
+    paymentInProgress,
+    setPaymentInProgress,
   } = usePaymentMethodGroup();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,6 +70,9 @@ function KortalanComponent({ configuration }: KortalanComponentProps): h.JSX.Ele
         return;
       }
 
+      // Lock the rest of the widget for the in-flight window (mirrors the Adyen flow).
+      setPaymentInProgress(true);
+
       // No Adyen client state for a native method — just the method type the backend routes on.
       const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitPayment({
         clientStateDataIndicator: false,
@@ -77,15 +82,18 @@ function KortalanComponent({ configuration }: KortalanComponentProps): h.JSX.Ele
       const redirectUrl = getRedirectUrl(action);
       if (redirectUrl) {
         // Leaving the page for Kortalán; the return lands back on /additional-details via submitDetails.
+        // Stay locked — the page is navigating away.
         window.location.assign(redirectUrl);
         return;
       }
 
       // No redirect (e.g. an outright refusal before the redirect) — surface the outcome in place.
       dispatchFinalResult(resultCode, { configuration, handleSuccess, handleError, failureMessage: errorMessage });
+      setPaymentInProgress(false);
       setIsSubmitting(false);
     } catch (error) {
       handleError(toResultMessage(error, "error.failedToSubmitPayment"));
+      setPaymentInProgress(false);
       setIsSubmitting(false);
     }
   };
@@ -100,7 +108,7 @@ function KortalanComponent({ configuration }: KortalanComponentProps): h.JSX.Ele
     >
       <button
         className="straumur__kortalan-component__submit-button"
-        disabled={isSubmitting}
+        disabled={isSubmitting || paymentInProgress}
         onClick={() => void pay()}
       >
         {i18n.t("kortalan.payButton")}

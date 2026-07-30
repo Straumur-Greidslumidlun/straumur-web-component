@@ -129,6 +129,8 @@ function WalletButton({
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    paymentInProgress,
+    setPaymentInProgress,
     isObscuredByThreeDS,
     setActivePaymentMethod,
     activePaymentMethod,
@@ -140,6 +142,7 @@ function WalletButton({
       handleSuccess,
       handleError,
       setThreeDSecureActive,
+      setPaymentInProgress,
       onSubmitStart: () => {
         if (isInstantPayment) {
           setActivePaymentMethod(method);
@@ -247,6 +250,11 @@ function WalletButton({
           height: threeDSecureActive ? undefined : "48px",
           width: threeDSecureActive ? "100%" : undefined,
           position: isPaymentMethodInitialized[method] ? "static" : "absolute",
+          // Lock the Adyen-drawn wallet button while a payment is in flight (can't add `disabled` to
+          // Adyen's element). Never while THIS wallet is showing a 3DS challenge in the same div —
+          // that must stay interactive; other methods are hidden by 3DS anyway.
+          pointerEvents: paymentInProgress && !threeDSecureActive ? "none" : undefined,
+          opacity: paymentInProgress && !threeDSecureActive ? 0.5 : undefined,
         }}
       />
     </Fragment>

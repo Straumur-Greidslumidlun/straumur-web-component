@@ -32,6 +32,14 @@ type PaymentMethodContextType = {
   threeDSecureActive: boolean;
   setThreeDSecureActive: (value: boolean) => void;
   /**
+   * True while any payment method's submission is in flight (from the moment its /payments call
+   * starts until the outcome takes over the widget or the call fails). Used to lock the rest of the
+   * UI — other method rows, wallet buttons, submit buttons — so the shopper can't start a second,
+   * concurrent attempt. (The backend also serializes attempts, so this is UX, not the safety net.)
+   */
+  paymentInProgress: boolean;
+  setPaymentInProgress: (value: boolean) => void;
+  /**
    * True while a 3DS challenge run by ANOTHER payment method takes over the widget —
    * the asking component must render nothing. Components matching a specific stored card
    * additionally check their own card id (see stored-card-component).
@@ -114,6 +122,7 @@ export const PaymentMethodGroupContext = ({
     initialStoredPaymentMethodId
   );
   const [threeDSecureActive, setThreeDSecureActive] = useState<boolean>(false);
+  const [paymentInProgress, setPaymentInProgress] = useState<boolean>(false);
   const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = useState(defaultIsInitialized);
   const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<Record<string, boolean>>({});
 
@@ -164,6 +173,8 @@ export const PaymentMethodGroupContext = ({
         error,
         threeDSecureActive,
         setThreeDSecureActive,
+        paymentInProgress,
+        setPaymentInProgress,
         isObscuredByThreeDS,
         isSolePaymentMethod,
         hasCard,

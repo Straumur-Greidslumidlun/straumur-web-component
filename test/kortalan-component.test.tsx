@@ -1,9 +1,16 @@
-import { h } from "preact";
+import { Fragment, h } from "preact";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/preact";
 import KortalanComponent from "../src/features/kortalan/kortalan-component";
+import { usePaymentMethodGroup } from "../src/components/payment-method-group/payment-method-group-context";
 import { baseConfig, makePaymentMethods, renderInGroup } from "./helpers/fixtures";
-import { PaymentFlow } from "../src/models/models";
+import { PaymentFlow, PaymentFlowResult } from "../src/models/models";
+
+// Reflects the shared cross-method lock so a test can observe it from outside KortalanComponent.
+function PaymentInProgressProbe() {
+  const { paymentInProgress } = usePaymentMethodGroup();
+  return <span data-testid="pip">{String(paymentInProgress)}</span>;
+}
 
 function makeFlow(overrides: Partial<PaymentFlow> = {}): PaymentFlow {
   return {
@@ -79,5 +86,32 @@ describe("KortalanComponent", () => {
 
     await waitFor(() => expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" }));
     expect(assignSpy).not.toHaveBeenCalled();
+  });
+
+  it("locks the widget (paymentInProgress) while the payment call is in flight", async () => {
+    let resolvePay!: (value: PaymentFlowResult) => void;
+    const paymentFlow = makeFlow({
+      submitPayment: vi.fn(() => new Promise<PaymentFlowResult>((resolve) => (resolvePay = resolve))),
+    });
+
+    renderInGroup(
+      <Fragment>
+        <KortalanComponent configuration={baseConfig({ paymentFlow })} paymentMethods={makePaymentMethods()} />
+        <PaymentInProgressProbe />
+      </Fragment>,
+      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" }
+    );
+
+    expect(screen.getByTestId("pip").textContent).toBe("false");
+
+    fireEvent.click(await screen.findByText("Continue to Kortalán"));
+
+    // Call in flight (submitPayment pending) -> the rest of the widget is locked.
+    await waitFor(() => expect(screen.getByTestId("pip").textContent).toBe("true"));
+
+    // Completing with a redirect keeps it locked (the page is navigating away).
+    resolvePay({ resultCode: "RedirectShopper", action: { type: "redirect", url: "https://kortalan.example/pay" } });
+    await waitFor(() => expect(assignSpy).toHaveBeenCalledWith("https://kortalan.example/pay"));
+    expect(screen.getByTestId("pip").textContent).toBe("true");
   });
 });

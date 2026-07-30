@@ -24,6 +24,8 @@ export interface AdyenPaymentHandlersOptions {
   handleSuccess: (message: ResultMessage) => void;
   handleError: (message: ResultMessage) => void;
   setThreeDSecureActive: (value: boolean) => void;
+  /** Locks the rest of the widget while this submission's /payments call is in flight. */
+  setPaymentInProgress?: (value: boolean) => void;
   enrichSubmitData?: (data: SubmitData["data"]) => AdvancedSubmitState["data"];
   onSubmitStart?: () => void;
   /**
@@ -52,6 +54,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     handleSuccess,
     handleError,
     setThreeDSecureActive,
+    setPaymentInProgress,
     enrichSubmitData,
     onSubmitStart,
     dispatchResultFromAdditionalDetails,
@@ -74,6 +77,12 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       return;
     }
 
+    // Lock the rest of the widget for the in-flight window. Set only after the beforeSubmit gate so a
+    // cancelled submission (which stays on the chooser) never leaves the UI disabled. On any outcome
+    // the result/failure screen or the 3DS takeover hides the other methods anyway; the catch clears
+    // it defensively for the rare path that returns to the chooser.
+    setPaymentInProgress?.(true);
+
     try {
       const data = enrichSubmitData ? enrichSubmitData(state.data) : (state.data as AdvancedSubmitState["data"]);
 
@@ -89,6 +98,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       // You must call this, even if the result of the payment is unsuccessful.
       actions.resolve({ resultCode, action } as Parameters<SubmitActions["resolve"]>[0]);
     } catch (error) {
+      setPaymentInProgress?.(false);
       actions.reject();
       handleError(toResultMessage(error, "error.failedToSubmitPayment"));
     }

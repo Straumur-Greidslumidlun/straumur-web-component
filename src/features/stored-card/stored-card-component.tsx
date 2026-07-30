@@ -46,6 +46,8 @@ function StoredCardComponent({
     handleError,
     setThreeDSecureActive,
     threeDSecureActive,
+    paymentInProgress,
+    setPaymentInProgress,
     isSolePaymentMethod,
     registerSubmitHandler,
     unregisterSubmitHandler,
@@ -96,6 +98,7 @@ function StoredCardComponent({
       handleSuccess,
       handleError,
       setThreeDSecureActive,
+      setPaymentInProgress,
       enrichSubmitData: (data) => ({
         ...data,
         paymentMethod: {
@@ -361,7 +364,7 @@ function StoredCardComponent({
           {!configuration.hideSubmitButton && (
             <button
               className="straumur__stored-card-component__submit-button"
-              disabled={payButtonDisabled}
+              disabled={payButtonDisabled || paymentInProgress}
               onClick={handleSubmitClick}
             >
               {paymentMethods.minorUnitsAmount === 0

@@ -1,5 +1,6 @@
 import { h, ComponentChildren } from "preact";
 import "./payment-method-item.css";
+import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
 
 interface PaymentMethodItemProps {
   icon: h.JSX.Element;
@@ -22,6 +23,9 @@ function PaymentMethodItem({
   headerRight,
   confirmSection,
 }: PaymentMethodItemProps): h.JSX.Element {
+  // Prevent switching methods while a payment is in flight (the buttons are disabled too).
+  const { paymentInProgress } = usePaymentMethodGroup();
+
   return (
     <label className={`straumur__payment-method-item${isSole ? " straumur__payment-method-item--sole" : ""}`}>
       {!isSole && (
@@ -30,6 +34,7 @@ function PaymentMethodItem({
           className="straumur__payment-method-item__radio-selector"
           checked={isActive}
           onChange={onChange}
+          disabled={paymentInProgress}
         />
       )}
       <span
