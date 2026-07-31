@@ -13,10 +13,9 @@ interface InstantPaymentsComponentProps {
   paymentMethods: SuccessResponse;
 }
 
-// Only these methods may render as express buttons. Kortalán sorts first so it always takes the
-// full-width top row (see the layout note below), with the wallets sharing the row beneath it.
-const INSTANT_PRIORITY: InstantPaymentMethod[] = ["kortalan", "googlepay", "applepay"];
-const WALLET_METHODS: InstantPaymentMethod[] = ["googlepay", "applepay"];
+// The methods that may render as express buttons. Used only to validate the configured tokens — the
+// render order follows the merchant's `instantPayments` array, not this list.
+const INSTANT_METHODS: InstantPaymentMethod[] = ["kortalan", "googlepay", "applepay"];
 
 function InstantPaymentsComponent({
   configuration,
@@ -36,13 +35,18 @@ function InstantPaymentsComponent({
   const isAvailable = (payment: InstantPaymentMethod): boolean =>
     payment === "googlepay" ? hasGooglePay : payment === "applepay" ? hasApplePay : hasKortalan;
 
-  // Keep only valid, available methods; dedupe (the public type is a plain array, so a merchant could
-  // repeat a method) and order by INSTANT_PRIORITY so the layout is deterministic regardless of the
-  // order the methods were configured in.
-  const configured = new Set(configuration.instantPayments);
-  const finalAvailableInstantPayments = INSTANT_PRIORITY.filter((payment) => configured.has(payment)).filter(
-    isAvailable
-  );
+  // Preserve the merchant's configured order (that order drives the layout); drop invalid tokens,
+  // duplicates (the public type is a plain array, so a merchant could repeat one), and unavailable
+  // methods.
+  const seen = new Set<InstantPaymentMethod>();
+  const finalAvailableInstantPayments = configuration.instantPayments.filter((payment) => {
+    if (seen.has(payment) || !INSTANT_METHODS.includes(payment)) {
+      return false;
+    }
+
+    seen.add(payment);
+    return isAvailable(payment);
+  });
 
   const visibleInstantPayments = finalAvailableInstantPayments.filter((payment) => !unavailableMethods.has(payment));
 
@@ -50,13 +54,12 @@ function InstantPaymentsComponent({
     return null;
   }
 
-  // Grid columns are driven by the wallet count, not the total: two wallets share a row (two columns),
-  // anything else is a single column. Kortalán always spans the full row (see its cell class), so with
-  // all three methods present Kortalán sits full-width on top and the two wallets pair beneath it.
-  // During a 3DS challenge only the active wallet renders (the others are obscured); force a single
-  // column so its challenge iframe fills the full widget width like the card flow.
-  const visibleWalletCount = visibleInstantPayments.filter((payment) => WALLET_METHODS.includes(payment)).length;
-  const twoColumn = visibleWalletCount > 1 && !threeDSecureActive;
+  // Express buttons flow two-up in the order the merchant listed them. An odd number leaves the last
+  // button alone on its row, so span it full width (e.g. 3 buttons: two on top, the third full-width
+  // below). During a 3DS challenge only the active wallet renders (others are obscured); force a
+  // single column so its challenge iframe fills the full widget width like the card flow.
+  const twoColumn = visibleInstantPayments.length > 1 && !threeDSecureActive;
+  const spanLastFull = twoColumn && visibleInstantPayments.length % 2 === 1;
 
   return (
     // The unprefixed instant-payments classes predate the straumur__ convention and may be
@@ -69,45 +72,38 @@ function InstantPaymentsComponent({
       }`}
       style={{ display: visibleInstantPayments.length === 0 ? "none" : undefined }}
     >
-      {/* Render the visible (available) methods only. Every wallet still mounts on first render
-          (visibleInstantPayments starts equal to finalAvailableInstantPayments) so isAvailable()
-          runs; a wallet that reports unavailable is dropped here and unmounts, collapsing its cell
-          instead of leaving an empty fixed-height (48px) button behind. Kortalán has no async
-          availability check, so it never drops. */}
-      {visibleInstantPayments.map((paymentMethod) => {
-        if (paymentMethod === "googlepay") {
-          return (
-            <GooglePayButton
-              key={paymentMethod}
-              configuration={configuration}
-              paymentMethods={paymentMethods}
-              isInstantPayment={true}
-              onUnavailable={() => handleUnavailable("googlepay")}
-            />
-          );
-        }
-        if (paymentMethod === "applepay") {
-          return (
-            <ApplePayButton
-              key={paymentMethod}
-              configuration={configuration}
-              paymentMethods={paymentMethods}
-              isInstantPayment={true}
-              onUnavailable={() => handleUnavailable("applepay")}
-            />
-          );
-        }
-        if (paymentMethod === "kortalan") {
-          // Wrapped in a full-width grid cell so Kortalán spans the row above the wallets.
-          return (
-            <div key={paymentMethod} className="straumur__instant-payments__full instant-payments__full">
-              <KortalanInstantButton configuration={configuration} />
-            </div>
-          );
-        }
+      {/* Render the visible (available) methods only, each in its own grid cell in the configured
+          order. Every wallet still mounts on first render (visibleInstantPayments starts equal to
+          finalAvailableInstantPayments) so isAvailable() runs; a wallet that reports unavailable is
+          dropped here and unmounts, collapsing its cell. Kortalán has no async availability check, so
+          it never drops. The lone trailing cell in an odd count spans the full width. */}
+      {visibleInstantPayments.map((paymentMethod, index) => {
+        const spanFull = spanLastFull && index === visibleInstantPayments.length - 1;
 
-        // this should never happen due to our filtering above, but typescript safeguard
-        return null;
+        return (
+          <div
+            key={paymentMethod}
+            className={spanFull ? "straumur__instant-payments__full instant-payments__full" : ""}
+          >
+            {paymentMethod === "googlepay" && (
+              <GooglePayButton
+                configuration={configuration}
+                paymentMethods={paymentMethods}
+                isInstantPayment={true}
+                onUnavailable={() => handleUnavailable("googlepay")}
+              />
+            )}
+            {paymentMethod === "applepay" && (
+              <ApplePayButton
+                configuration={configuration}
+                paymentMethods={paymentMethods}
+                isInstantPayment={true}
+                onUnavailable={() => handleUnavailable("applepay")}
+              />
+            )}
+            {paymentMethod === "kortalan" && <KortalanInstantButton configuration={configuration} />}
+          </div>
+        );
       })}
     </div>
   );

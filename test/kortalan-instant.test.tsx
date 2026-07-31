@@ -73,9 +73,10 @@ describe("InstantPaymentsComponent — Kortalán", () => {
 
     const wrapper = container.querySelector(".instant-payments")!;
     expect(wrapper).toBeTruthy();
-    // Single column (no wallets sharing a row) and the Kortalán cell spans the full width.
+    // Only method -> single column; the lone cell fills the width (no explicit full-span needed).
     expect(wrapper.className).toContain("instant-payments--single");
-    expect(wrapper.querySelector(".instant-payments__full .straumur__kortalan-instant-button")).toBeTruthy();
+    expect(wrapper.querySelector(".instant-payments__full")).toBeNull();
+    expect(wrapper.querySelector(".straumur__kortalan-instant-button")).toBeTruthy();
     expect(screen.getByText("Continue to Kortalán")).toBeTruthy();
   });
 
@@ -111,7 +112,7 @@ describe("InstantPaymentsComponent — Kortalán", () => {
     }
   });
 
-  it("lays out Kortalán full-width on top with the two wallets sharing the row below", async () => {
+  it("lays out three express buttons two-up in configured order, the last spanning full width", () => {
     const { container } = renderInGroup(
       <InstantPaymentsComponent
         configuration={baseConfig({ instantPayments: ["kortalan", "googlepay", "applepay"] })}
@@ -121,14 +122,15 @@ describe("InstantPaymentsComponent — Kortalán", () => {
     );
 
     const wrapper = container.querySelector(".instant-payments")!;
-    // Two wallets present -> two-column grid; the wallets pair on the row beneath Kortalán.
     expect(wrapper.className).toContain("instant-payments--multiple");
-    // Kortalán is the first cell and spans the full width (grid-column: 1 / -1 via the class).
-    const firstCell = wrapper.firstElementChild!;
-    expect(firstCell.className).toContain("instant-payments__full");
-    expect(firstCell.querySelector(".straumur__kortalan-instant-button")).toBeTruthy();
-    // The wallets still mount alongside it.
-    await waitFor(() => expect(wrapper.querySelectorAll(".straumur__kortalan-instant-button").length).toBe(1));
+
+    const cells = wrapper.querySelectorAll(":scope > div");
+    expect(cells.length).toBe(3);
+    // Configured order is preserved: Kortalán (first) sits top-left and is NOT full-width.
+    expect(cells[0].className).not.toContain("instant-payments__full");
+    expect(cells[0].querySelector(".straumur__kortalan-instant-button")).toBeTruthy();
+    // The odd trailing button (the 3rd) spans the full width below the first two.
+    expect(cells[2].className).toContain("instant-payments__full");
   });
 
   it("themes the express button: whitish (light) by default, blackish (dark), and kortalanButtonTheme wins", () => {
@@ -152,7 +154,7 @@ describe("InstantPaymentsComponent — Kortalán", () => {
     ).toBe("dark");
   });
 
-  it("uses a single (stacked) column for Kortalán plus a single wallet", () => {
+  it("places Kortalán side-by-side with a single wallet (not stacked)", () => {
     const gpayOnly = makePaymentMethods({ paymentMethods: { paymentMethods: [googlePayMethod()] } });
     const { container } = renderInGroup(
       <InstantPaymentsComponent
@@ -163,8 +165,9 @@ describe("InstantPaymentsComponent — Kortalán", () => {
     );
 
     const wrapper = container.querySelector(".instant-payments")!;
-    // Only one wallet -> single column; Kortalán and the lone wallet stack full-width.
-    expect(wrapper.className).toContain("instant-payments--single");
-    expect(wrapper.querySelector(".instant-payments__full .straumur__kortalan-instant-button")).toBeTruthy();
+    // Kortalán + one wallet -> two columns, side by side; Kortalán is a peer, not full-width here.
+    expect(wrapper.className).toContain("instant-payments--multiple");
+    expect(wrapper.querySelector(".instant-payments__full")).toBeNull();
+    expect(wrapper.querySelector(".straumur__kortalan-instant-button")).toBeTruthy();
   });
 });
