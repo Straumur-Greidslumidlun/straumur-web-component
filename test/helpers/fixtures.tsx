@@ -39,6 +39,8 @@ export const applePayMethod = () => ({
   name: "Apple Pay",
   configuration: { gatewayMerchantId: "gm", merchantId: "m" },
 });
+// Native (non-Adyen) redirect method — no wallet `configuration`, just the type the backend routes on.
+export const kortalanMethod = () => ({ type: "kortalan", name: "Kortalán" });
 export const storedCard = (overrides: Record<string, unknown> = {}) => ({
   type: "scheme",
   name: "VISA",

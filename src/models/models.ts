@@ -12,16 +12,16 @@ type StraumurWebBaseConfiguration = {
   placeholders?: Placeholders;
   locale?: PublicLocale;
   localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-  instantPayments?: UniqueInstantPayments;
+  instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];
   /**
-   * Top-to-bottom order of the payment-method options. Tokens: "card", "storedcard", "googlepay",
-   * "applepay", and "instantpayments" (the express wallet row). A wallet listed in `instantPayments`
-   * renders only inside the "instantpayments" slot, never standalone, so its standalone token here is
-   * effectively ignored. Any available method you omit is appended in the default order. Defaults to
-   * ["instantpayments", "storedcard", "card", "googlepay", "applepay"].
+   * Top-to-bottom order of the payment-method options. Tokens: "card", "storedcard", "kortalan",
+   * "googlepay", "applepay", and "instantpayments" (the express row). A method listed in
+   * `instantPayments` renders only inside the "instantpayments" slot, never standalone, so its
+   * standalone token here is effectively ignored. Any available method you omit is appended in the
+   * default order. Defaults to ["instantpayments", "storedcard", "card", "kortalan", "googlepay", "applepay"].
    */
   orderPaymentMethods?: PaymentMethodOrder[];
   /**
@@ -177,11 +177,13 @@ export interface PaymentFlow {
 // message shown on the built-in result screens: either a translation key or raw text supplied by the host
 export type ResultMessage = { key: TranslationKey } | { text: string };
 
-type UniqueInstantPayments =
-  | [Extract<PaymentMethod, "googlepay">]
-  | [Extract<PaymentMethod, "applepay">]
-  | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">]
-  | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
+/**
+ * A payment method that can be placed in `instantPayments` to render as an express button at the top
+ * of the widget: the two Adyen wallets and Kortalán (a redirect method). Duplicates are ignored at
+ * runtime (the instant strip dedupes), so this is a plain array rather than a unique-tuple union —
+ * enumerating every permutation of three methods is unmaintainable.
+ */
+export type InstantPaymentMethod = Extract<PaymentMethod, "googlepay" | "applepay" | "kortalan">;
 
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {
@@ -195,7 +197,7 @@ export type StraumurCheckoutConfiguration = {
   placeholders?: Placeholders;
   locale: Language;
   customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-  instantPayments?: UniqueInstantPayments;
+  instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
   allowedPaymentMethods?: PaymentMethod[];

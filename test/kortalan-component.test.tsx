@@ -51,6 +51,19 @@ describe("KortalanComponent", () => {
     expect(container.querySelector(".straumur__kortalan-component__submit-button")).toBeNull();
   });
 
+  it("renders nothing as a standalone row when Kortalán is configured as an instant payment", () => {
+    // In instantPayments it renders only in the express strip; the standalone row stays hidden.
+    const { container } = renderInGroup(
+      <KortalanComponent
+        configuration={baseConfig({ instantPayments: ["kortalan"] })}
+        paymentMethods={makePaymentMethods()}
+      />,
+      { hasKortalan: true }
+    );
+
+    expect(container.querySelector(".straumur__kortalan-component__submit-button")).toBeNull();
+  });
+
   it("submits the kortalan method and redirects on a Pending redirect action", async () => {
     const paymentFlow = makeFlow();
     renderInGroup(

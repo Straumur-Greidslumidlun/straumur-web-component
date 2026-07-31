@@ -101,6 +101,30 @@ describe("determineInitialState", () => {
       isSolePaymentMethod: true,
     });
   });
+
+  it("excludes Kortalán from the standard count when it is configured as an instant payment", () => {
+    // kortalan moved to instant -> zero standard options -> no selection
+    expect(determineInitialState(false, false, false, true, 0, ["kortalan"])).toEqual({
+      initialPaymentMethod: null,
+      isSolePaymentMethod: false,
+    });
+  });
+
+  it("treats card as sole when Kortalán is an instant payment", () => {
+    // card is the only *standard* option because kortalan is instant
+    expect(determineInitialState(true, false, false, true, 0, ["kortalan"])).toEqual({
+      initialPaymentMethod: "card",
+      isSolePaymentMethod: true,
+    });
+  });
+
+  it("treats Kortalán as sole when both wallets are instant payments", () => {
+    // kortalan is the only *standard* option because both wallets are instant
+    expect(determineInitialState(false, true, true, true, 0, ["googlepay", "applepay"])).toEqual({
+      initialPaymentMethod: "kortalan",
+      isSolePaymentMethod: true,
+    });
+  });
 });
 
 describe("determineInitialState — openDefaultPaymentMethod", () => {

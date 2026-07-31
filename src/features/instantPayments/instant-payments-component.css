@@ -12,6 +12,13 @@
   grid-template-columns: 1fr;
 }
 
+/* Kortalán always spans the full row, sitting above the wallet buttons that share the row below it.
+   grid-column: 1 / -1 works in both the two-column (Kortalán + two wallets) and single-column
+   (Kortalán alone, or Kortalán + one wallet, or the stacked < 500px layout) grids. */
+.instant-payments__full {
+  grid-column: 1 / -1;
+}
+
 /* Stack the wallets once the WIDGET is under 500px, so they sit side by side only at a full-width
    (~500px) column and stack on anything narrower — independent of the host container/viewport. */
 @container straumur (max-width: 499px) {

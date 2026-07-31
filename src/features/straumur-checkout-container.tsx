@@ -31,9 +31,14 @@ export function determineInitialState(
 ): { initialPaymentMethod: PaymentMethod | null; isSolePaymentMethod: boolean } {
   const gpayInStandard = hasGooglePay && !instantPayments?.some((x) => x === "googlepay");
   const apayInStandard = hasApplePay && !instantPayments?.some((x) => x === "applepay");
+  const kortalanInStandard = hasKortalan && !instantPayments?.some((x) => x === "kortalan");
 
   const totalOptions =
-    storedCount + (hasCard ? 1 : 0) + (gpayInStandard ? 1 : 0) + (apayInStandard ? 1 : 0) + (hasKortalan ? 1 : 0);
+    storedCount +
+    (hasCard ? 1 : 0) +
+    (gpayInStandard ? 1 : 0) +
+    (apayInStandard ? 1 : 0) +
+    (kortalanInStandard ? 1 : 0);
 
   // Exactly one option: auto-select it and hide the chooser (sole mode).
   if (totalOptions === 1) {
@@ -41,7 +46,7 @@ export function determineInitialState(
     if (hasCard) return { initialPaymentMethod: "card", isSolePaymentMethod: true };
     if (gpayInStandard) return { initialPaymentMethod: "googlepay", isSolePaymentMethod: true };
     if (apayInStandard) return { initialPaymentMethod: "applepay", isSolePaymentMethod: true };
-    if (hasKortalan) return { initialPaymentMethod: "kortalan", isSolePaymentMethod: true };
+    if (kortalanInStandard) return { initialPaymentMethod: "kortalan", isSolePaymentMethod: true };
     return { initialPaymentMethod: null, isSolePaymentMethod: false };
   }
 
