@@ -131,6 +131,27 @@ describe("InstantPaymentsComponent — Kortalán", () => {
     await waitFor(() => expect(wrapper.querySelectorAll(".straumur__kortalan-instant-button").length).toBe(1));
   });
 
+  it("themes the express button: whitish (light) by default, blackish (dark), and kortalanButtonTheme wins", () => {
+    const render = (configuration: ReturnType<typeof baseConfig>) =>
+      renderInGroup(<InstantPaymentsComponent configuration={configuration} paymentMethods={makePaymentMethods()} />, {
+        hasKortalan: true,
+      }).container.querySelector(".straumur__kortalan-instant-button")!;
+
+    // Default follows the widget theme.
+    expect(
+      render(baseConfig({ instantPayments: ["kortalan"], theme: "light" })).getAttribute("data-kortalan-theme")
+    ).toBe("light");
+    expect(
+      render(baseConfig({ instantPayments: ["kortalan"], theme: "dark" })).getAttribute("data-kortalan-theme")
+    ).toBe("dark");
+    // Override wins over the widget theme.
+    expect(
+      render(baseConfig({ instantPayments: ["kortalan"], theme: "light", kortalanButtonTheme: "dark" })).getAttribute(
+        "data-kortalan-theme"
+      )
+    ).toBe("dark");
+  });
+
   it("uses a single (stacked) column for Kortalán plus a single wallet", () => {
     const gpayOnly = makePaymentMethods({ paymentMethods: { paymentMethods: [googlePayMethod()] } });
     const { container } = renderInGroup(

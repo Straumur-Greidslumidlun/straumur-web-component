@@ -33,7 +33,7 @@ type StraumurWebBaseConfiguration = {
   openDefaultPaymentMethod?: OpenDefaultPaymentMethod;
   /**
    * Color theme for the widget. Accepts a mode ("light" | "dark" | "system"), or a
-   * {@link ThemeConfiguration} object to also override the wallet button styling. "system" follows
+   * {@link ThemeConfiguration} object to also override the wallet / Kortalán button styling. "system" follows
    * the shopper's OS/browser preference (`prefers-color-scheme`) and updates live if it changes.
    * Defaults to "light".
    */
@@ -51,15 +51,19 @@ export type GooglePayButtonTheme = "dark" | "white";
 /** Apple Pay button style override: "light" = white button, "dark" = black button. */
 export type ApplePayButtonTheme = "dark" | "light";
 
+/** Kortalán express-button style override: "light" = whitish button, "dark" = blackish button. */
+export type KortalanButtonTheme = "light" | "dark";
+
 /**
- * Object form of `theme`: the widget color mode plus optional per-wallet button overrides.
- * When an override is omitted the wallet button follows the mode — a light widget gets a
- * light/white button, a dark widget gets a black one.
+ * Object form of `theme`: the widget color `mode` plus optional per-button style overrides.
+ * When an override is omitted the button follows the mode — a light widget gets a light/whitish
+ * button, a dark widget gets a black/blackish one.
  */
 export type ThemeConfiguration = {
-  theme: Theme;
+  mode: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
+  kortalanButtonTheme?: KortalanButtonTheme;
 };
 
 // the public configuration (session mode): the component loads everything itself from the Straumur API using the sessionId
@@ -206,6 +210,7 @@ export type StraumurCheckoutConfiguration = {
   theme: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
+  kortalanButtonTheme?: KortalanButtonTheme;
 };
 
 // What updateConfig() accepts: internal config fields minus the immutable ones,

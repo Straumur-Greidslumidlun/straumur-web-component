@@ -7,21 +7,32 @@
   /* Match the wallet express buttons (Apple Pay height / border radius) so Kortalán aligns with the
      Google Pay + Apple Pay tiles that sit beside or below it. */
   height: var(--apple-pay-button-height);
-  border: none;
   border-radius: var(--straumur__border-radius-lg);
-  /* Theme-aware: primary flips to a light surface in dark mode, on-primary to its readable label
-     color — so the [data-theme="dark"] token overrides in main.css handle both modes with no hex. */
-  background: var(--straumur__color-primary);
-  color: var(--straumur__color-on-primary);
   cursor: pointer;
   font-size: 16px;
   padding: 0 var(--straumur__space-xxlg);
   transition: opacity 0.2s ease-out;
 }
 
+/* Whitish (light) / blackish (dark) tile so it reads like the Google Pay & Apple Pay express buttons
+   next to it. The active variant is chosen in JS (data-kortalan-theme = kortalanButtonTheme override,
+   or the resolved widget theme). Like the Adyen wallet buttons — which can only be literal black or
+   white and don't follow the widget tokens — these two states use fixed colors so the override holds
+   regardless of the widget theme. The icon inherits currentColor. */
+.straumur__kortalan-instant-button[data-kortalan-theme="light"] {
+  background: #ffffff;
+  color: #00112c;
+  border: 1px solid #dbdee2;
+}
+
+.straumur__kortalan-instant-button[data-kortalan-theme="dark"] {
+  background: #0d0f13;
+  color: #ffffff;
+  border: 1px solid #0d0f13;
+}
+
 .straumur__kortalan-instant-button svg {
-  /* The icon inherits currentColor (= on-primary), so it stays readable in both themes. Cap its
-     height so the 40x26 mark sits neatly inside the 48px button. */
+  /* Cap the 40x26 mark so it sits neatly inside the 48px button. */
   height: 20px;
   width: auto;
 }

@@ -3,6 +3,8 @@ import "./kortalan-instant-button.css";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 import { StraumurCheckoutConfiguration } from "../../models/models";
 import { useI18n } from "../../localizations/i18n-context";
+import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
+import { resolveKortalanButtonTheme } from "../../utils/wallet-button-theme";
 import KortalanIcon from "../../assets/icons/kortalan";
 import { KORTALAN_TYPE, useKortalanPay } from "./use-kortalan-pay";
 
@@ -20,6 +22,10 @@ function KortalanInstantButton({ configuration }: KortalanInstantButtonProps): h
   const { i18n } = useI18n();
   const { isObscuredByThreeDS, paymentInProgress } = usePaymentMethodGroup();
   const { pay, isSubmitting } = useKortalanPay(configuration);
+  // Whitish (light) or blackish (dark) tile, following the widget theme unless kortalanButtonTheme
+  // forces one — mirrors how the Google Pay / Apple Pay express buttons beside it pick black/white.
+  const resolvedTheme = useResolvedTheme(configuration.theme);
+  const buttonTheme = resolveKortalanButtonTheme(resolvedTheme, configuration.kortalanButtonTheme);
 
   if (isObscuredByThreeDS(KORTALAN_TYPE)) {
     return null;
@@ -28,6 +34,7 @@ function KortalanInstantButton({ configuration }: KortalanInstantButtonProps): h
   return (
     <button
       className="straumur__kortalan-instant-button"
+      data-kortalan-theme={buttonTheme}
       disabled={isSubmitting || paymentInProgress}
       onClick={() => void pay()}
     >

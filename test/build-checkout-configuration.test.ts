@@ -43,23 +43,25 @@ describe("buildCheckoutConfiguration", () => {
     ).toBe("dark");
   });
 
-  it("flattens the object theme form into mode + wallet button overrides", () => {
+  it("flattens the object theme form into mode + button overrides", () => {
     const { configuration } = buildCheckoutConfiguration({
       sessionId: "s1",
       environment: "test",
-      theme: { theme: "dark", googlePayButtonTheme: "white", applePayButtonTheme: "light" },
+      theme: { mode: "dark", googlePayButtonTheme: "white", applePayButtonTheme: "light", kortalanButtonTheme: "light" },
     });
 
     expect(configuration.theme).toBe("dark");
     expect(configuration.googlePayButtonTheme).toBe("white");
     expect(configuration.applePayButtonTheme).toBe("light");
+    expect(configuration.kortalanButtonTheme).toBe("light");
   });
 
-  it("leaves wallet button overrides undefined for the bare theme form", () => {
+  it("leaves button overrides undefined for the bare theme form", () => {
     const { configuration } = buildCheckoutConfiguration({ sessionId: "s1", environment: "test", theme: "dark" });
 
     expect(configuration.googlePayButtonTheme).toBeUndefined();
     expect(configuration.applePayButtonTheme).toBeUndefined();
+    expect(configuration.kortalanButtonTheme).toBeUndefined();
   });
 
   it("propagates hideSubmitButton, onCardValidityChanged, and allowedPaymentMethods to the internal config", () => {
