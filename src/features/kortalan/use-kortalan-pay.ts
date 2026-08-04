@@ -72,6 +72,13 @@ export function useKortalanPay(configuration: StraumurCheckoutConfiguration): {
       setIsSubmitting(false);
     } catch (error) {
       handleError(toResultMessage(error, "error.failedToSubmitPayment"));
+
+      // Nothing else owns the outcome for a native method (no Adyen element to dispatch it), so a
+      // thrown submission must notify the host itself — otherwise a failed attempt renders the error
+      // screen but leaves host-side failure UI (e.g. Hosted Checkout's "Try again") hidden.
+      // Mirrors the submitDetails catch in straumur-checkout.tsx.
+      configuration.onPaymentFailed?.({ resultCode: "Error" });
+
       setPaymentInProgress(false);
       setIsSubmitting(false);
     }

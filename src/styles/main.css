@@ -175,6 +175,9 @@
   font-size: 16px;
   line-height: 24px;
   color: var(--straumur__color-text);
+  /* Honour explicit newlines in a host-supplied message (e.g. "Payment successful.\nRedirecting…"),
+     while still collapsing incidental whitespace like a normal paragraph. */
+  white-space: pre-line;
 }
 
 .js-iframe {

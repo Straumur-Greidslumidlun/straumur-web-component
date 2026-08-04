@@ -101,6 +101,32 @@ describe("KortalanComponent", () => {
     expect(assignSpy).not.toHaveBeenCalled();
   });
 
+  it("notifies the host and unlocks the widget when the payment call throws", async () => {
+    const paymentFlow = makeFlow({
+      submitPayment: vi.fn(async () => {
+        throw new Error("network down");
+      }),
+    });
+    const onPaymentFailed = vi.fn();
+    renderInGroup(
+      <Fragment>
+        <KortalanComponent
+          configuration={baseConfig({ paymentFlow, onPaymentFailed })}
+          paymentMethods={makePaymentMethods()}
+        />
+        <PaymentInProgressProbe />
+      </Fragment>,
+      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" }
+    );
+
+    fireEvent.click(await screen.findByText("Continue to Kortalán"));
+
+    // No Adyen element owns this outcome, so the hook itself must report the failure to the host.
+    await waitFor(() => expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" }));
+    expect(assignSpy).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByTestId("pip").textContent).toBe("false"));
+  });
+
   it("locks the widget (paymentInProgress) while the payment call is in flight", async () => {
     let resolvePay!: (value: PaymentFlowResult) => void;
     const paymentFlow = makeFlow({
