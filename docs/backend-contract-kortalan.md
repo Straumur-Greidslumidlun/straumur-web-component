@@ -105,6 +105,39 @@ payment-methods payload, apply the same rule: **`type: "kortalan"` with no Adyen
 
 ---
 
+
+### 1.3 Kortalan is availability-gated — it can be absent even when the store enables it
+
+Two gates decide whether `type: "kortalan"` appears in either channel's listing:
+
+1. **Store configuration** — the merchant's store has the Kortalan payment method enabled.
+2. **Kortalan's own answer** — the backend then POSTs the checkout's amount to Kortalan
+   `/payment-methods` and only lists the method on `isAvailable: true`.
+
+```jsonc
+// backend → Kortalan (per listing, both channels)
+POST {KortalanApiSettings.BaseAddress}/payment-methods
+{ "amount": 2500000, "currency": "ISK" }   // minor units, same conversion the /payments call uses
+
+// Kortalan → backend
+{ "isAvailable": true }
+```
+
+The gate is **fail-closed**: a non-`true` answer, an error status, or an unreachable Kortalan all drop the
+method from the listing rather than render a button whose `/payments` call would fail. Consequences for the
+component:
+
+- **Do not cache the method list across amount changes.** Availability is per amount/currency, so the same
+  store can list Kortalan for one basket and omit it for another.
+- **A listing with no methods at all is legitimate** (native-only store whose only method is unavailable).
+  Hosted still returns `resultType: "Valid"`; embedded still returns amount/currency. Render an
+  empty-state, not an error.
+- Nothing in the component needs to call `/payment-methods` itself — the backend gate is the only one.
+
+Backend: `KortalanPaymentGatewayHandler.IsAvailableAsync`
+(`src/Payfac.Core/Services/PaymentProviders/`) — the same handler that owns `PayAsync`, so the probe and the
+create-payment call share one minor-unit conversion. Both unified listing providers call it directly.
+
 ## 2. `/payments` response for a Kortalan result (`Pending` → redirect)
 
 Backend: `KortalanPaymentProviderHandler.PayAsync`
