@@ -77,16 +77,38 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     setThreeDSecureActive,
     threeDSecureActive,
     hasCard,
+    registerSubmitHandler,
+    unregisterSubmitHandler,
   } = usePaymentMethodGroup();
 
-  if (!hasCard || (activePaymentMethod !== "card" && threeDSecureActive)) {
-    // if threeDSecureActive for some other payment method, do not show card form
-    return null;
-  }
+  useEffect(() => {
+    const isActive = activePaymentMethod === "card" && isPaymentMethodInitialized.card;
+    if (!isActive) {
+      // Nothing selected yet, or a different payment method is active - tell the
+      // host explicitly so a custom submit button can default to disabled.
+      configuration.onCardValidityChanged?.(false, false);
+      return;
+    }
 
-  const schemeBrands = paymentMethods.paymentMethods.paymentMethods!.find((x) => x.type === "scheme")!.brands!;
+    registerSubmitHandler(handleSubmitClick);
+    return () => {
+      unregisterSubmitHandler(handleSubmitClick);
+      configuration.onCardValidityChanged?.(false, false);
+    };
+  }, [activePaymentMethod, isPaymentMethodInitialized.card, registerSubmitHandler, unregisterSubmitHandler]);
+
+  // Computed defensively (optional chaining + fallback) because it runs on every render,
+  // ahead of the render guards below. Keeping every hook unconditional satisfies the Rules
+  // of Hooks; initializeAdyenComponent is only ever invoked while the card method is active.
+  const schemeBrands =
+    paymentMethods.paymentMethods?.paymentMethods?.find((x) => x.type === "scheme")?.brands ?? [];
 
   const initializeAdyenComponent = async () => {
+    // Fully tear down any previous instance before re-initializing (e.g. on locale change),
+    // otherwise the old secure iframes leak and stack up on the same DOM node. Uses remove()
+    // (destroy-style cleanup) to match the wallet components (google-pay/apple-pay buttons).
+    customCardRef.current?.remove();
+
     adyenCardRef.current = await AdyenCheckout({
       clientKey: paymentMethods.clientKey,
       environment: configuration.environment,
@@ -173,6 +195,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       },
       onAllValid: (event) => {
         setPayButtonDisabled(!event.allValid);
+        configuration.onCardValidityChanged?.(event.allValid, true);
       },
     });
 
@@ -182,7 +205,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   };
 
   useEffect(() => {
-    if (activePaymentMethod === "card" && !isPaymentMethodInitialized.card) {
+    if (hasCard && activePaymentMethod === "card" && !isPaymentMethodInitialized.card) {
       initializeAdyenComponent();
     }
   }, [configuration, activePaymentMethod]);
@@ -200,9 +223,9 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     }
   }, [configuration]);
 
-  if (paymentMethods.paymentMethods?.paymentMethods?.length === 0) {
-    return null;
-  }
+  useEffect(() => {
+    storePaymentMethodRef.current = storePaymentMethod;
+  }, [storePaymentMethod]);
 
   function dualBrandListener(e: h.JSX.TargetedMouseEvent<HTMLSpanElement>) {
     customCardRef.current!.dualBrandingChangeHandler(e);
@@ -215,10 +238,6 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
     handleError("error.unknownError");
   }
-
-  useEffect(() => {
-    storePaymentMethodRef.current = storePaymentMethod;
-  }, [storePaymentMethod]);
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
     const data: ICreatePaymentBody = {
@@ -318,6 +337,16 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     if (!customCardRef.current) return;
 
     customCardRef.current!.submit();
+  }
+
+  // Render guards live below all hooks so hook order is identical on every render.
+  if (!hasCard || (activePaymentMethod !== "card" && threeDSecureActive)) {
+    // If 3-D Secure is active for another payment method, do not show the card form.
+    return null;
+  }
+
+  if (paymentMethods.paymentMethods?.paymentMethods?.length === 0) {
+    return null;
   }
 
   return (
@@ -457,13 +486,15 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
           </label>
         )}
 
-        <button
-          className="straumur__card-component__submit-button"
-          disabled={payButtonDisabled}
-          onClick={handleSubmitClick}
-        >
-          {paymentMethods.formattedAmount}
-        </button>
+        {!configuration.hideSubmitButton && (
+          <button
+            className="straumur__card-component__submit-button"
+            disabled={payButtonDisabled}
+            onClick={handleSubmitClick}
+          >
+            {paymentMethods.formattedAmount}
+          </button>
+        )}
       </div>
     </div>
   );

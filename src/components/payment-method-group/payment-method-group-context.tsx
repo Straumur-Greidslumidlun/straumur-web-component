@@ -1,8 +1,18 @@
 import { h } from "preact";
 import { createContext, ComponentChildren } from "preact";
-import { useState, useContext } from "preact/hooks";
+import {
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "preact/hooks";
 import { PaymentMethod } from "../../models/constants";
 import { TranslationKey } from "../../localizations/translations";
+
+export type SubmitApi = {
+  triggerSubmit: () => boolean;
+};
 
 type PaymentMethodContextType = {
   activePaymentMethod: PaymentMethod | null;
@@ -10,9 +20,15 @@ type PaymentMethodContextType = {
   activeStoredPaymentMethodId: string | null;
   setActiveStoredPaymentMethodId: (value: string) => void;
   isPaymentMethodInitialized: Record<PaymentMethod, boolean>;
-  updatePaymentMethodInitialization: (paymentMethod: PaymentMethod, isInitialized: boolean) => void;
+  updatePaymentMethodInitialization: (
+    paymentMethod: PaymentMethod,
+    isInitialized: boolean,
+  ) => void;
   isStoredCardInitialized: Record<string, boolean>;
-  updateStoredCardInitialization: (storedPaymentMethod: string, isInitialized: boolean) => void;
+  updateStoredCardInitialization: (
+    storedPaymentMethod: string,
+    isInitialized: boolean,
+  ) => void;
   handleSuccess: (success: TranslationKey) => void;
   success: TranslationKey | null;
   handleError: (error: TranslationKey) => void;
@@ -24,9 +40,13 @@ type PaymentMethodContextType = {
   hasGooglePay: boolean;
   hasApplePay: boolean;
   hasStoredPaymentMethods: boolean;
+  registerSubmitHandler: (handler: () => void) => void;
+  unregisterSubmitHandler: (handler: () => void) => void;
 };
 
-const PaymentMethodContext = createContext<PaymentMethodContextType | undefined>(undefined);
+const PaymentMethodContext = createContext<
+  PaymentMethodContextType | undefined
+>(undefined);
 
 const defaultIsInitialized: Record<PaymentMethod, boolean> = {
   card: false,
@@ -43,6 +63,7 @@ export const PaymentMethodGroupContext = ({
   hasGooglePay,
   hasApplePay,
   hasStoredPaymentMethods,
+  onSubmitApiReady,
 }: {
   children: ComponentChildren;
   initialValue: PaymentMethod | null;
@@ -51,24 +72,64 @@ export const PaymentMethodGroupContext = ({
   hasGooglePay: boolean;
   hasApplePay: boolean;
   hasStoredPaymentMethods: boolean;
+  onSubmitApiReady?: (api: SubmitApi) => void;
 }): h.JSX.Element => {
   const [activePaymentMethod, setActivePaymentMethod] = useState(initialValue);
-  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] = useState<string | null>(null);
+  const activeSubmitHandlerRef = useRef<(() => void) | null>(null);
+
+  const registerSubmitHandler = useCallback((handler: () => void): void => {
+    activeSubmitHandlerRef.current = handler;
+  }, []);
+
+  const unregisterSubmitHandler = useCallback((handler: () => void): void => {
+    // Identity check guards against effect-cleanup ordering races when switching
+    // between card-type payment methods: an outgoing form's cleanup must not
+    // clobber a handler an incoming form already registered.
+    if (activeSubmitHandlerRef.current === handler) {
+      activeSubmitHandlerRef.current = null;
+    }
+  }, []);
+
+  const triggerSubmit = useCallback((): boolean => {
+    const handler = activeSubmitHandlerRef.current;
+
+    if (!handler) {
+      return false;
+    }
+
+    handler();
+    return true;
+  }, []);
+
+  useLayoutEffect(() => {
+    onSubmitApiReady?.({ triggerSubmit });
+  }, []);
+  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] =
+    useState<string | null>(null);
   const [threeDSecureActive, setThreeDSecureActive] = useState<boolean>(false);
-  const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = useState(defaultIsInitialized);
-  const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<Record<string, boolean>>({});
+  const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] =
+    useState(defaultIsInitialized);
+  const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<
+    Record<string, boolean>
+  >({});
 
   const [success, setSuccess] = useState<TranslationKey | null>(null);
   const [error, setError] = useState<TranslationKey | null>(null);
 
-  const updatePaymentMethodInitialization = (paymentMethod: PaymentMethod, isInitialized: boolean) => {
+  const updatePaymentMethodInitialization = (
+    paymentMethod: PaymentMethod,
+    isInitialized: boolean,
+  ) => {
     setIsPaymentMethodInitialized((prevState) => ({
       ...prevState,
       [paymentMethod]: isInitialized,
     }));
   };
 
-  const updateStoredCardInitialization = (storedPaymentMethod: string, isInitialized: boolean) => {
+  const updateStoredCardInitialization = (
+    storedPaymentMethod: string,
+    isInitialized: boolean,
+  ) => {
     setIsStoredCardInitialized((prevState) => ({
       ...prevState,
       [storedPaymentMethod]: isInitialized,
@@ -105,6 +166,8 @@ export const PaymentMethodGroupContext = ({
         hasGooglePay,
         hasApplePay,
         hasStoredPaymentMethods,
+        registerSubmitHandler,
+        unregisterSubmitHandler,
       }}
     >
       {children}
@@ -115,7 +178,9 @@ export const PaymentMethodGroupContext = ({
 export const usePaymentMethodGroup = (): PaymentMethodContextType => {
   const context = useContext(PaymentMethodContext);
   if (context === undefined) {
-    throw new Error("usePaymentMethodGroup must be used within a PaymentMethodGroup");
+    throw new Error(
+      "usePaymentMethodGroup must be used within a PaymentMethodGroup",
+    );
   }
   return context as PaymentMethodContextType;
 };

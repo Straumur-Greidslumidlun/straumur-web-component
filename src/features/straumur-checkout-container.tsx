@@ -10,13 +10,15 @@ import ResultComponent from "./result-component/result-component";
 import PaymentMethodsWrapper from "./payment-methods-wrapper/payment-methods-wrapper";
 import InstantPaymentsComponent from "./instantPayments/instant-payments-component";
 import { PaymentMethod } from "../models/constants";
+import { SubmitApi } from "../components/payment-method-group/payment-method-group-context";
 
 interface StraumurCheckoutContainerProps {
   configuration: StraumurCheckoutConfiguration;
   paymentMethods: SuccessResponse;
+  onSubmitApiReady?: (api: SubmitApi) => void;
 }
 
-function determineInitialState(
+export function determineInitialState(
   hasCard: boolean,
   hasGooglePay: boolean,
   hasApplePay: boolean,
@@ -40,20 +42,28 @@ function determineInitialState(
   return { initialPaymentMethod: null, isSolePaymentMethod: false };
 }
 
-function StraumurCheckoutContainer({ configuration, paymentMethods }: StraumurCheckoutContainerProps): h.JSX.Element {
+function StraumurCheckoutContainer({
+  configuration,
+  paymentMethods,
+  onSubmitApiReady,
+}: StraumurCheckoutContainerProps): h.JSX.Element {
   const methods = paymentMethods.paymentMethods.paymentMethods ?? [];
   const stored = paymentMethods.paymentMethods.storedPaymentMethods ?? [];
 
-  const hasCard = methods.some((x) => x.type === "scheme");
-  const hasGooglePay = methods.some((x) => x.type === "googlepay");
-  const hasApplePay = methods.some((x) => x.type === "applepay");
-  const hasStoredPaymentMethods = stored.length > 0;
+  const isAllowed = (method: PaymentMethod): boolean =>
+    !configuration.allowedPaymentMethods || configuration.allowedPaymentMethods.includes(method);
+
+  const hasCard = methods.some((x) => x.type === "scheme") && isAllowed("card");
+  const hasGooglePay = methods.some((x) => x.type === "googlepay") && isAllowed("googlepay");
+  const hasApplePay = methods.some((x) => x.type === "applepay") && isAllowed("applepay");
+  const storedCount = isAllowed("storedcard") ? stored.length : 0;
+  const hasStoredPaymentMethods = storedCount > 0;
 
   const { initialPaymentMethod, isSolePaymentMethod } = determineInitialState(
     hasCard,
     hasGooglePay,
     hasApplePay,
-    stored.length,
+    storedCount,
     configuration.instantPayments
   );
 
@@ -65,6 +75,7 @@ function StraumurCheckoutContainer({ configuration, paymentMethods }: StraumurCh
       hasGooglePay={hasGooglePay}
       hasApplePay={hasApplePay}
       hasStoredPaymentMethods={hasStoredPaymentMethods}
+      onSubmitApiReady={onSubmitApiReady}
     >
       <PaymentMethodsWrapper>
         <InstantPaymentsComponent configuration={configuration} paymentMethods={paymentMethods} />

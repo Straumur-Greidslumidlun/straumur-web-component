@@ -61,7 +61,6 @@ function InstantPaymentsComponent({
               key={paymentMethod}
               configuration={configuration}
               paymentMethods={paymentMethods}
-              showPaymentButton={true}
               isInstantPayment={true}
               onUnavailable={() => handleUnavailable("googlepay")}
             />
@@ -73,7 +72,6 @@ function InstantPaymentsComponent({
               key={paymentMethod}
               configuration={configuration}
               paymentMethods={paymentMethods}
-              showPaymentButton={true}
               isInstantPayment={true}
               onUnavailable={() => handleUnavailable("applepay")}
             />
