@@ -6,6 +6,7 @@ import { SuccessResponse } from "../../services/models";
 import { useI18n } from "../../localizations/i18n-context";
 import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
 import KortalanIcon from "../../assets/icons/kortalan";
+import StraumurKortalanLogo from "../../assets/icons/straumur-kortalan-logo";
 import { KORTALAN_TYPE, useKortalanPay } from "./use-kortalan-pay";
 
 interface KortalanComponentProps {
@@ -46,6 +47,11 @@ function KortalanComponent({ configuration }: KortalanComponentProps): h.JSX.Ele
       isActive={activePaymentMethod === KORTALAN_TYPE}
       isSole={isSolePaymentMethod}
       onChange={() => setActivePaymentMethod(KORTALAN_TYPE)}
+      headerRight={
+        <span className="straumur__kortalan-component__logo">
+          <StraumurKortalanLogo />
+        </span>
+      }
     >
       <button
         className="straumur__kortalan-component__submit-button"

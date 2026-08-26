@@ -19,6 +19,16 @@
   --straumur__color-white: #ffffff;
   --straumur__color-transparent: transparent;
 
+  /* Kortalán brand surfaces. Like the Google Pay / Apple Pay buttons, these are the provider's own
+     colors — we never restyle them to match the widget theme, so NONE of these are overridden in the
+     dark block below (same rule as --straumur__color-brand-chip). They are tokens only so the values
+     live in one place, not so the theme can move them.
+     Button: baby blue fill + brand blue label. Lockup: two-tone #002649 wordmark + #4D5F6F subtext. */
+  --straumur__color-kortalan-button-bg: #bce6f3;
+  --straumur__color-kortalan-button-text: #002649;
+  --straumur__color-kortalan-logo-primary: #002649;
+  --straumur__color-kortalan-logo-secondary: #4d5f6f;
+
   /* Always-light backing for brand-logo "chips" (networks with no reversed mark keep their
      multicolor logo on a light field on every theme). Intentionally NOT overridden in dark. */
   --straumur__color-brand-chip: #ffffff;

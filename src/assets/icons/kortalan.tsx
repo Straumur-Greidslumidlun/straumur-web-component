@@ -1,12 +1,22 @@
 import { h } from "preact";
 
-// Placeholder mark until the official Kortalán brand asset is supplied. Uses currentColor so it
-// follows the widget theme; swap for the real logo when available.
+// Kortalán's payment-method glyph: the money-bill-wave mark, exported from Figma (Straumur Card
+// loans, node 2214:7392). The 24x24 glyph sits in a 36x24 box offset by 6px, matching the design's
+// icon slot so the row's title lines up with the other methods. Fills use currentColor (repo
+// convention) with the same 0.4 opacity split the export carries, so the mark follows the theme.
 const KortalanIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="26" fill="none" viewBox="0 0 40 26">
-    <rect x="0.5" y="0.5" width="39" height="25" rx="6" fill="none" stroke="currentColor" opacity="0.35" />
-    <path fill="currentColor" d="M11 7h2.2v5.1L18 7h2.7l-4.7 5.1L21 19h-2.8l-3.7-5.2-1.3 1.4V19H11V7Z" />
-    <path fill="currentColor" d="M23 7h2.2v10h4.6v2H23V7Z" />
+  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="24" viewBox="0 0 36 24" fill="none">
+    <g transform="translate(6 0)">
+      <path
+        d="M2.0275 4.93299C5.35 5.8259 8.675 4.99288 12 4.15862C15.625 3.2493 19.25 2.33958 22.875 3.67176C23.5792 3.93057 24 4.62497 24 5.36489V18.0732C24 19.0534 22.9333 19.7015 21.9708 19.4431C18.65 18.549 15.325 19.3816 12 20.2142C8.3375 21.1247 4.7125 22.0353 1.12375 20.7023C0.419167 20.4439 0 19.7507 0 19.0083V6.30168C0 5.321 1.06708 4.67459 2.0275 4.93299ZM21.3333 8.21301C19.9208 8.21301 18.7667 7.17122 18.6708 5.80129C17.0042 5.84231 15.1958 6.23606 13.0458 6.75286C12.8875 6.79797 12.6917 6.84719 12.4917 6.89641C10.3667 7.42551 7.89167 8.03665 5.25417 8.06946C5.0625 9.29172 3.97417 10.1818 2.62917 10.1818V16.1249C4.07875 16.1249 5.23333 17.2036 5.32917 18.5736C6.99583 18.5325 8.80417 18.1388 10.9167 17.622C11.1125 17.5769 11.3083 17.5277 11.5083 17.4415C13.6333 16.9493 16.1083 16.3382 18.7083 16.3054C18.9375 15.0831 20.025 14.1562 21.3333 14.1562V8.21301Z"
+        fill="currentColor"
+      />
+      <path
+        opacity="0.4"
+        d="M21.3333 14.1562C20.025 14.1562 18.9375 15.0832 18.7083 16.3054C16.1083 16.3382 13.6333 16.9494 11.5083 17.4416C11.3083 17.5277 11.1125 17.5769 10.9167 17.622C8.80416 18.1388 6.99583 18.5326 5.32916 18.5736C5.23333 17.2037 4.07875 16.125 2.66666 16.125V10.2187C3.97416 10.2187 5.0625 9.29176 5.25416 8.06949C7.89166 8.03668 10.3667 7.42555 12.4917 6.89645C12.6917 6.84723 12.8875 6.79801 13.0458 6.75289C15.1958 6.2361 17.0042 5.84235 18.6708 5.80133C18.7667 7.17125 19.9208 8.24996 21.3333 8.24996V14.1562ZM12 16.125C13.8417 16.125 15.3333 14.3613 15.3333 12.1875C15.3333 9.97672 13.8417 8.24996 12 8.24996C10.1583 8.24996 8.66666 9.97672 8.66666 12.1875C8.66666 14.3613 10.1583 16.125 12 16.125Z"
+        fill="currentColor"
+      />
+    </g>
   </svg>
 );
 

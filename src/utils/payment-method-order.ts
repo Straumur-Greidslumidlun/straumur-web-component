@@ -2,11 +2,13 @@ import { PaymentMethodOrder } from "../models/constants";
 
 // Default top-to-bottom order, used when no custom order is given and to append any slots the caller
 // omitted from a custom order (so an available method is never silently hidden just by being left out).
+// Kortalán leads the radio list per design; "instantpayments" stays above it because that slot is the
+// express-button strip, not a radio row.
 export const DEFAULT_PAYMENT_METHOD_ORDER: PaymentMethodOrder[] = [
   "instantpayments",
+  "kortalan",
   "storedcard",
   "card",
-  "kortalan",
   "googlepay",
   "applepay",
 ];

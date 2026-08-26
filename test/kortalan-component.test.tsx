@@ -51,6 +51,30 @@ describe("KortalanComponent", () => {
     expect(container.querySelector(".straumur__kortalan-component__submit-button")).toBeNull();
   });
 
+  it("renders the Straumur x Kortalán lockup and the money-bill glyph in the row header", () => {
+    const { container } = renderInGroup(
+      <KortalanComponent configuration={baseConfig()} paymentMethods={makePaymentMethods()} />,
+      { hasKortalan: true }
+    );
+
+    // The brand lockup sits on the right of the header, alongside the method glyph on the left.
+    const logo = container.querySelector(".straumur__kortalan-component__logo svg");
+    expect(logo).not.toBeNull();
+    expect(logo!.getAttribute("viewBox")).toBe("0 0 123.555 31.9999");
+
+    // Two svgs in the row: the icon slot glyph and the lockup.
+    expect(container.querySelectorAll(".straumur__payment-method-item svg").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("does not render the lockup when the row itself is hidden", () => {
+    const { container } = renderInGroup(
+      <KortalanComponent configuration={baseConfig()} paymentMethods={makePaymentMethods()} />,
+      { hasKortalan: false }
+    );
+
+    expect(container.querySelector(".straumur__kortalan-component__logo")).toBeNull();
+  });
+
   it("renders nothing as a standalone row when Kortalán is configured as an instant payment", () => {
     // In instantPayments it renders only in the express strip; the standalone row stays hidden.
     const { container } = renderInGroup(

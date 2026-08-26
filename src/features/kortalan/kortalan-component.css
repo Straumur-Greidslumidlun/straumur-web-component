@@ -1,20 +1,43 @@
+/* Brand lockup on the right of the row header. Height trimmed to 26px (design ships it at 32) so it
+   sits level with the other methods' brand marks; width follows the aspect ratio. The flex shrink-0
+   keeps it intact when a long localized title competes for the same row. */
+.straumur__kortalan-component__logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  line-height: 0;
+}
+
+.straumur__kortalan-component__logo svg {
+  display: block;
+  height: 26px;
+  width: auto;
+}
+
+/* Kortalán's own call to action, not the generic submit button. Its colors are the provider's, so
+   they are fixed in both themes exactly like the Google Pay / Apple Pay buttons we never restyle —
+   do NOT swap these for --straumur__color-primary / -blue-beta, which flip in dark mode and would
+   recolor a brand button. */
 .straumur__kortalan-component__submit-button {
-  background: var(--straumur__color-primary);
+  background: var(--straumur__color-kortalan-button-bg);
   border: none;
   border-radius: var(--straumur__border-radius-s);
-  color: var(--straumur__color-on-primary);
+  color: var(--straumur__color-kortalan-button-text);
   cursor: pointer;
   font-size: 16px;
-  height: 40px;
+  font-weight: 500;
+  height: 48px;
+  letter-spacing: 0.48px;
+  line-height: 16px;
   outline: none;
-  padding: 0 var(--straumur__space-xxlg);
-  transition: background 0.2s ease-out;
+  padding: 0 var(--straumur__space-6xlg);
+  transition: filter 0.2s ease-out;
   width: 100%;
 }
 
 .straumur__kortalan-component__submit-button:hover {
-  background: var(--straumur__color-primary);
-  border: 1px solid var(--straumur__color-border);
+  filter: brightness(0.96);
 }
 
 .straumur__kortalan-component__submit-button:disabled {
@@ -22,4 +45,5 @@
   color: var(--straumur__color-secondary);
   border: 1px solid var(--straumur__color-border);
   cursor: not-allowed;
+  filter: none;
 }

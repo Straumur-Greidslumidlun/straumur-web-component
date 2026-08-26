@@ -6,13 +6,20 @@ describe("resolvePaymentMethodOrder", () => {
     expect(resolvePaymentMethodOrder(undefined)).toEqual(DEFAULT_PAYMENT_METHOD_ORDER);
   });
 
+  it("leads the radio list with Kortalán, below the express strip", () => {
+    // Design puts Kortalán at the top of the radio rows; "instantpayments" is the express-button
+    // strip above them, not a radio, so it still comes first overall.
+    expect(DEFAULT_PAYMENT_METHOD_ORDER[0]).toBe("instantpayments");
+    expect(DEFAULT_PAYMENT_METHOD_ORDER[1]).toBe("kortalan");
+  });
+
   it("honours the given order and appends omitted slots in the default order", () => {
     expect(resolvePaymentMethodOrder(["card", "googlepay"])).toEqual([
       "card",
       "googlepay",
       "instantpayments",
-      "storedcard",
       "kortalan",
+      "storedcard",
       "applepay",
     ]);
   });
@@ -21,8 +28,8 @@ describe("resolvePaymentMethodOrder", () => {
     expect(resolvePaymentMethodOrder(["card", "bogus", "card", "instantpayments"])).toEqual([
       "card",
       "instantpayments",
-      "storedcard",
       "kortalan",
+      "storedcard",
       "googlepay",
       "applepay",
     ]);
