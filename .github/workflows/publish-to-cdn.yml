@@ -9,14 +9,22 @@ on:
 
 permissions:
   contents: read
+  id-token: write # mint the OIDC token AWS exchanges for short-lived creds
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+
+    # Gate: required reviewers on the `production` environment. Also scopes the
+    # AWS secrets and the OIDC trust policy's `sub`.
+    environment: production
+
+    # Only after a successful npm publish from a Release — not a `next` pre-release.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'release')
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,11 +43,11 @@ jobs:
         id: pkg
         run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: gha-publish-to-cdn-${{ github.run_id }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Upload versioned build (immutable)
@@ -91,35 +99,20 @@ jobs:
       - name: Generate SRI hashes and summary
         env:
           VERSION: ${{ steps.pkg.outputs.version }}
-          CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
         run: |
           sri_js=$(openssl dgst -sha384 -binary dist/index.js | openssl base64 -A)
           sri_mjs=$(openssl dgst -sha384 -binary dist/index.mjs | openssl base64 -A)
-
-          BASE="${CDN_BASE_URL:-https://<your-cdn-domain>}"
+          DIR="libs/straumur-web-component/$VERSION"
 
           {
             echo "## Straumur Web Component — CDN publish"
             echo ""
             echo "**Version:** \`$VERSION\`"
             echo ""
-            echo "### IIFE bundle (global \`StraumurWeb\`)"
-            echo '```html'
-            echo "<script src=\"$BASE/libs/straumur-web-component/$VERSION/index.js\""
-            echo "        integrity=\"sha384-$sri_js\""
-            echo "        crossorigin=\"anonymous\"></script>"
-            echo '```'
+            echo "| Bundle | Path | Integrity |"
+            echo "|---|---|---|"
+            echo "| IIFE (global \`StraumurWeb\`) | \`$DIR/index.js\` | \`sha384-$sri_js\` |"
+            echo "| ESM | \`$DIR/index.mjs\` | \`sha384-$sri_mjs\` |"
             echo ""
-            echo "### ESM module"
-            echo '```html'
-            echo "<script type=\"module\">"
-            echo "  import { StraumurCheckout } from \"$BASE/libs/straumur-web-component/$VERSION/index.mjs\";"
-            echo "</script>"
-            echo '```'
-            echo ""
-            echo "**SRI (index.js):** \`sha384-$sri_js\`"
-            echo ""
-            echo "**SRI (index.mjs):** \`sha384-$sri_mjs\`"
-            echo ""
-            echo "_Also published under \`latest/\` (no SRI — use a pinned version for integrity)._"
+            echo "Also published under \`libs/straumur-web-component/latest/\` — mutable, so not integrity-pinned."
           } >> "$GITHUB_STEP_SUMMARY"
