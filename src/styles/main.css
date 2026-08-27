@@ -24,6 +24,8 @@
      dark block below (same rule as --straumur__color-brand-chip). They are tokens only so the values
      live in one place, not so the theme can move them.
      Button: baby blue fill + brand blue label. Lockup: two-tone #002649 wordmark + #4D5F6F subtext. */
+  --straumur__color-kortalan-standalone-bg: #002649;
+  --straumur__color-kortalan-standalone-ink: #dafda3;
   --straumur__color-kortalan-button-bg: #bce6f3;
   --straumur__color-kortalan-button-text: #002649;
   --straumur__color-kortalan-logo-primary: #002649;

@@ -1,7 +1,6 @@
 import {
   ApplePayButtonTheme,
   GooglePayButtonTheme,
-  KortalanButtonTheme,
   StraumurCheckoutConfiguration,
   StraumurWebAdvancedConfiguration,
   StraumurWebConfiguration,
@@ -28,14 +27,12 @@ function normalizeTheme(theme: Theme | ThemeConfiguration | undefined): {
   theme: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
-  kortalanButtonTheme?: KortalanButtonTheme;
 } {
   if (typeof theme === "object") {
     return {
       theme: theme.mode ?? "light",
       googlePayButtonTheme: theme.googlePayButtonTheme,
       applePayButtonTheme: theme.applePayButtonTheme,
-      kortalanButtonTheme: theme.kortalanButtonTheme,
     };
   }
 
@@ -102,7 +99,6 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     theme: themeConfig.theme,
     googlePayButtonTheme: themeConfig.googlePayButtonTheme,
     applePayButtonTheme: themeConfig.applePayButtonTheme,
-    kortalanButtonTheme: themeConfig.kortalanButtonTheme,
   };
 
   if (isSession) {

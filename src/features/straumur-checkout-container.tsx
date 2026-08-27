@@ -31,7 +31,8 @@ export function determineInitialState(
 ): { initialPaymentMethod: PaymentMethod | null; isSolePaymentMethod: boolean } {
   const gpayInStandard = hasGooglePay && !instantPayments?.some((x) => x === "googlepay");
   const apayInStandard = hasApplePay && !instantPayments?.some((x) => x === "applepay");
-  const kortalanInStandard = hasKortalan && !instantPayments?.some((x) => x === "kortalan");
+  // Kortalán cannot be an express button, so it is always a standard option when available.
+  const kortalanInStandard = hasKortalan;
 
   const totalOptions =
     storedCount +

@@ -52,8 +52,6 @@ export type GooglePayButtonTheme = "dark" | "white";
 export type ApplePayButtonTheme = "dark" | "light";
 
 /** Kortalán express-button style override: "light" = whitish button, "dark" = blackish button. */
-export type KortalanButtonTheme = "light" | "dark";
-
 /**
  * Object form of `theme`: the widget color `mode` plus optional per-button style overrides.
  * When an override is omitted the button follows the mode — a light widget gets a light/whitish
@@ -63,7 +61,6 @@ export type ThemeConfiguration = {
   mode: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
-  kortalanButtonTheme?: KortalanButtonTheme;
 };
 
 // the public configuration (session mode): the component loads everything itself from the Straumur API using the sessionId
@@ -183,11 +180,11 @@ export type ResultMessage = { key: TranslationKey } | { text: string };
 
 /**
  * A payment method that can be placed in `instantPayments` to render as an express button at the top
- * of the widget: the two Adyen wallets and Kortalán (a redirect method). Duplicates are ignored at
- * runtime (the instant strip dedupes), so this is a plain array rather than a unique-tuple union —
- * enumerating every permutation of three methods is unmaintainable.
+ * of the widget: the two Adyen wallets. Kortalán is deliberately NOT expressible here — it cannot be
+ * rendered in the express strip. Duplicates are ignored at runtime (the instant strip dedupes), so
+ * this is a plain array rather than a unique-tuple union.
  */
-export type InstantPaymentMethod = Extract<PaymentMethod, "googlepay" | "applepay" | "kortalan">;
+export type InstantPaymentMethod = Extract<PaymentMethod, "googlepay" | "applepay">;
 
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {
@@ -210,7 +207,6 @@ export type StraumurCheckoutConfiguration = {
   theme: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
-  kortalanButtonTheme?: KortalanButtonTheme;
 };
 
 // What updateConfig() accepts: internal config fields minus the immutable ones,

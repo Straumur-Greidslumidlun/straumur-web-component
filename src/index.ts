@@ -9,6 +9,5 @@ export type {
   ThemeConfiguration,
   GooglePayButtonTheme,
   ApplePayButtonTheme,
-  KortalanButtonTheme,
 } from "./models/models";
 export type { PaymentMethod, PaymentMethodOrder, OpenDefaultPaymentMethod } from "./models/constants";

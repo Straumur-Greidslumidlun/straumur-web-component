@@ -47,13 +47,12 @@ describe("buildCheckoutConfiguration", () => {
     const { configuration } = buildCheckoutConfiguration({
       sessionId: "s1",
       environment: "test",
-      theme: { mode: "dark", googlePayButtonTheme: "white", applePayButtonTheme: "light", kortalanButtonTheme: "light" },
+      theme: { mode: "dark", googlePayButtonTheme: "white", applePayButtonTheme: "light" },
     });
 
     expect(configuration.theme).toBe("dark");
     expect(configuration.googlePayButtonTheme).toBe("white");
     expect(configuration.applePayButtonTheme).toBe("light");
-    expect(configuration.kortalanButtonTheme).toBe("light");
   });
 
   it("leaves button overrides undefined for the bare theme form", () => {
@@ -61,7 +60,6 @@ describe("buildCheckoutConfiguration", () => {
 
     expect(configuration.googlePayButtonTheme).toBeUndefined();
     expect(configuration.applePayButtonTheme).toBeUndefined();
-    expect(configuration.kortalanButtonTheme).toBeUndefined();
   });
 
   it("propagates hideSubmitButton, onCardValidityChanged, and allowedPaymentMethods to the internal config", () => {

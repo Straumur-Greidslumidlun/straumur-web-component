@@ -5,7 +5,6 @@ import { InstantPaymentMethod, StraumurCheckoutConfiguration } from "../../model
 import { SuccessResponse } from "../../services/models";
 import GooglePayButton from "../../components/google-pay-button/google-pay-button";
 import ApplePayButton from "../../components/apple-pay-button/apple-pay-button";
-import KortalanInstantButton from "../kortalan/kortalan-instant-button";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 
 interface InstantPaymentsComponentProps {
@@ -15,13 +14,13 @@ interface InstantPaymentsComponentProps {
 
 // The methods that may render as express buttons. Used only to validate the configured tokens — the
 // render order follows the merchant's `instantPayments` array, not this list.
-const INSTANT_METHODS: InstantPaymentMethod[] = ["kortalan", "googlepay", "applepay"];
+const INSTANT_METHODS: InstantPaymentMethod[] = ["googlepay", "applepay"];
 
 function InstantPaymentsComponent({
   configuration,
   paymentMethods,
 }: InstantPaymentsComponentProps): h.JSX.Element | null {
-  const { hasGooglePay, hasApplePay, hasKortalan, threeDSecureActive } = usePaymentMethodGroup();
+  const { hasGooglePay, hasApplePay, threeDSecureActive } = usePaymentMethodGroup();
   const [unavailableMethods, setUnavailableMethods] = useState<Set<string>>(new Set());
 
   const handleUnavailable = (method: string) => {
@@ -33,7 +32,7 @@ function InstantPaymentsComponent({
   }
 
   const isAvailable = (payment: InstantPaymentMethod): boolean =>
-    payment === "googlepay" ? hasGooglePay : payment === "applepay" ? hasApplePay : hasKortalan;
+    payment === "googlepay" ? hasGooglePay : hasApplePay;
 
   // Preserve the merchant's configured order (that order drives the layout); drop invalid tokens,
   // duplicates (the public type is a plain array, so a merchant could repeat one), and unavailable
@@ -75,8 +74,8 @@ function InstantPaymentsComponent({
       {/* Render the visible (available) methods only, each in its own grid cell in the configured
           order. Every wallet still mounts on first render (visibleInstantPayments starts equal to
           finalAvailableInstantPayments) so isAvailable() runs; a wallet that reports unavailable is
-          dropped here and unmounts, collapsing its cell. Kortalán has no async availability check, so
-          it never drops. The lone trailing cell in an odd count spans the full width. */}
+          dropped here and unmounts, collapsing its cell. The lone trailing cell in an odd count spans
+          the full width. */}
       {visibleInstantPayments.map((paymentMethod, index) => {
         const spanFull = spanLastFull && index === visibleInstantPayments.length - 1;
 
@@ -101,7 +100,6 @@ function InstantPaymentsComponent({
                 onUnavailable={() => handleUnavailable("applepay")}
               />
             )}
-            {paymentMethod === "kortalan" && <KortalanInstantButton configuration={configuration} />}
           </div>
         );
       })}

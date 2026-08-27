@@ -1,4 +1,4 @@
-import { ApplePayButtonTheme, GooglePayButtonTheme, KortalanButtonTheme, ResolvedTheme } from "../models/models";
+import { ApplePayButtonTheme, GooglePayButtonTheme, ResolvedTheme } from "../models/models";
 
 // Adyen's own button-color unions, mirrored here so this util doesn't import the Adyen SDK just for
 // two string-literal types (keeps it trivially unit-testable).
@@ -27,14 +27,4 @@ export function resolveApplePayButtonColor(theme: ResolvedTheme, override?: Appl
   const choice = override ?? (theme === "dark" ? "dark" : "light");
 
   return choice === "dark" ? "black" : "white-outline";
-}
-
-/**
- * Kortalán express-button appearance derived from the resolved widget theme, overridable via
- * `kortalanButtonTheme`. Default: light widget → whitish button, dark widget → blackish button.
- * (The two modes share the "light" | "dark" vocabulary as the resolved theme, so the default is a
- * straight pass-through.)
- */
-export function resolveKortalanButtonTheme(theme: ResolvedTheme, override?: KortalanButtonTheme): KortalanButtonTheme {
-  return override ?? theme;
 }

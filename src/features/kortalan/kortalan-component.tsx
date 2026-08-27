@@ -6,6 +6,7 @@ import { SuccessResponse } from "../../services/models";
 import { useI18n } from "../../localizations/i18n-context";
 import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
 import KortalanIcon from "../../assets/icons/kortalan";
+import KortalanStandaloneButton from "./kortalan-standalone-button";
 import StraumurKortalanLogo from "../../assets/icons/straumur-kortalan-logo";
 import { KORTALAN_TYPE, useKortalanPay } from "./use-kortalan-pay";
 
@@ -30,14 +31,14 @@ function KortalanComponent({ configuration }: KortalanComponentProps): h.JSX.Ele
     return null;
   }
 
-  // Placed in instantPayments? It renders only in the express strip; the standalone row stays hidden
-  // (mirrors the Google Pay / Apple Pay standalone components).
-  if (configuration.instantPayments?.some((x) => x === KORTALAN_TYPE)) {
+  if (isObscuredByThreeDS(KORTALAN_TYPE)) {
     return null;
   }
 
-  if (isObscuredByThreeDS(KORTALAN_TYPE)) {
-    return null;
+  // Sole payment method: there is nothing to choose between, so the radio row collapses to a single
+  // branded call to action rather than a one-option chooser.
+  if (isSolePaymentMethod) {
+    return <KortalanStandaloneButton configuration={configuration} />;
   }
 
   return (

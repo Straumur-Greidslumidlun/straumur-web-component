@@ -75,16 +75,15 @@ describe("KortalanComponent", () => {
     expect(container.querySelector(".straumur__kortalan-component__logo")).toBeNull();
   });
 
-  it("renders nothing as a standalone row when Kortalán is configured as an instant payment", () => {
-    // In instantPayments it renders only in the express strip; the standalone row stays hidden.
+  it("renders the branded standalone button (not the radio row) when Kortalán is the sole method", () => {
+    // Nothing to choose between, so the chooser collapses to a single call to action.
     const { container } = renderInGroup(
-      <KortalanComponent
-        configuration={baseConfig({ instantPayments: ["kortalan"] })}
-        paymentMethods={makePaymentMethods()}
-      />,
-      { hasKortalan: true }
+      <KortalanComponent configuration={baseConfig()} paymentMethods={makePaymentMethods()} />,
+      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" }
     );
 
+    expect(container.querySelector(".straumur__kortalan-standalone-button")).toBeTruthy();
+    expect(container.querySelector(".straumur__payment-method-item")).toBeNull();
     expect(container.querySelector(".straumur__kortalan-component__submit-button")).toBeNull();
   });
 
@@ -92,7 +91,7 @@ describe("KortalanComponent", () => {
     const paymentFlow = makeFlow();
     renderInGroup(
       <KortalanComponent configuration={baseConfig({ paymentFlow })} paymentMethods={makePaymentMethods()} />,
-      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" }
+      { hasKortalan: true, initialValue: "kortalan" }
     );
 
     fireEvent.click(await screen.findByText("Continue to Kortalán"));
@@ -116,7 +115,7 @@ describe("KortalanComponent", () => {
         configuration={baseConfig({ paymentFlow, onPaymentFailed })}
         paymentMethods={makePaymentMethods()}
       />,
-      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" }
+      { hasKortalan: true, initialValue: "kortalan" }
     );
 
     fireEvent.click(await screen.findByText("Continue to Kortalán"));
@@ -140,7 +139,7 @@ describe("KortalanComponent", () => {
         />
         <PaymentInProgressProbe />
       </Fragment>,
-      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" }
+      { hasKortalan: true, initialValue: "kortalan" }
     );
 
     fireEvent.click(await screen.findByText("Continue to Kortalán"));
@@ -162,7 +161,7 @@ describe("KortalanComponent", () => {
         <KortalanComponent configuration={baseConfig({ paymentFlow })} paymentMethods={makePaymentMethods()} />
         <PaymentInProgressProbe />
       </Fragment>,
-      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" }
+      { hasKortalan: true, initialValue: "kortalan" }
     );
 
     expect(screen.getByTestId("pip").textContent).toBe("false");
