@@ -25,6 +25,7 @@ export const translations = {
     "stored-cards.saveCardDetails": "Save card details",
 
     "success.paymentAuthorized": "Payment authorized",
+    "payment.processing": "Processing payment…",
 
     "error.unknownError": "Unknown error occurred",
     "error.failedToInitializeStraumurWebComponent": "Failed to initialize Straumur Web component",
@@ -65,6 +66,7 @@ export const translations = {
     "stored-cards.saveCardDetails": "Vista kortaupplýsingar",
 
     "success.paymentAuthorized": "Greiðsla samþykkt",
+    "payment.processing": "Greiðsla í vinnslu…",
 
     "error.unknownError": "Óþekkt villa kom upp",
     "error.failedToInitializeStraumurWebComponent": "Mistókst að sækja Straumur Web hluta",

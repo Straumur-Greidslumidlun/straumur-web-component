@@ -18,6 +18,7 @@ import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activa
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
 import { getAdyenFieldStyles } from "../../utils/adyen-field-styles";
 import { toResultMessage } from "../../flows/payment-flow";
+import { ProcessingOverlay } from "../../components/shared/processing-overlay";
 
 function StoredCardComponent({
   configuration,
@@ -27,6 +28,8 @@ function StoredCardComponent({
 }: StoredCardComponentProps): h.JSX.Element | null {
   const storedCardElementRef = useRef<HTMLDivElement>(null);
   const adyenCheckoutRef = useRef<ICore>();
+  // See card-form: a superseded init discards itself so overlapping inits never double-mount.
+  const initGenerationRef = useRef(0);
   const customCardRef = useRef<CustomCard>();
   const { i18n } = useI18n();
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
@@ -48,6 +51,9 @@ function StoredCardComponent({
     threeDSecureActive,
     paymentInProgress,
     setPaymentInProgress,
+    tryStartPayment,
+    paymentProcessing,
+    setPaymentProcessing,
     isSolePaymentMethod,
     registerSubmitHandler,
     unregisterSubmitHandler,
@@ -62,7 +68,10 @@ function StoredCardComponent({
   const resolvedTheme = useResolvedTheme(configuration.theme);
 
   async function handleSubmitClick(): Promise<void> {
-    await submitCardWithGate(configuration.paymentFlow, () => customCardRef.current);
+    await submitCardWithGate(configuration.paymentFlow, () => customCardRef.current, {
+      tryStart: tryStartPayment,
+      release: () => setPaymentInProgress(false),
+    });
   }
 
   useEffect(() => {
@@ -92,28 +101,60 @@ function StoredCardComponent({
     unregisterSubmitHandler,
   ]);
 
-  const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
-    createAdyenPaymentHandlers({
-      configuration,
-      handleSuccess,
-      handleError,
-      setThreeDSecureActive,
-      setPaymentInProgress,
-      enrichSubmitData: (data) => ({
-        ...data,
-        paymentMethod: {
-          ...data.paymentMethod,
-          storedPaymentMethodId: storedPaymentMethod.id,
-        },
-      }),
-    });
+  const {
+    handleOnSubmit,
+    handleOnSubmitAdditionalData,
+    handlePaymentCompleted,
+    handlePaymentFailed,
+    handleActionHandled,
+  } = createAdyenPaymentHandlers({
+    configuration,
+    handleSuccess,
+    handleError,
+    setThreeDSecureActive,
+    setPaymentInProgress,
+    setPaymentProcessing,
+    enrichSubmitData: (data) => ({
+      ...data,
+      paymentMethod: {
+        ...data.paymentMethod,
+        storedPaymentMethodId: storedPaymentMethod.id,
+      },
+    }),
+  });
 
   function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined) {
     handleError({ key: "error.unknownError" });
   }
 
-  const initializeAdyenComponent = async () => {
-    adyenCheckoutRef.current = await AdyenCheckout({
+  const { markBuilt } = useAdyenLocaleReinit({
+    configuration,
+    resolvedTheme,
+    // Keyed on THIS card's id (activeStoredPaymentMethodId is null in sole mode, which used to
+    // disable re-init entirely there).
+    ready: Boolean(isStoredCardInitialized[storedPaymentMethod.id]),
+    busy: paymentInProgress || threeDSecureActive,
+    reinitialize: () => {
+      initializeAdyenComponent();
+      setFormErrors({ encryptedSecurityCode: { visible: false, message: undefined } });
+    },
+  });
+
+  async function initializeAdyenComponent(): Promise<void> {
+    const generation = ++initGenerationRef.current;
+    markBuilt();
+
+    try {
+      await buildAdyenComponent(generation);
+    } catch (error) {
+      if (generation !== initGenerationRef.current) return;
+      console.error("[StraumurCheckout] stored card initialization failed:", error);
+      handleError({ key: "error.failedToInitializePaymentMethods" });
+    }
+  }
+
+  async function buildAdyenComponent(generation: number): Promise<void> {
+    const core = await AdyenCheckout({
       // This Adyen bootstrap only runs for a stored card, which means Adyen methods are present and
       // the backend returned a clientKey.
       clientKey: paymentMethods.clientKey!,
@@ -129,12 +170,24 @@ function StoredCardComponent({
       onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: handlePaymentCompleted,
       onPaymentFailed: handlePaymentFailed,
+      onActionHandled: handleActionHandled,
     });
 
-    customCardRef.current = new CustomCard(adyenCheckoutRef.current, {
+    if (generation !== initGenerationRef.current) return;
+
+    // Tear down the previous element on re-init, or its secure iframe stacks up on the same span.
+    customCardRef.current?.remove();
+    adyenCheckoutRef.current = core;
+
+    customCardRef.current = new CustomCard(core, {
       brands: [storedPaymentMethod.brand!],
       styles: getAdyenFieldStyles(resolvedTheme),
       onSubmit: handleOnSubmit,
+      // Enter inside the secure fields: route through the gated entry point instead of Adyen's
+      // direct submit(), so beforeSubmit and the double-submit lock apply there too.
+      onEnterKeyPressed: () => {
+        handleSubmitClick();
+      },
       onConfigSuccess() {
         updateStoredCardInitialization(storedPaymentMethod.id, true);
       },
@@ -167,22 +220,13 @@ function StoredCardComponent({
     if (storedCardElementRef.current) {
       customCardRef.current.mount(storedCardElementRef.current);
     }
-  };
+  }
 
   useEffect(() => {
     if (isActive && !isStoredCardInitialized[storedPaymentMethod.id]) {
       initializeAdyenComponent();
     }
   }, [configuration, isActive]);
-
-  useAdyenLocaleReinit(
-    configuration,
-    () => Boolean(customCardRef.current && isStoredCardInitialized[activeStoredPaymentMethodId!]),
-    () => {
-      initializeAdyenComponent();
-      setFormErrors({ encryptedSecurityCode: { visible: false, message: undefined } });
-    }
-  );
 
   useEffect(() => {
     setAskConfirmRemoveStoredCard(false);
@@ -289,90 +333,94 @@ function StoredCardComponent({
       headerRight={headerRight}
       confirmSection={confirmSection}
     >
-      <div
-        ref={storedCardElementRef}
-        tabIndex={-1}
-        style={{
-          height: threeDSecureActive ? "600px" : "auto",
-          minWidth: threeDSecureActive ? "350px" : "auto",
-        }}
-      >
-        {!isStoredCardInitialized[storedPaymentMethod.id] && (
-          <div className="straumur__stored-card-component__loading-text">
-            <LoaderIcon />
-          </div>
-        )}
-
+      <div className="straumur__processing-host">
         <div
-          className="straumur__stored-card-component__form"
+          ref={storedCardElementRef}
+          tabIndex={-1}
           style={{
-            opacity: isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? 1 : 0,
-            position: isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? "relative" : "absolute",
-            transition: "opacity 0.3s ease-in-out",
+            height: threeDSecureActive ? "600px" : "auto",
+            minWidth: threeDSecureActive ? "350px" : "auto",
           }}
         >
-          <div className="straumur__stored-card-component__form--field-wrapper">
-            <div className="straumur__stored-card-component__form--wrapper">
-              <label className="straumur__stored-card-component__form--wrapper--label straumur__stored-card-component__form--wrapper--label--readonly">
-                {i18n.t("stored-cards.expiryDate")}
-              </label>
-              <span className="straumur__stored-card-component__form--wrapper--input straumur__stored-card-component__form--wrapper--input--readonly">
-                {storedPaymentMethod.expiryMonth}/{storedPaymentMethod.expiryYear}
-              </span>
+          {!isStoredCardInitialized[storedPaymentMethod.id] && (
+            <div className="straumur__stored-card-component__loading-text">
+              <LoaderIcon />
             </div>
-
-            <div className="straumur__stored-card-component__form--wrapper">
-              {(securityCodePolicy === "optional" || securityCodePolicy === "required") && (
-                <Fragment>
-                  <label
-                    className={`${"straumur__stored-card-component__form--wrapper--label"} ${
-                      formErrors.encryptedSecurityCode.visible
-                        ? "straumur__stored-card-component__form--wrapper--label--error"
-                        : ""
-                    }`}
-                  >
-                    {securityCodePolicy === "optional"
-                      ? i18n.t("stored-cards.securityCode3DigitsOptional")
-                      : i18n.t("stored-cards.securityCode3Digits")}
-                  </label>
-                  <span
-                    className={`${"straumur__stored-card-component__form--wrapper--input"} ${
-                      formErrors.encryptedSecurityCode.visible
-                        ? "straumur__stored-card-component__form--wrapper--input--error"
-                        : ""
-                    }`}
-                    data-cse="encryptedSecurityCode"
-                    role="group"
-                    aria-label={i18n.t("stored-cards.securityCode3Digits")}
-                  >
-                    <div className="straumur__stored-card-component__form--wrapper--label--info">
-                      <Tooltip content={i18n.t("stored-cards.securityCode3DigitsInfo")} placement="top">
-                        <InfoIcon />
-                      </Tooltip>
-                    </div>
-                  </span>
-                </Fragment>
-              )}
-              {formErrors.encryptedSecurityCode.visible && (
-                <span className="straumur__stored-card-component__form--wrapper--error">
-                  {formErrors.encryptedSecurityCode.message}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {!configuration.hideSubmitButton && (
-            <button
-              className="straumur__stored-card-component__submit-button"
-              disabled={payButtonDisabled || paymentInProgress}
-              onClick={handleSubmitClick}
-            >
-              {paymentMethods.minorUnitsAmount === 0
-                ? i18n.t("stored-cards.saveCardDetails")
-                : paymentMethods.formattedAmount}
-            </button>
           )}
+
+          <div
+            className="straumur__stored-card-component__form"
+            style={{
+              opacity: isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? 1 : 0,
+              position:
+                isStoredCardInitialized[storedPaymentMethod.id] && !threeDSecureActive ? "relative" : "absolute",
+              transition: "opacity 0.3s ease-in-out",
+            }}
+          >
+            <div className="straumur__stored-card-component__form--field-wrapper">
+              <div className="straumur__stored-card-component__form--wrapper">
+                <label className="straumur__stored-card-component__form--wrapper--label straumur__stored-card-component__form--wrapper--label--readonly">
+                  {i18n.t("stored-cards.expiryDate")}
+                </label>
+                <span className="straumur__stored-card-component__form--wrapper--input straumur__stored-card-component__form--wrapper--input--readonly">
+                  {storedPaymentMethod.expiryMonth}/{storedPaymentMethod.expiryYear}
+                </span>
+              </div>
+
+              <div className="straumur__stored-card-component__form--wrapper">
+                {(securityCodePolicy === "optional" || securityCodePolicy === "required") && (
+                  <Fragment>
+                    <label
+                      className={`${"straumur__stored-card-component__form--wrapper--label"} ${
+                        formErrors.encryptedSecurityCode.visible
+                          ? "straumur__stored-card-component__form--wrapper--label--error"
+                          : ""
+                      }`}
+                    >
+                      {securityCodePolicy === "optional"
+                        ? i18n.t("stored-cards.securityCode3DigitsOptional")
+                        : i18n.t("stored-cards.securityCode3Digits")}
+                    </label>
+                    <span
+                      className={`${"straumur__stored-card-component__form--wrapper--input"} ${
+                        formErrors.encryptedSecurityCode.visible
+                          ? "straumur__stored-card-component__form--wrapper--input--error"
+                          : ""
+                      }`}
+                      data-cse="encryptedSecurityCode"
+                      role="group"
+                      aria-label={i18n.t("stored-cards.securityCode3Digits")}
+                    >
+                      <div className="straumur__stored-card-component__form--wrapper--label--info">
+                        <Tooltip content={i18n.t("stored-cards.securityCode3DigitsInfo")} placement="top">
+                          <InfoIcon />
+                        </Tooltip>
+                      </div>
+                    </span>
+                  </Fragment>
+                )}
+                {formErrors.encryptedSecurityCode.visible && (
+                  <span className="straumur__stored-card-component__form--wrapper--error">
+                    {formErrors.encryptedSecurityCode.message}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {!configuration.hideSubmitButton && (
+              <button
+                className="straumur__stored-card-component__submit-button"
+                disabled={payButtonDisabled || paymentInProgress}
+                onClick={handleSubmitClick}
+              >
+                {paymentMethods.minorUnitsAmount === 0
+                  ? i18n.t("stored-cards.saveCardDetails")
+                  : paymentMethods.formattedAmount}
+              </button>
+            )}
+          </div>
         </div>
+        <ProcessingOverlay visible={paymentProcessing && isActive} />
       </div>
     </PaymentMethodItem>
   );

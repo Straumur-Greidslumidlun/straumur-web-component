@@ -87,6 +87,16 @@ async function setup(config = baseConfig()) {
 }
 
 const actions = () => ({ resolve: vi.fn(), reject: vi.fn() });
+
+/**
+ * Like real Adyen: a reject() in onSubmit/onAdditionalDetails is answered (a microtask later) with the
+ * core-level onPaymentFailed — which is where the failure screen comes from.
+ */
+const adyenActions = (checkout: any) => ({
+  resolve: vi.fn(),
+  reject: vi.fn(() => queueMicrotask(() => checkout.onPaymentFailed(undefined))),
+});
+
 const submitState = { data: { paymentMethod: { type: "scheme" } } };
 
 beforeEach(() => {
@@ -147,8 +157,8 @@ describe("CardForm.handleOnSubmit", () => {
 
   it("rejects and surfaces an error when the request is not ok", async () => {
     createPayment.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
-    const { onSubmit } = await setup();
-    const act1 = actions();
+    const { onSubmit, checkout } = await setup();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await onSubmit(submitState, {}, act1);
@@ -160,8 +170,8 @@ describe("CardForm.handleOnSubmit", () => {
 
   it("rejects with paymentFailed when the response has no resultCode", async () => {
     createPayment.mockResolvedValue({ ok: true, json: async () => ({}) } as any);
-    const { onSubmit } = await setup();
-    const act1 = actions();
+    const { onSubmit, checkout } = await setup();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await onSubmit(submitState, {}, act1);
@@ -349,7 +359,7 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
       json: async () => ({ resultCode: "Authorised", action: null }),
     } as any);
     const { checkout } = await setup();
-    const act1 = actions();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await checkout.onAdditionalDetails(detailsState, {}, act1);
@@ -362,7 +372,7 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
   it("rejects and surfaces an error when the details request is not ok", async () => {
     createDetails.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
     const { checkout } = await setup();
-    const act1 = actions();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await checkout.onAdditionalDetails(detailsState, {}, act1);
@@ -375,7 +385,7 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
   it("rejects with paymentDetailsFailed when the response has no resultCode", async () => {
     createDetails.mockResolvedValue({ ok: true, json: async () => ({}) } as any);
     const { checkout } = await setup();
-    const act1 = actions();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await checkout.onAdditionalDetails(detailsState, {}, act1);
@@ -383,5 +393,35 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
 
     expect(act1.reject).toHaveBeenCalled();
     await waitFor(() => expect(screen.getByTestId("error").textContent).toBe("error.paymentDetailsFailed"));
+  });
+});
+
+describe("CardForm processing overlay", () => {
+  it("shows the overlay from submit until the 3DS challenge iframe has loaded", async () => {
+    let respond!: (value: unknown) => void;
+    createPayment.mockReturnValue(new Promise((resolve) => (respond = resolve)) as any);
+    const { onSubmit, checkout } = await setup();
+
+    expect(screen.queryByText("Processing payment…")).toBeNull();
+
+    let submission!: Promise<void>;
+    await act(async () => {
+      submission = onSubmit(submitState, {}, actions());
+    });
+    // /payments in flight.
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Processing payment…"));
+
+    await act(async () => {
+      respond({ ok: true, json: async () => ({ resultCode: "ChallengeShopper", action: { type: "threeDS2" } }) });
+      await submission;
+    });
+    // 3DS active, challenge iframe not loaded yet: still covered.
+    expect(screen.getByTestId("tds").textContent).toBe("true");
+    expect(screen.getByText("Processing payment…")).toBeTruthy();
+
+    await act(async () => {
+      checkout.onActionHandled({ componentType: "3DS2Challenge", actionDescription: "3DS2 challenge iframe loaded" });
+    });
+    expect(screen.queryByText("Processing payment…")).toBeNull();
   });
 });

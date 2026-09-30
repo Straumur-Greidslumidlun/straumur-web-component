@@ -20,6 +20,7 @@ import { AdyenPaymentHandlers, createAdyenPaymentHandlers } from "./create-adyen
 import { createBeforeSubmitClickHandler } from "./before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
+import { ProcessingOverlay } from "./processing-overlay";
 import { resolveApplePayButtonColor, resolveGooglePayButtonColor } from "../../utils/wallet-button-theme";
 
 export type WalletMethod = "applepay" | "googlepay";
@@ -43,6 +44,8 @@ interface WalletContext {
   walletConfig: WalletMerchantConfig;
   handleOnSubmit: AdyenPaymentHandlers["handleOnSubmit"];
   resolvedTheme: ResolvedTheme;
+  /** Synchronous lock read: the onClick gate refuses to open the sheet while a payment runs. */
+  isPaymentLocked: () => boolean;
 }
 
 interface WalletDescriptor {
@@ -55,7 +58,10 @@ interface WalletDescriptor {
 const WALLETS: Record<WalletMethod, WalletDescriptor> = {
   applepay: {
     loadingClassName: "straumur__apple-pay-button__loading",
-    createElement(core, { configuration, paymentMethods, walletConfig, handleOnSubmit, resolvedTheme }) {
+    createElement(
+      core,
+      { configuration, paymentMethods, walletConfig, handleOnSubmit, resolvedTheme, isPaymentLocked }
+    ) {
       const applePayConfiguration: ApplePayConfiguration = {
         amount: {
           value: paymentMethods.minorUnitsAmount,
@@ -63,7 +69,7 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         },
         environment: configuration.environment,
         onSubmit: handleOnSubmit,
-        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow),
+        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow, isPaymentLocked),
         // Follows the widget theme (light → white-outline, dark → black); overridable via applePayButtonTheme.
         buttonColor: resolveApplePayButtonColor(resolvedTheme, configuration.applePayButtonTheme),
         configuration: {
@@ -77,7 +83,10 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
   },
   googlepay: {
     loadingClassName: "straumur__google-pay-button__loading",
-    createElement(core, { configuration, paymentMethods, walletConfig, handleOnSubmit, resolvedTheme }) {
+    createElement(
+      core,
+      { configuration, paymentMethods, walletConfig, handleOnSubmit, resolvedTheme, isPaymentLocked }
+    ) {
       const googlePayConfiguration: GooglePayConfiguration = {
         amount: {
           value: paymentMethods.minorUnitsAmount,
@@ -87,7 +96,7 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         countryCode: configuration.countryCode,
         environment: configuration.environment,
         onSubmit: handleOnSubmit,
-        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow),
+        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow, isPaymentLocked),
         // Follows the widget theme (light → white, dark → black); overridable via googlePayButtonTheme.
         buttonColor: resolveGooglePayButtonColor(resolvedTheme, configuration.googlePayButtonTheme),
         // "plain" renders only the Google Pay mark (no "Pay"/"Buy with" text), matching the
@@ -122,6 +131,8 @@ function WalletButton({
   const walletElementRef = useRef<HTMLDivElement>(null);
   const adyenCheckoutRef = useRef<ICore>();
   const walletRef = useRef<WalletElement>();
+  // See card-form: a superseded init discards itself so overlapping inits never mount two buttons.
+  const initGenerationRef = useRef(0);
   const {
     isPaymentMethodInitialized,
     updatePaymentMethodInitialization,
@@ -131,24 +142,33 @@ function WalletButton({
     threeDSecureActive,
     paymentInProgress,
     setPaymentInProgress,
+    isPaymentLocked,
+    paymentProcessing,
+    setPaymentProcessing,
     isObscuredByThreeDS,
     setActivePaymentMethod,
     activePaymentMethod,
   } = usePaymentMethodGroup();
 
-  const { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed } =
-    createAdyenPaymentHandlers({
-      configuration,
-      handleSuccess,
-      handleError,
-      setThreeDSecureActive,
-      setPaymentInProgress,
-      onSubmitStart: () => {
-        if (isInstantPayment) {
-          setActivePaymentMethod(method);
-        }
-      },
-    });
+  const {
+    handleOnSubmit,
+    handleOnSubmitAdditionalData,
+    handlePaymentCompleted,
+    handlePaymentFailed,
+    handleActionHandled,
+  } = createAdyenPaymentHandlers({
+    configuration,
+    handleSuccess,
+    handleError,
+    setThreeDSecureActive,
+    setPaymentInProgress,
+    setPaymentProcessing,
+    onSubmitStart: () => {
+      if (isInstantPayment) {
+        setActivePaymentMethod(method);
+      }
+    },
+  });
 
   function handleOnError(data: AdyenCheckoutError, _?: UIElement<UIElementProps> | undefined): void {
     if (data.name !== CANCEL) {
@@ -165,8 +185,32 @@ function WalletButton({
     onUnavailable?.();
   }
 
-  const initializeAdyenComponent = async () => {
-    adyenCheckoutRef.current = await AdyenCheckout({
+  const { markBuilt } = useAdyenLocaleReinit({
+    configuration,
+    resolvedTheme,
+    ready: Boolean(walletRef.current && isPaymentMethodInitialized[method]),
+    busy: paymentInProgress || threeDSecureActive,
+    reinitialize: () => {
+      initializeAdyenComponent();
+    },
+  });
+
+  async function initializeAdyenComponent(): Promise<void> {
+    const generation = ++initGenerationRef.current;
+    markBuilt();
+
+    try {
+      await buildAdyenComponent(generation);
+    } catch (error) {
+      if (generation !== initGenerationRef.current) return;
+      // A wallet that can't start is just unavailable — hide it, don't take down the whole checkout.
+      console.error(`[StraumurCheckout] ${method} initialization failed:`, error);
+      markUnavailable();
+    }
+  }
+
+  async function buildAdyenComponent(generation: number): Promise<void> {
+    const core = await AdyenCheckout({
       // This Adyen bootstrap only runs when a wallet method exists, which means Adyen methods are
       // present and the backend returned a clientKey.
       clientKey: paymentMethods.clientKey!,
@@ -182,7 +226,11 @@ function WalletButton({
       onAdditionalDetails: handleOnSubmitAdditionalData,
       onPaymentCompleted: handlePaymentCompleted,
       onPaymentFailed: handlePaymentFailed,
+      onActionHandled: handleActionHandled,
     });
+
+    if (generation !== initGenerationRef.current) return;
+    adyenCheckoutRef.current = core;
 
     const walletPaymentMethod = paymentMethods.paymentMethods.paymentMethods?.find((x) => x.type === method);
     const walletConfig = walletPaymentMethod?.configuration as WalletMerchantConfig | undefined;
@@ -193,24 +241,31 @@ function WalletButton({
       return;
     }
 
-    walletRef.current = wallet.createElement(adyenCheckoutRef.current, {
+    // Tear down the previous button (re-init) right before building its replacement.
+    walletRef.current?.remove();
+    const element = wallet.createElement(core, {
       configuration,
       paymentMethods,
       walletConfig,
       handleOnSubmit,
       resolvedTheme,
+      isPaymentLocked,
     });
 
-    walletRef.current
-      .isAvailable()
-      .then(() => {
-        walletRef.current!.mount(walletElementRef.current!);
-        updatePaymentMethodInitialization(method, true);
-      })
-      .catch(() => {
-        markUnavailable();
-      });
-  };
+    walletRef.current = element;
+
+    try {
+      await element.isAvailable();
+    } catch {
+      // isAvailable() rejecting is Adyen's normal "not available on this device/browser" signal.
+      if (generation === initGenerationRef.current) markUnavailable();
+      return;
+    }
+
+    if (generation !== initGenerationRef.current || !walletElementRef.current) return;
+    element.mount(walletElementRef.current);
+    updatePaymentMethodInitialization(method, true);
+  }
 
   useEffect(() => {
     if (!isPaymentMethodInitialized[method]) {
@@ -218,18 +273,11 @@ function WalletButton({
     }
   }, [configuration]);
 
-  useAdyenLocaleReinit(
-    configuration,
-    () => Boolean(walletRef.current && isPaymentMethodInitialized[method]),
-    () => {
-      walletRef.current!.remove();
-      initializeAdyenComponent();
-    }
-  );
-
   if (isObscuredByThreeDS(method)) {
     return null;
   }
+
+  const showProcessing = paymentProcessing && activePaymentMethod === method;
 
   return (
     <Fragment>
@@ -239,24 +287,36 @@ function WalletButton({
         </div>
       )}
       <div
-        ref={walletElementRef}
+        className="straumur__processing-host"
         style={{
-          // Button tile: fixed 48px (matching the Apple Pay button height) so Google Pay and Apple
-          // Pay render at the same height — an "auto" height let a shorter wallet leave a few px of
-          // dead space below.
-          // 3DS challenge: drop the fixed height/min-width and go full width so the Adyen challenge
-          // iframe (min-height:400px, height:inherit) governs the size — identical to the card flow,
-          // which mounts the same challenge into an auto-height, full-width container.
-          height: threeDSecureActive ? undefined : "48px",
+          // While 3DS runs in this tile, reserve the challenge's footprint so the overlay is visible
+          // during the fingerprint step too (its iframe is display:none, so the tile would collapse).
+          minHeight: threeDSecureActive && showProcessing ? "400px" : undefined,
           width: threeDSecureActive ? "100%" : undefined,
-          position: isPaymentMethodInitialized[method] ? "static" : "absolute",
-          // Lock the Adyen-drawn wallet button while a payment is in flight (can't add `disabled` to
-          // Adyen's element). Never while THIS wallet is showing a 3DS challenge in the same div —
-          // that must stay interactive; other methods are hidden by 3DS anyway.
-          pointerEvents: paymentInProgress && !threeDSecureActive ? "none" : undefined,
-          opacity: paymentInProgress && !threeDSecureActive ? 0.5 : undefined,
         }}
-      />
+      >
+        <div
+          ref={walletElementRef}
+          style={{
+            // Button tile: fixed 48px (matching the Apple Pay button height) so Google Pay and Apple
+            // Pay render at the same height — an "auto" height let a shorter wallet leave a few px of
+            // dead space below.
+            // 3DS challenge: drop the fixed height/min-width and go full width so the Adyen challenge
+            // iframe (min-height:400px, height:inherit) governs the size — identical to the card flow,
+            // which mounts the same challenge into an auto-height, full-width container.
+            height: threeDSecureActive ? undefined : "48px",
+            width: threeDSecureActive ? "100%" : undefined,
+            position: isPaymentMethodInitialized[method] ? "static" : "absolute",
+            // Lock the Adyen-drawn wallet button while a payment is in flight (can't add `disabled` to
+            // Adyen's element). Never while THIS wallet is showing a 3DS challenge in the same div —
+            // that must stay interactive; other methods are hidden by 3DS anyway.
+            pointerEvents: paymentInProgress && !threeDSecureActive ? "none" : undefined,
+            opacity: paymentInProgress && !threeDSecureActive ? 0.5 : undefined,
+          }}
+        />
+        {/* Compact over the 48px tile; full (with label) once 3DS has widened it to the challenge area. */}
+        <ProcessingOverlay visible={showProcessing} compact={!threeDSecureActive} />
+      </div>
     </Fragment>
   );
 }

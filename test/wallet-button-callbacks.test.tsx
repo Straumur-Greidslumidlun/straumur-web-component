@@ -68,6 +68,16 @@ function Probe() {
 }
 
 const actions = () => ({ resolve: vi.fn(), reject: vi.fn() });
+
+/**
+ * Like real Adyen: a reject() in onSubmit/onAdditionalDetails is answered (a microtask later) with the
+ * core-level onPaymentFailed — which is where the failure screen comes from.
+ */
+const adyenActions = (checkout: any) => ({
+  resolve: vi.fn(),
+  reject: vi.fn(() => queueMicrotask(() => checkout.onPaymentFailed(undefined))),
+});
+
 const submitState = { data: { paymentMethod: { type: "wallet" } } };
 
 beforeEach(() => {
@@ -169,8 +179,8 @@ wallets.forEach(({ name, Comp, method }) => {
 
     it("rejects and surfaces an error when the request is not ok", async () => {
       createPayment.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
-      const { onSubmit } = await setup();
-      const act1 = actions();
+      const { onSubmit, checkout } = await setup();
+      const act1 = adyenActions(checkout);
 
       await act(async () => {
         await onSubmit(submitState, {}, act1);
@@ -182,8 +192,8 @@ wallets.forEach(({ name, Comp, method }) => {
 
     it("rejects with paymentFailed when the response has no resultCode", async () => {
       createPayment.mockResolvedValue({ ok: true, json: async () => ({}) } as any);
-      const { onSubmit } = await setup();
-      const act1 = actions();
+      const { onSubmit, checkout } = await setup();
+      const act1 = adyenActions(checkout);
 
       await act(async () => {
         await onSubmit(submitState, {}, act1);

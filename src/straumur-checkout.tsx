@@ -24,6 +24,10 @@ class StraumurCheckout {
   private i18n: I18nService;
   private submitApi: SubmitApi | null = null;
   private initializationFailed = false;
+  // Set once a class-level result screen is showing (init failure, redirect-return result). A later
+  // updateConfig/setLanguage must re-render THAT screen, never bring the checkout form back — after a
+  // success that would let the shopper pay twice.
+  private resultScreen: { variant: "success" | "failure"; message: ResultMessage } | null = null;
 
   // Public signature accepts the session configuration only. The advanced-mode configuration
   // (internal, used by Straumur Hosted Checkout via the IIFE bundle) is detected at runtime.
@@ -39,6 +43,7 @@ class StraumurCheckout {
   async mount(selector: HTMLElement | string): Promise<void> {
     try {
       this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
+      this.resultScreen = null;
 
       if (!this.mountElement) {
         return;
@@ -67,13 +72,17 @@ class StraumurCheckout {
 
       this.renderComponent();
     } catch (error) {
-      // Never throw into the host page, but leave a trace for the merchant's console.
+      // Never throw into the host page, but leave a trace for the merchant's console — and replace
+      // the loader, which would otherwise spin forever.
       console.error("[StraumurCheckout] mount() failed:", error);
+      this.handleError({ key: "error.failedToInitializePaymentMethods" });
     }
   }
 
   private renderComponent(): void {
-    if (!this.mountElement) return;
+    // No payment methods yet (session fetch in flight, it failed, or a redirect-return page that only
+    // called submitDetails): nothing to render. A pending mount() picks up the new configuration.
+    if (!this.mountElement || !this.paymentMethods) return;
 
     render(
       <RootComponent theme={this.configuration.theme}>
@@ -98,19 +107,19 @@ class StraumurCheckout {
   }
 
   handleSuccess(message: ResultMessage) {
-    if (!this.mountElement) return;
-
-    render(
-      <StatusScreen variant="success" message={message} i18n={this.i18n} theme={this.configuration.theme} />,
-      this.mountElement
-    );
+    this.showResultScreen("success", message);
   }
 
   handleError(message: ResultMessage) {
+    this.showResultScreen("failure", message);
+  }
+
+  private showResultScreen(variant: "success" | "failure", message: ResultMessage): void {
     if (!this.mountElement) return;
 
+    this.resultScreen = { variant, message };
     render(
-      <StatusScreen variant="failure" message={message} i18n={this.i18n} theme={this.configuration.theme} />,
+      <StatusScreen variant={variant} message={message} i18n={this.i18n} theme={this.configuration.theme} />,
       this.mountElement
     );
   }
@@ -129,6 +138,11 @@ class StraumurCheckout {
       if (this.initializationFailed) {
         this.handleError({ key: "error.failedToInitializeStraumurWebComponent" });
         return;
+      }
+
+      // The shopper just landed back from the 3DS/Kortalán redirect: show progress while /details runs.
+      if (this.mountElement) {
+        render(<LoaderScreen theme={this.configuration.theme} />, this.mountElement);
       }
 
       const { resultCode, errorMessage } = await this.configuration.paymentFlow.submitAdditionalDetails({
@@ -168,8 +182,11 @@ class StraumurCheckout {
       this.i18n.updateCustomLocalizations(newConfig.customLocalizations);
     }
 
-    // Re-render the component with new config
-    if (this.mountElement) {
+    // Re-render with the new config: the result screen if one is showing (so a language/theme change
+    // still applies to it), otherwise the checkout.
+    if (this.resultScreen) {
+      this.showResultScreen(this.resultScreen.variant, this.resultScreen.message);
+    } else {
       this.renderComponent();
     }
   }
@@ -186,6 +203,7 @@ class StraumurCheckout {
       render(null, this.mountElement);
       this.mountElement = null;
     }
+    this.resultScreen = null;
     this.submitApi = null;
   }
 

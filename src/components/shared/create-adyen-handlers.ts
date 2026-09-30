@@ -1,4 +1,5 @@
 import {
+  ActionHandledReturnObject,
   AdditionalDetailsActions,
   AdditionalDetailsData,
   PaymentCompletedData,
@@ -16,7 +17,6 @@ import {
   toResultCode,
 } from "../../models/models";
 import { toResultMessage } from "../../flows/payment-flow";
-import { runBeforeSubmit } from "./before-submit-click";
 import { dispatchFinalResult } from "./dispatch-final-result";
 
 export interface AdyenPaymentHandlersOptions {
@@ -26,6 +26,11 @@ export interface AdyenPaymentHandlersOptions {
   setThreeDSecureActive: (value: boolean) => void;
   /** Locks the rest of the widget while this submission's /payments call is in flight. */
   setPaymentInProgress?: (value: boolean) => void;
+  /**
+   * Drives the processing overlay: on once a submission passes the gate, off when the 3DS challenge
+   * iframe is visible, on again while /payments/details runs. Off on any thrown failure.
+   */
+  setPaymentProcessing?: (value: boolean) => void;
   enrichSubmitData?: (data: SubmitData["data"]) => AdvancedSubmitState["data"];
   onSubmitStart?: () => void;
   /**
@@ -46,6 +51,8 @@ export interface AdyenPaymentHandlers {
   ) => Promise<void>;
   handlePaymentCompleted: (data: PaymentCompletedData, element?: UIElement<UIElementProps>) => void;
   handlePaymentFailed: (data?: PaymentFailedData, element?: UIElement<UIElementProps>) => void;
+  /** Pass as the core-level onActionHandled so the overlay lifts once the 3DS challenge is on screen. */
+  handleActionHandled: (data: ActionHandledReturnObject) => void;
 }
 
 export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions): AdyenPaymentHandlers {
@@ -55,6 +62,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     handleError,
     setThreeDSecureActive,
     setPaymentInProgress,
+    setPaymentProcessing,
     enrichSubmitData,
     onSubmitStart,
     dispatchResultFromAdditionalDetails,
@@ -62,31 +70,40 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
 
   // Buyer-friendly failure message from the host (advanced mode). Set on submit, shown when the payment fails.
   let failureMessage: string | undefined;
+  // Why our own /payments or /payments/details call threw. We only actions.reject() there; Adyen then
+  // reports the failure through onPaymentFailed, which is where the screen is shown — showing it in the
+  // catch as well used to be immediately overwritten by the generic copy from that later callback.
+  let thrownFailure: ResultMessage | undefined;
 
   function dispatchResult(resultCode: ResultCode): void {
-    dispatchFinalResult(resultCode, { configuration, handleSuccess, handleError, failureMessage });
+    dispatchFinalResult(resultCode, {
+      configuration,
+      handleSuccess,
+      handleError: (message) => handleError(thrownFailure ?? message),
+      failureMessage,
+    });
   }
 
   async function handleOnSubmit(state: SubmitData, _: UIElement<UIElementProps>, actions: SubmitActions) {
     onSubmitStart?.();
+    thrownFailure = undefined;
 
-    const { paymentFlow } = configuration;
+    // No beforeSubmit gate here: every entry point (submitCardWithGate for cards, the wallet onClick
+    // handler) has already run it exactly once, before Adyen's submit. A reject from this handler can't
+    // be a quiet cancel — Adyen only treats its own (unexported) CancelError that way.
 
-    if (!(await runBeforeSubmit(paymentFlow))) {
-      actions.reject();
-      return;
-    }
-
-    // Lock the rest of the widget for the in-flight window. Set only after the beforeSubmit gate so a
-    // cancelled submission (which stays on the chooser) never leaves the UI disabled. On any outcome
-    // the result/failure screen or the 3DS takeover hides the other methods anyway; the catch clears
-    // it defensively for the rare path that returns to the chooser.
+    // Lock the rest of the widget for the in-flight window (card entry points already took the lock
+    // synchronously; wallets take it here). On any outcome the result/failure screen or the 3DS
+    // takeover hides the other methods anyway; the catch clears it defensively.
     setPaymentInProgress?.(true);
+    // The overlay stays up through /payments and — for IdentifyShopper — the invisible fingerprint
+    // iframe; handleActionHandled lifts it once a challenge is actually visible.
+    setPaymentProcessing?.(true);
 
     try {
       const data = enrichSubmitData ? enrichSubmitData(state.data) : (state.data as AdvancedSubmitState["data"]);
 
-      const { resultCode, action, errorMessage } = await paymentFlow.submitPayment(data);
+      const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitPayment(data);
 
       failureMessage = errorMessage;
 
@@ -99,8 +116,10 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       actions.resolve({ resultCode, action } as Parameters<SubmitActions["resolve"]>[0]);
     } catch (error) {
       setPaymentInProgress?.(false);
+      setPaymentProcessing?.(false);
+      thrownFailure = toResultMessage(error, "error.failedToSubmitPayment");
+      // Adyen answers with onPaymentFailed -> handlePaymentFailed, which shows thrownFailure.
       actions.reject();
-      handleError(toResultMessage(error, "error.failedToSubmitPayment"));
     }
   }
 
@@ -109,6 +128,9 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     _: UIElement<UIElementProps>,
     actions: AdditionalDetailsActions
   ) {
+    // Fingerprint or challenge finished: the shopper is waiting on /payments/details again.
+    setPaymentProcessing?.(true);
+
     try {
       const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitAdditionalDetails(state.data);
 
@@ -122,11 +144,14 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
         dispatchResult(resultCode);
       }
     } catch (error) {
+      setPaymentProcessing?.(false);
+      thrownFailure = toResultMessage(error, "error.failedToSubmitPaymentDetails");
       actions.reject();
-      handleError(toResultMessage(error, "error.failedToSubmitPaymentDetails"));
 
+      // Mounted components: Adyen answers the reject with onPaymentFailed (-> thrownFailure). The
+      // redirect-return bootstrap wires no such callback, so dispatch here instead.
       if (dispatchResultFromAdditionalDetails) {
-        configuration.onPaymentFailed?.({ resultCode: "Error" });
+        dispatchResult("Error");
       }
     }
   }
@@ -141,5 +166,19 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     dispatchResult(data ? toResultCode(data.resultCode) : "Error");
   }
 
-  return { handleOnSubmit, handleOnSubmitAdditionalData, handlePaymentCompleted, handlePaymentFailed };
+  function handleActionHandled(data: ActionHandledReturnObject): void {
+    // Only the challenge is something the shopper can see and act on. The fingerprint iframe is
+    // hidden (display:none), so its "loaded" event must NOT lift the overlay.
+    if (data.componentType === "3DS2Challenge") {
+      setPaymentProcessing?.(false);
+    }
+  }
+
+  return {
+    handleOnSubmit,
+    handleOnSubmitAdditionalData,
+    handlePaymentCompleted,
+    handlePaymentFailed,
+    handleActionHandled,
+  };
 }

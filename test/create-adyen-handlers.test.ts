@@ -49,22 +49,14 @@ describe("handleOnSubmit", () => {
     expect(order).toEqual(["start", "submit"]);
   });
 
-  it("rejects and skips submission when the beforeSubmit gate returns false", async () => {
-    const { handlers, paymentFlow } = setup({ beforeSubmit: vi.fn().mockResolvedValue(false) });
+  it("does not run the beforeSubmit gate itself (every entry point already ran it once)", async () => {
+    const beforeSubmit = vi.fn().mockResolvedValue(false);
+    const { handlers, paymentFlow } = setup({ beforeSubmit });
     const a = actions();
 
     await handlers.handleOnSubmit(submitState, element, a);
 
-    expect(a.reject).toHaveBeenCalledTimes(1);
-    expect(paymentFlow.submitPayment).not.toHaveBeenCalled();
-  });
-
-  it("submits when the beforeSubmit gate returns true", async () => {
-    const { handlers, paymentFlow } = setup({ beforeSubmit: vi.fn().mockResolvedValue(true) });
-    const a = actions();
-
-    await handlers.handleOnSubmit(submitState, element, a);
-
+    expect(beforeSubmit).not.toHaveBeenCalled();
     expect(paymentFlow.submitPayment).toHaveBeenCalledTimes(1);
     expect(a.resolve).toHaveBeenCalledWith({ resultCode: "Authorised", action: undefined });
   });
@@ -111,16 +103,21 @@ describe("handleOnSubmit", () => {
     expect(options.setThreeDSecureActive).not.toHaveBeenCalled();
   });
 
-  it("rejects and shows the host's error text when the flow fails with a PaymentFlowError", async () => {
+  it("rejects, and the host's error text survives Adyen's follow-up onPaymentFailed", async () => {
     const { handlers, options } = setup({
       submitPayment: vi.fn().mockRejectedValue(new PaymentFlowError("error.failedToSubmitPayment", "Host message")),
     });
     const a = actions();
 
     await handlers.handleOnSubmit(submitState, element, a);
-
     expect(a.reject).toHaveBeenCalledTimes(1);
+    // Adyen answers the reject with onPaymentFailed (no payload).
+    handlers.handlePaymentFailed(undefined);
+
+    expect(options.handleError).toHaveBeenCalledTimes(1);
     expect(options.handleError).toHaveBeenCalledWith({ text: "Host message" });
+    expect(options.configuration.onPaymentFailed).toHaveBeenCalledTimes(1);
+    expect(options.configuration.onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
   });
 
   it("rejects and shows the generic key when the flow fails with an unknown error", async () => {
@@ -128,6 +125,7 @@ describe("handleOnSubmit", () => {
     const a = actions();
 
     await handlers.handleOnSubmit(submitState, element, a);
+    handlers.handlePaymentFailed(undefined);
 
     expect(a.reject).toHaveBeenCalledTimes(1);
     expect(options.handleError).toHaveBeenCalledWith({ key: "error.failedToSubmitPayment" });
@@ -154,10 +152,28 @@ describe("handleOnSubmitAdditionalData", () => {
     const a = actions();
 
     await handlers.handleOnSubmitAdditionalData(detailsState, element, a);
+    handlers.handlePaymentFailed(undefined);
 
     expect(a.reject).toHaveBeenCalledTimes(1);
     expect(options.handleError).toHaveBeenCalledWith({ key: "error.failedToSubmitPaymentDetails" });
   });
+
+  it.each([true, false])(
+    "fires onPaymentFailed exactly once on a thrown details call (dispatchResultFromAdditionalDetails=%s)",
+    async (dispatchResultFromAdditionalDetails) => {
+      const { handlers, options } = setup(
+        { submitAdditionalDetails: vi.fn().mockRejectedValue(new Error("boom")) },
+        { dispatchResultFromAdditionalDetails }
+      );
+
+      await handlers.handleOnSubmitAdditionalData(detailsState, element, actions());
+      // Mounted components get Adyen's follow-up onPaymentFailed; the redirect bootstrap does not.
+      if (!dispatchResultFromAdditionalDetails) handlers.handlePaymentFailed(undefined);
+
+      expect(options.configuration.onPaymentFailed).toHaveBeenCalledTimes(1);
+      expect(options.handleError).toHaveBeenLastCalledWith({ key: "error.failedToSubmitPaymentDetails" });
+    }
+  );
 });
 
 describe("result dispatch", () => {
@@ -241,5 +257,57 @@ describe("result dispatch", () => {
 
     expect(options.configuration.onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
     expect(options.handleError).toHaveBeenCalledWith({ key: "error.paymentUnsuccessful" });
+  });
+});
+
+describe("processing overlay state (setPaymentProcessing)", () => {
+  it("turns on after the gate passes and stays on for a 3DS action", async () => {
+    const setPaymentProcessing = vi.fn();
+    const { handlers } = setup(
+      { submitPayment: vi.fn().mockResolvedValue({ resultCode: "IdentifyShopper", action: { type: "threeDS2" } }) },
+      { setPaymentProcessing }
+    );
+
+    await handlers.handleOnSubmit(submitState, element, actions());
+
+    expect(setPaymentProcessing.mock.calls).toEqual([[true]]);
+  });
+
+  it("turns off when /payments throws", async () => {
+    const setPaymentProcessing = vi.fn();
+    const { handlers } = setup(
+      { submitPayment: vi.fn().mockRejectedValue(new Error("boom")) },
+      { setPaymentProcessing }
+    );
+
+    await handlers.handleOnSubmit(submitState, element, actions());
+
+    expect(setPaymentProcessing.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("lifts only once the challenge iframe is on screen, not for the hidden fingerprint iframe", () => {
+    const setPaymentProcessing = vi.fn();
+    const { handlers } = setup({}, { setPaymentProcessing });
+
+    handlers.handleActionHandled({
+      componentType: "3DS2Fingerprint",
+      actionDescription: "3DS2 fingerprint iframe loaded",
+    });
+    expect(setPaymentProcessing).not.toHaveBeenCalled();
+
+    handlers.handleActionHandled({ componentType: "3DS2Challenge", actionDescription: "3DS2 challenge iframe loaded" });
+    expect(setPaymentProcessing).toHaveBeenCalledWith(false);
+  });
+
+  it("turns back on while /payments/details runs, and off if it throws", async () => {
+    const setPaymentProcessing = vi.fn();
+    const { handlers } = setup(
+      { submitAdditionalDetails: vi.fn().mockRejectedValue(new Error("boom")) },
+      { setPaymentProcessing }
+    );
+
+    await handlers.handleOnSubmitAdditionalData(detailsState, element, actions());
+
+    expect(setPaymentProcessing.mock.calls).toEqual([[true], [false]]);
   });
 });

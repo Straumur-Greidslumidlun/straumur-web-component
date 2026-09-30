@@ -40,6 +40,22 @@ type PaymentMethodContextType = {
   paymentInProgress: boolean;
   setPaymentInProgress: (value: boolean) => void;
   /**
+   * Synchronously claims the in-progress lock (sets paymentInProgress); false if a submission is
+   * already running. Use at every submit entry point — the state flag alone only updates on the next
+   * render, so two clicks in one tick would both pass a `paymentInProgress` check.
+   */
+  tryStartPayment: () => boolean;
+  /** Synchronous read of the lock, for event-time checks in Adyen callbacks. */
+  isPaymentLocked: () => boolean;
+  /**
+   * True while the shopper is waiting on us with nothing interactive to look at: from the moment a
+   * submission passes the beforeSubmit gate, through the /payments call and the invisible 3DS
+   * fingerprint step, until the 3DS challenge iframe has loaded — and again while /payments/details
+   * runs after the challenge. Drives the processing overlay (see ProcessingOverlay).
+   */
+  paymentProcessing: boolean;
+  setPaymentProcessing: (value: boolean) => void;
+  /**
    * True while a 3DS challenge run by ANOTHER payment method takes over the widget —
    * the asking component must render nothing. Components matching a specific stored card
    * additionally check their own card id (see stored-card-component).
@@ -122,7 +138,21 @@ export const PaymentMethodGroupContext = ({
     initialStoredPaymentMethodId
   );
   const [threeDSecureActive, setThreeDSecureActive] = useState<boolean>(false);
-  const [paymentInProgress, setPaymentInProgress] = useState<boolean>(false);
+  const [paymentInProgress, setPaymentInProgressState] = useState<boolean>(false);
+  const paymentInProgressRef = useRef(false);
+  const setPaymentInProgress = useCallback((value: boolean): void => {
+    paymentInProgressRef.current = value;
+    setPaymentInProgressState(value);
+  }, []);
+  const tryStartPayment = useCallback((): boolean => {
+    if (paymentInProgressRef.current) {
+      return false;
+    }
+    setPaymentInProgress(true);
+    return true;
+  }, [setPaymentInProgress]);
+  const isPaymentLocked = useCallback((): boolean => paymentInProgressRef.current, []);
+  const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
   const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = useState(defaultIsInitialized);
   const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<Record<string, boolean>>({});
 
@@ -175,6 +205,10 @@ export const PaymentMethodGroupContext = ({
         setThreeDSecureActive,
         paymentInProgress,
         setPaymentInProgress,
+        tryStartPayment,
+        isPaymentLocked,
+        paymentProcessing,
+        setPaymentProcessing,
         isObscuredByThreeDS,
         isSolePaymentMethod,
         hasCard,
