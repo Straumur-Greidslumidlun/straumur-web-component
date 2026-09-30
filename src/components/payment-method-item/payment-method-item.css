@@ -11,8 +11,26 @@
   cursor: default;
 }
 
-.straumur__payment-method-item:has(.straumur__payment-method-item__radio-selector:checked) {
+.straumur__payment-method-item--active {
   cursor: default;
+}
+
+/* Header row: the label (radio + icon + title) grows; headerRight (brands, Remove) sits at the end. */
+.straumur__payment-method-item__header {
+  display: flex;
+  align-items: center;
+  gap: var(--straumur__space-lg);
+}
+
+/* Spacing between the header and the expanded form. */
+.straumur__payment-method-item__header--expanded {
+  padding-bottom: var(--straumur__space-xxlg);
+}
+
+.straumur__payment-method-item__label {
+  flex: 1;
+  min-width: 0;
+  cursor: inherit;
 }
 
 .straumur__payment-method-item__radio-selector {
@@ -26,16 +44,6 @@
   align-items: center;
   gap: var(--straumur__space-lg);
   transition: background-color 0.3s ease;
-}
-
-/* Padding-bottom when radio checked (non-sole mode) */
-.straumur__payment-method-item__radio-selector:checked + .straumur__payment-method-item__content {
-  padding-bottom: var(--straumur__space-xxlg);
-}
-
-/* Padding-bottom in sole mode (always expanded) */
-.straumur__payment-method-item__content--expanded {
-  padding-bottom: var(--straumur__space-xxlg);
 }
 
 .straumur__payment-method-item--circle {
@@ -95,13 +103,7 @@
   opacity: 0;
 }
 
-/* Expandable via :checked sibling selector (non-sole mode) */
-.straumur__payment-method-item__radio-selector:checked ~ .straumur__payment-method-item__expandable {
-  max-height: 600px;
-  opacity: 1;
-}
-
-/* Expandable always visible in sole mode */
+/* Expanded when active, or always in sole mode. */
 .straumur__payment-method-item__expandable--visible {
   max-height: 600px;
   opacity: 1;
