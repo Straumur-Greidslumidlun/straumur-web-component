@@ -105,7 +105,6 @@ payment-methods payload, apply the same rule: **`type: "kortalan"` with no Adyen
 
 ---
 
-
 ### 1.3 Kortalan is availability-gated — it can be absent even when the store enables it
 
 Two gates decide whether `type: "kortalan"` appears in either channel's listing:

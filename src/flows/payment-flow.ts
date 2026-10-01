@@ -124,7 +124,8 @@ export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConf
               { data },
               {
                 resolve: (result) => {
-                  capturedPaymentCheckoutReference = result.paymentCheckoutReference ?? capturedPaymentCheckoutReference;
+                  capturedPaymentCheckoutReference =
+                    result.paymentCheckoutReference ?? capturedPaymentCheckoutReference;
                   res(result);
                 },
                 reject: (errorMessage) => rej(new PaymentFlowError("error.failedToSubmitPayment", errorMessage)),
