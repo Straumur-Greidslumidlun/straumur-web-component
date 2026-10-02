@@ -397,3 +397,31 @@ describe("StraumurCheckout updateConfig/setLanguage safety", () => {
     consoleError.mockRestore();
   });
 });
+
+describe("StraumurCheckout merchant callback isolation", () => {
+  it("keeps the success outcome when the host's onPaymentCompleted throws", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const onPaymentFailed = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentCompleted: () => {
+        throw new Error("host bug");
+      },
+      onPaymentFailed,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised" }),
+    } as any);
+
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    expect(onPaymentFailed).not.toHaveBeenCalled();
+    expect(root().textContent).toContain(en("success.paymentAuthorized"));
+    expect(consoleError).toHaveBeenCalledWith("[StraumurCheckout] onPaymentCompleted threw:", expect.any(Error));
+    consoleError.mockRestore();
+  });
+});

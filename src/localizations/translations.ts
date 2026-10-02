@@ -25,6 +25,7 @@ export const translations = {
     "stored-cards.saveCardDetails": "Save card details",
 
     "success.paymentAuthorized": "Payment authorized",
+    "success.paymentPending": "Payment received and being processed",
     "payment.processing": "Processing payment…",
     "payment.loading": "Loading…",
 
@@ -67,6 +68,7 @@ export const translations = {
     "stored-cards.saveCardDetails": "Vista kortaupplýsingar",
 
     "success.paymentAuthorized": "Greiðsla samþykkt",
+    "success.paymentPending": "Greiðsla móttekin og er í vinnslu",
     "payment.processing": "Greiðsla í vinnslu…",
     "payment.loading": "Hleður…",
 

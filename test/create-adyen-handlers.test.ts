@@ -311,3 +311,18 @@ describe("processing overlay state (setPaymentProcessing)", () => {
     expect(setPaymentProcessing.mock.calls).toEqual([[true], [false]]);
   });
 });
+
+describe("result screens", () => {
+  it.each(["Pending", "Received"] as const)(
+    "shows the 'being processed' screen (not a failure) for %s",
+    (resultCode) => {
+      const { handlers, options } = setup();
+
+      handlers.handlePaymentCompleted({ resultCode } as any);
+
+      expect(options.handleSuccess).toHaveBeenCalledWith({ key: "success.paymentPending" });
+      expect(options.handleError).not.toHaveBeenCalled();
+      expect(options.configuration.onPaymentCompleted).toHaveBeenCalledWith({ resultCode });
+    }
+  );
+});
