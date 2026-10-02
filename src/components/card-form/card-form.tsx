@@ -328,7 +328,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
         tabIndex={-1}
         style={{
           height: threeDSecureActive ? "600px" : "auto",
-          minWidth: threeDSecureActive ? "350px" : "auto",
+          // No minWidth: the widget allows 320px, and a 350px floor overflowed it. Challenge window "05"
+          // is 100% wide, so it fits whatever width the host gives the widget.
         }}
       >
         {!isPaymentMethodInitialized.card && (
