@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
+  createAdyenErrorHandler,
   createAdyenPaymentHandlers,
   AdyenPaymentHandlersOptions,
 } from "../src/components/shared/create-adyen-handlers";
@@ -325,4 +326,26 @@ describe("result screens", () => {
       expect(options.configuration.onPaymentCompleted).toHaveBeenCalledWith({ resultCode });
     }
   );
+});
+
+describe("createAdyenErrorHandler", () => {
+  it("ignores a shopper cancel", () => {
+    const handleError = vi.fn();
+
+    createAdyenErrorHandler(handleError, "card")({ name: "CANCEL" } as any);
+
+    expect(handleError).not.toHaveBeenCalled();
+  });
+
+  it("logs any other Adyen error and shows the generic failure (without firing host callbacks)", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const handleError = vi.fn();
+    const error = { name: "NETWORK_ERROR", message: "x" } as any;
+
+    createAdyenErrorHandler(handleError, "card")(error);
+
+    expect(handleError).toHaveBeenCalledWith({ key: "error.unknownError" });
+    expect(consoleError).toHaveBeenCalledWith("[StraumurCheckout] Adyen error (card):", error);
+    consoleError.mockRestore();
+  });
 });

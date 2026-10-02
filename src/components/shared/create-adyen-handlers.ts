@@ -1,5 +1,6 @@
 import {
   ActionHandledReturnObject,
+  AdyenCheckoutError,
   AdditionalDetailsActions,
   AdditionalDetailsData,
   PaymentCompletedData,
@@ -18,6 +19,7 @@ import {
 } from "../../models/models";
 import { toResultMessage } from "../../flows/payment-flow";
 import { dispatchFinalResult } from "./dispatch-final-result";
+import { CANCEL } from "../../models/constants";
 
 export interface AdyenPaymentHandlersOptions {
   configuration: StraumurCheckoutConfiguration;
@@ -180,5 +182,27 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     handlePaymentCompleted,
     handlePaymentFailed,
     handleActionHandled,
+  };
+}
+
+/**
+ * Core-level Adyen onError for every mounted method. A shopper cancel (closing a wallet sheet) is not
+ * an error. Anything else is logged — it used to vanish without a trace — and shown as the generic
+ * failure screen.
+ *
+ * Deliberately does NOT call the host's onPaymentFailed: Adyen also raises onError for conditions it
+ * then continues from (e.g. a 3DS challenge timeout still completes via /payments/details and reaches
+ * onPaymentCompleted/onPaymentFailed), so reporting here would double-fire the merchant callbacks.
+ */
+export function createAdyenErrorHandler(
+  handleError: (message: ResultMessage) => void,
+  source: string
+): (error: AdyenCheckoutError, element?: UIElement<UIElementProps>) => void {
+  return (error) => {
+    if (error?.name === CANCEL) {
+      return;
+    }
+    console.error(`[StraumurCheckout] Adyen error (${source}):`, error);
+    handleError({ key: "error.unknownError" });
   };
 }

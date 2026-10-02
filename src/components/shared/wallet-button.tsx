@@ -2,21 +2,17 @@ import { Fragment, h } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 import {
   AdyenCheckout,
-  AdyenCheckoutError,
   ApplePay,
   ApplePayConfiguration,
   GooglePay,
   GooglePayConfiguration,
   ICore,
-  UIElement,
-  UIElementProps,
 } from "@adyen/adyen-web";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
 import { ResolvedTheme, StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
-import { CANCEL } from "../../models/constants";
 import LoaderIcon from "../../assets/icons/loader";
-import { AdyenPaymentHandlers, createAdyenPaymentHandlers } from "./create-adyen-handlers";
+import { AdyenPaymentHandlers, createAdyenErrorHandler, createAdyenPaymentHandlers } from "./create-adyen-handlers";
 import { createBeforeSubmitClickHandler } from "./before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
@@ -170,11 +166,7 @@ function WalletButton({
     },
   });
 
-  function handleOnError(data: AdyenCheckoutError, _?: UIElement<UIElementProps> | undefined): void {
-    if (data.name !== CANCEL) {
-      handleError({ key: "error.unknownError" });
-    }
-  }
+  const handleOnError = createAdyenErrorHandler(handleError, `${method}`);
 
   function markUnavailable(): void {
     // Initialized-but-unavailable: the loader must disappear and the method must not stay selected.

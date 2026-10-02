@@ -6,12 +6,12 @@ import { useI18n } from "../../localizations/i18n-context";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
 import { Tooltip } from "../../components/tooltip/tooltip";
 import InfoIcon from "../../assets/icons/info";
-import { AdyenCheckout, AdyenCheckoutError, CustomCard, ICore, UIElement, UIElementProps } from "@adyen/adyen-web";
+import { AdyenCheckout, CustomCard, ICore } from "@adyen/adyen-web";
 import { RenderBrandIcons } from "../../utils/renderBrandIcons";
 import { StoredCardComponentProps, StoredCardFormError, StoredCardFormErrorField } from "./models";
 import WarningIcon from "../../assets/icons/warning";
 import PaymentMethodItem from "../../components/payment-method-item/payment-method-item";
-import { createAdyenPaymentHandlers } from "../../components/shared/create-adyen-handlers";
+import { createAdyenErrorHandler, createAdyenPaymentHandlers } from "../../components/shared/create-adyen-handlers";
 import { submitCardWithGate } from "../../components/shared/before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activate";
@@ -128,9 +128,7 @@ function StoredCardComponent({
     }),
   });
 
-  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined) {
-    handleError({ key: "error.unknownError" });
-  }
+  const handleOnError = createAdyenErrorHandler(handleError, "stored card");
 
   const { markBuilt } = useAdyenLocaleReinit({
     configuration,

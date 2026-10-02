@@ -2,7 +2,7 @@ import { Fragment, h } from "preact";
 import { LoadingIndicator } from "../shared/loading-indicator";
 import { useRef, useState, useEffect, StateUpdater, Dispatch } from "preact/hooks";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
-import { AdyenCheckout, AdyenCheckoutError, CustomCard, ICore, UIElement, UIElementProps } from "@adyen/adyen-web";
+import { AdyenCheckout, CustomCard, ICore } from "@adyen/adyen-web";
 import { useI18n } from "../../localizations/i18n-context";
 import { Tooltip } from "../tooltip/tooltip";
 import InfoIcon from "../../assets/icons/info";
@@ -11,7 +11,7 @@ import CheckmarkIcon from "../../assets/icons/checkmark";
 import { RenderDualBrandComponent, DualBrandConfiguration } from "../render-dual-brand/render-dual-brand";
 import { StraumurCheckoutConfiguration } from "../../models/models";
 import { SuccessResponse } from "../../services/models";
-import { createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
+import { createAdyenErrorHandler, createAdyenPaymentHandlers } from "../shared/create-adyen-handlers";
 import { submitCardWithGate } from "../shared/before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activate";
@@ -143,9 +143,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     }),
   });
 
-  function handleOnError(_: AdyenCheckoutError, __?: UIElement<UIElementProps> | undefined): void {
-    handleError({ key: "error.unknownError" });
-  }
+  const handleOnError = createAdyenErrorHandler(handleError, "card");
 
   const { markBuilt } = useAdyenLocaleReinit({
     configuration,
