@@ -1,5 +1,6 @@
 import { ICreateDetailsBody, ICreatePaymentBody, IPostDisableTokenBody } from "../adapter/models";
 import { createDetailsRequest, createPaymentRequest, postDisableTokenRequest } from "../adapter/straumur-adapter";
+import { RequestTimeoutError } from "../adapter/request-timeout-error";
 import { PaymentFlow, PaymentFlowResult, ResultMessage, StraumurWebAdvancedConfiguration } from "../models/models";
 import { TranslationKey } from "../localizations/translations";
 
@@ -22,6 +23,21 @@ export function toResultMessage(error: unknown, fallbackKey: TranslationKey): Re
   return { key: fallbackKey };
 }
 
+/**
+ * A /payment or /details call that timed out may still have succeeded on the backend, so it is never
+ * reported as "failed" (the shopper might pay twice) — they are told it couldn't be confirmed.
+ */
+async function withNotConfirmedOnTimeout(request: () => Promise<Response>): Promise<Response> {
+  try {
+    return await request();
+  } catch (error) {
+    if (error instanceof RequestTimeoutError) {
+      throw new PaymentFlowError("error.paymentNotConfirmed");
+    }
+    throw error;
+  }
+}
+
 export function createSessionPaymentFlow(environment: "test" | "live", sessionId: string): PaymentFlow {
   // Remembered from the /payment response so a native (in-component) 3DS continuation can auto-attach it to
   // /details. A redirect continuation supplies it explicitly via submitDetails instead.
@@ -31,7 +47,7 @@ export function createSessionPaymentFlow(environment: "test" | "live", sessionId
     async submitPayment(data) {
       const body: ICreatePaymentBody = { ...data, sessionId };
 
-      const fetchResponse = await createPaymentRequest(environment, body);
+      const fetchResponse = await withNotConfirmedOnTimeout(() => createPaymentRequest(environment, body));
 
       // We will always get 200 OK unless there is an error in our server code.
       // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
@@ -57,7 +73,7 @@ export function createSessionPaymentFlow(environment: "test" | "live", sessionId
         sessionId,
       };
 
-      const fetchResponse = await createDetailsRequest(environment, body);
+      const fetchResponse = await withNotConfirmedOnTimeout(() => createDetailsRequest(environment, body));
 
       // We will always get 200 OK unless there is an error in our server code.
       // Payment unsuccessful still returns 200 OK, but with resultCode Refused.

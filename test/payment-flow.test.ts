@@ -1,3 +1,4 @@
+import { RequestTimeoutError } from "../src/adapter/request-timeout-error";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const adapter = vi.hoisted(() => ({
@@ -68,6 +69,20 @@ describe("createSessionPaymentFlow", () => {
 
       expect(adapter.createPaymentRequest).toHaveBeenCalledWith("test", { ...submitData, sessionId: "session-1" });
       expect(result).toEqual({ resultCode: "Authorised", action: { type: "x" } });
+    });
+
+    it("reports a timed-out /payment as not confirmed (never as failed)", async () => {
+      adapter.createPaymentRequest.mockRejectedValue(new RequestTimeoutError("url", 90_000));
+
+      await expect(flow.submitPayment(submitData)).rejects.toMatchObject({ messageKey: "error.paymentNotConfirmed" });
+    });
+
+    it("reports a timed-out /details as not confirmed", async () => {
+      adapter.createDetailsRequest.mockRejectedValue(new RequestTimeoutError("url", 90_000));
+
+      await expect(flow.submitAdditionalDetails({ details: {} } as any)).rejects.toMatchObject({
+        messageKey: "error.paymentNotConfirmed",
+      });
     });
 
     it("throws a PaymentFlowError when the server responds non-OK", async () => {
