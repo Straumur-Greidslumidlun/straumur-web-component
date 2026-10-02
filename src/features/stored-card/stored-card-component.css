@@ -41,6 +41,17 @@
   padding-bottom: var(--straumur__space-xxlg);
 }
 
+.straumur__stored-card-component__confirm-remove-stored-card--error {
+  margin: 0 0 var(--straumur__space-xxlg);
+  color: var(--straumur__color-error-text);
+  font-size: 14px;
+}
+
+.straumur__stored-card-component__confirm-remove-stored-card--actions--button:disabled {
+  cursor: progress;
+  opacity: 0.5;
+}
+
 .straumur__stored-card-component__confirm-remove-stored-card--actions {
   display: flex;
   gap: var(--straumur__space-lg);

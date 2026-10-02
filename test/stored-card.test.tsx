@@ -137,7 +137,7 @@ describe("Stored card removal", () => {
     );
   });
 
-  it("surfaces an error and keeps the card when the disable request is not ok", async () => {
+  it("shows the failure inline, keeping the card and the checkout, when the disable request is not ok", async () => {
     disableToken.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
     await setup();
 
@@ -146,13 +146,13 @@ describe("Stored card removal", () => {
       fireEvent.click(screen.getByText("Yes, remove"));
     });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("error").textContent).toBe("error.failedToSubmitRemoveStoredPaymentCard")
-    );
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("Failed to remove stored payment card"));
     expect(screen.getByText("•••• 1234")).toBeTruthy();
+    // A failed removal is not a checkout failure: no global error screen.
+    expect(screen.getByTestId("error").textContent).toBe("null");
   });
 
-  it("surfaces an error when the server reports success: false", async () => {
+  it("shows the failure inline when the server reports success: false", async () => {
     disableToken.mockResolvedValue({ ok: true, json: async () => ({ success: false }) } as any);
     await setup();
 
@@ -161,7 +161,26 @@ describe("Stored card removal", () => {
       fireEvent.click(screen.getByText("Yes, remove"));
     });
 
-    await waitFor(() => expect(screen.getByTestId("error").textContent).toBe("error.failedToRemoveStoredPaymentCard"));
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("Stored payment card was not removed"));
+    expect(screen.getByTestId("error").textContent).toBe("null");
+  });
+
+  it("sends one disable request even if Confirm is double-clicked", async () => {
+    let respond!: (value: unknown) => void;
+    disableToken.mockReturnValue(new Promise((resolve) => (respond = resolve)) as any);
+    await setup();
+
+    fireEvent.click(screen.getByText("Remove"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Yes, remove"));
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByText("Yes, remove"));
+    });
+
+    expect(disableToken).toHaveBeenCalledTimes(1);
+    await act(async () => respond({ ok: true, json: async () => ({ success: true }) }));
+    await waitFor(() => expect(screen.queryByText("•••• 1234")).toBeNull());
   });
 });
 

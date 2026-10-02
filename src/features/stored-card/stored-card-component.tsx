@@ -18,6 +18,7 @@ import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activa
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
 import { getAdyenFieldStyles } from "../../utils/adyen-field-styles";
 import { toResultMessage } from "../../flows/payment-flow";
+import { ResultMessage } from "../../models/models";
 import { ProcessingOverlay } from "../../components/shared/processing-overlay";
 
 function StoredCardComponent({
@@ -35,6 +36,10 @@ function StoredCardComponent({
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
   const [securityCodePolicy, setSecurityCodePolicy] = useState<"hidden" | "optional" | "required">("required");
   const [askConfirmRemoveStoredCard, setAskConfirmRemoveStoredCard] = useState<boolean>(false);
+  // Removal is a side action: its failure is shown inline in the confirm box and the checkout stays
+  // usable (the global handleError would replace every payment method with a failure screen).
+  const [isRemovingStoredCard, setIsRemovingStoredCard] = useState(false);
+  const [removeStoredCardError, setRemoveStoredCardError] = useState<ResultMessage | null>(null);
   const [formErrors, setFormErrors] = useState<StoredCardFormError>({
     encryptedSecurityCode: { visible: false },
   });
@@ -230,6 +235,7 @@ function StoredCardComponent({
 
   useEffect(() => {
     setAskConfirmRemoveStoredCard(false);
+    setRemoveStoredCardError(null);
   }, [activePaymentMethod, activeStoredPaymentMethodId]);
 
   // When the 3DS challenge replaces the stored-card field, move focus into the container.
@@ -249,23 +255,30 @@ function StoredCardComponent({
   }
 
   function handleAskToConfirmRemoveCard() {
+    setRemoveStoredCardError(null);
     setAskConfirmRemoveStoredCard(true);
   }
 
   function handleCancelRemoveStoredCard() {
+    setRemoveStoredCardError(null);
     setAskConfirmRemoveStoredCard(false);
   }
 
   async function handleConfirmRemoveStoredCard() {
     const { disableToken } = configuration.paymentFlow;
 
-    if (!disableToken) return;
+    // Guard double clicks: a second disable call for the same token would just fail.
+    if (!disableToken || isRemovingStoredCard) return;
 
+    setIsRemovingStoredCard(true);
+    setRemoveStoredCardError(null);
     try {
       await disableToken(storedPaymentMethod.id);
       onStoredCardRemoved(storedPaymentMethod.id);
     } catch (error) {
-      handleError(toResultMessage(error, "error.failedToSubmitRemoveStoredPaymentCard"));
+      setRemoveStoredCardError(toResultMessage(error, "error.failedToSubmitRemoveStoredPaymentCard"));
+    } finally {
+      setIsRemovingStoredCard(false);
     }
   }
 
@@ -277,7 +290,7 @@ function StoredCardComponent({
         <button
           onClick={handleAskToConfirmRemoveCard}
           className="straumur__stored-card-component__remove-stored-card-button--text"
-          disabled={askConfirmRemoveStoredCard}
+          disabled={askConfirmRemoveStoredCard || paymentInProgress}
         >
           {i18n.t("stored-cards.removeStoredCard")}
         </button>
@@ -296,16 +309,23 @@ function StoredCardComponent({
           {i18n.t("stored-cards.removeStoredCardQuestion")}
         </span>
       </div>
+      {removeStoredCardError && (
+        <p className="straumur__stored-card-component__confirm-remove-stored-card--error" role="alert">
+          {"key" in removeStoredCardError ? i18n.t(removeStoredCardError.key) : removeStoredCardError.text}
+        </p>
+      )}
       <div className="straumur__stored-card-component__confirm-remove-stored-card--actions">
         <button
           className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
           onClick={handleConfirmRemoveStoredCard}
+          disabled={isRemovingStoredCard}
         >
           {i18n.t("stored-cards.removeStoredCardQuestionYesRemove")}
         </button>
         <button
           className="straumur__stored-card-component__confirm-remove-stored-card--actions--button"
           onClick={handleCancelRemoveStoredCard}
+          disabled={isRemovingStoredCard}
         >
           {i18n.t("stored-cards.removeStoredCardQuestionCancel")}
         </button>
