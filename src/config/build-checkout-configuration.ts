@@ -9,7 +9,7 @@ import {
   ThemeConfiguration,
 } from "../models/models";
 import { createAdvancedPaymentFlow, createSessionPaymentFlow } from "../flows/payment-flow";
-import { normalizeLocale } from "../localizations/locale";
+import { normalizeLocale, normalizeLocalizations } from "../localizations/locale";
 import { normalizeAdvancedConfiguration } from "../services/advanced-normalizer";
 import { SuccessResponse } from "../services/models";
 
@@ -23,7 +23,7 @@ export function isSessionConfiguration(config: StraumurWebInternalConfiguration)
 
 // The public `theme` accepts either a bare mode or a ThemeConfiguration object; flatten both into
 // the internal fields, defaulting the mode to "light".
-function normalizeTheme(theme: Theme | ThemeConfiguration | undefined): {
+export function normalizeTheme(theme: Theme | ThemeConfiguration | undefined): {
   theme: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
@@ -89,7 +89,7 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     onPaymentFailed: config.onPaymentFailed,
     placeholders: config.placeholders,
     locale,
-    customLocalizations: config.localizations,
+    customLocalizations: normalizeLocalizations(config.localizations),
     instantPayments: config.instantPayments,
     hideSubmitButton: config.hideSubmitButton,
     onCardValidityChanged: config.onCardValidityChanged,

@@ -11,7 +11,7 @@ type StraumurWebBaseConfiguration = {
   onPaymentFailed?: (data: PaymentFailedData) => void;
   placeholders?: Placeholders;
   locale?: PublicLocale;
-  localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+  localizations?: Localizations;
   instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
@@ -39,6 +39,19 @@ type StraumurWebBaseConfiguration = {
    */
   theme?: Theme | ThemeConfiguration;
 };
+
+/**
+ * Per-language overrides of the built-in copy, keyed by language then TranslationKey. Language keys
+ * are the public short codes ("is" / "en"); the full tags ("is-IS" / "en-US") are still accepted for
+ * 1.x compatibility.
+ */
+export type Localizations = Partial<Record<LocalizationLanguage, Partial<Record<TranslationKey, string>>>>;
+
+/** A `localizations` key: the public short code, or (legacy, still accepted) the full tag. */
+export type LocalizationLanguage = PublicLocale | Language;
+
+/** Internal form of {@link Localizations}: always keyed by the full Language tag. */
+export type CustomLocalizations = Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
 
 export type Theme = "light" | "dark" | "system";
 
@@ -197,7 +210,7 @@ export type StraumurCheckoutConfiguration = {
   onPaymentFailed?: (data: PaymentFailedData) => void;
   placeholders?: Placeholders;
   locale: Language;
-  customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+  customLocalizations?: CustomLocalizations;
   instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
@@ -209,12 +222,34 @@ export type StraumurCheckoutConfiguration = {
   applePayButtonTheme?: ApplePayButtonTheme;
 };
 
-// What updateConfig() accepts: internal config fields minus the immutable ones,
-// with locale in the public short-code vocabulary.
+/**
+ * What updateConfig() accepts: the public configuration options that can change after construction.
+ * The session itself (sessionId, environment) is fixed for the instance's lifetime — the payment flow
+ * captures it at construction — so it is not updatable; create a new StraumurCheckout instead.
+ */
 export type StraumurCheckoutUpdateOptions = Partial<
-  Omit<StraumurCheckoutConfiguration, "mode" | "paymentFlow" | "locale">
+  Pick<
+    StraumurWebBaseConfiguration,
+    | "onPaymentCompleted"
+    | "onPaymentFailed"
+    | "placeholders"
+    | "locale"
+    | "localizations"
+    | "instantPayments"
+    | "hideSubmitButton"
+    | "onCardValidityChanged"
+    | "allowedPaymentMethods"
+    | "orderPaymentMethods"
+    | "openDefaultPaymentMethod"
+    | "theme"
+  >
 > & {
-  locale?: PublicLocale;
+  /** @deprecated Use `localizations` (same shape; the name the constructor uses). */
+  customLocalizations?: Localizations;
+  /** @deprecated Use `theme: { mode, googlePayButtonTheme }`. */
+  googlePayButtonTheme?: GooglePayButtonTheme;
+  /** @deprecated Use `theme: { mode, applePayButtonTheme }`. */
+  applePayButtonTheme?: ApplePayButtonTheme;
 };
 
 type PlaceholderKeys =

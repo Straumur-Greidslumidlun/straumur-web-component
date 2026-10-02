@@ -425,3 +425,39 @@ describe("StraumurCheckout merchant callback isolation", () => {
     consoleError.mockRestore();
   });
 });
+
+describe("StraumurCheckout updateConfig public options", () => {
+  it("accepts a theme object and keeps its mode (it used to be stored raw)", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "light" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ theme: { mode: "dark", googlePayButtonTheme: "white" } });
+
+    expect(root().querySelector('.straumur__root-component[data-theme="dark"]')).toBeTruthy();
+  });
+
+  it("applies `localizations` (the constructor's name) with short-code keys", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ localizations: { en: { "error.unknownError": "Custom boom" } } });
+    checkout.handleError({ key: "error.unknownError" });
+
+    expect(root().textContent).toContain("Custom boom");
+  });
+
+  it("ignores (and warns about) fields fixed at construction", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ sessionId: "other", environment: "live" } as any);
+
+    expect(warn).toHaveBeenCalledWith(
+      '[StraumurCheckout] updateConfig: "sessionId" cannot change after construction; ignored.'
+    );
+    expect((checkout as any).configuration.sessionId).toBe("s1");
+    expect((checkout as any).configuration.environment).toBe("test");
+    warn.mockRestore();
+  });
+});

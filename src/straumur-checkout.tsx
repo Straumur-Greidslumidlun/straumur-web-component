@@ -7,7 +7,7 @@ import {
   StraumurWebConfiguration,
 } from "./models/models";
 import { setupPaymentMethods } from "./services/straumur-service";
-import { normalizeLocale, PublicLocale } from "./localizations/locale";
+import { normalizeLocale, normalizeLocalizations, PublicLocale } from "./localizations/locale";
 import StraumurCheckoutContainer from "./features/straumur-checkout-container";
 import { SuccessResponse } from "./services/models";
 import { I18nProvider } from "./localizations/i18n-context";
@@ -15,7 +15,11 @@ import { I18nService } from "./localizations/i18n-service";
 import { SubmitApi } from "./components/payment-method-group/payment-method-group-context";
 import { dispatchFinalResult } from "./components/shared/dispatch-final-result";
 import { LoaderScreen, RootComponent, StatusScreen } from "./components/shared/status-screen";
-import { buildCheckoutConfiguration } from "./config/build-checkout-configuration";
+import { buildCheckoutConfiguration, normalizeTheme } from "./config/build-checkout-configuration";
+
+// Captured by the payment flow at construction; changing them later would load one session and pay
+// into another.
+const FIXED_CONFIG_KEYS = ["sessionId", "environment", "countryCode", "mode", "paymentFlow"] as const;
 
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
@@ -171,21 +175,39 @@ class StraumurCheckout {
   }
 
   updateConfig(newConfig: StraumurCheckoutUpdateOptions): void {
-    const { locale, ...rest } = newConfig;
+    const { locale, localizations, customLocalizations, theme, ...rest } = newConfig;
+
+    // IIFE consumers get no type checking: refuse the fields that are fixed for the instance's
+    // lifetime instead of silently storing values the payment flow will never use.
+    const fixed = rest as Partial<Record<(typeof FIXED_CONFIG_KEYS)[number], unknown>>;
+    for (const key of FIXED_CONFIG_KEYS) {
+      if (key in fixed) {
+        console.warn(`[StraumurCheckout] updateConfig: "${key}" cannot change after construction; ignored.`);
+        delete fixed[key];
+      }
+    }
+
+    // `localizations` is the public name (as in the constructor); `customLocalizations` is the legacy alias.
+    const normalizedLocalizations = normalizeLocalizations(localizations ?? customLocalizations);
 
     this.configuration = {
       ...this.configuration,
       ...rest,
+      // A theme object carries button overrides; flatten it exactly like the constructor does.
+      ...(theme !== undefined ? normalizeTheme(theme) : {}),
+      // Deprecated flat overrides still win when passed explicitly.
+      ...(rest.googlePayButtonTheme ? { googlePayButtonTheme: rest.googlePayButtonTheme } : {}),
+      ...(rest.applePayButtonTheme ? { applePayButtonTheme: rest.applePayButtonTheme } : {}),
       // The public vocabulary is short codes; normalizeLocale also tolerates legacy full tags at runtime.
       ...(locale ? { locale: normalizeLocale(locale) } : {}),
+      ...(normalizedLocalizations ? { customLocalizations: normalizedLocalizations } : {}),
     };
 
-    // Update i18n if locale or customLocalizations changed
     if (locale) {
       this.i18n.setLanguage(this.configuration.locale);
     }
-    if (newConfig.customLocalizations) {
-      this.i18n.updateCustomLocalizations(newConfig.customLocalizations);
+    if (normalizedLocalizations) {
+      this.i18n.updateCustomLocalizations(normalizedLocalizations);
     }
 
     // Re-render with the new config: the result screen if one is showing (so a language/theme change

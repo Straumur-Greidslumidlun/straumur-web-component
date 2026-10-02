@@ -47,7 +47,7 @@ const paymentConfiguration = {
     cardNumber: "1234 5678 9012 3456",
   },
   localizations: {
-    "en-US": {
+    en: {
       "cards.title": "Card Information",
     },
   },
@@ -96,13 +96,14 @@ Any subset of: `cardNumber`, `expiryDate`, `expiryMonth`, `expiryYear`, `securit
 
 ### `localizations`
 
-Override any translation key per locale (`"is-IS"` / `"en-US"`). Provided strings take precedence
-over the built-in translations; missing keys fall back to the defaults.
+Override any translation key per language (`"is"` / `"en"`). Provided strings take precedence
+over the built-in translations; missing keys fall back to the defaults. The 1.x full tags
+(`"is-IS"` / `"en-US"`) are still accepted as keys.
 
 ```javascript
 localizations: {
-  "en-US": { "cards.title": "Card Information" },
-  "is-IS": { "cards.title": "Kortaupplýsingar" },
+  en: { "cards.title": "Card Information" },
+  is: { "cards.title": "Kortaupplýsingar" },
 }
 ```
 
@@ -155,7 +156,7 @@ const checkout = new StraumurCheckout(config);
 | ----------------------- | -------------------------------------------------------------------------------------------------- |
 | `mount(selector)`       | Fetches the payment methods and renders the component into a CSS selector or `HTMLElement`. Async. |
 | `setLanguage(locale)`   | Switches the UI language at runtime (`"en"` or `"is"`, same codes as the `locale` option).         |
-| `updateConfig(partial)` | Merges new configuration and re-renders.                                                           |
+| `updateConfig(partial)` | Merges new options (`locale`, `localizations`, `theme`, callbacks, …) and re-renders.              |
 | `submitDetails(result)` | Completes a redirect-based (e.g. 3‑D Secure) flow using the `redirectResult` from the return URL.  |
 | `destroy()`             | Unmounts the component and cleans up.                                                              |
 
@@ -169,7 +170,7 @@ provider reports a failure without one, it is delivered as `Error`.
 ## Breaking changes in v2.0.0
 
 - Removed the config field `submitDetails?: (details: any) => void` (it was never invoked). Use the `submitDetails(redirectResult)` method on the class instead.
-- `updateConfig()` accepts only the documented configuration fields.
+- `updateConfig()` accepts only the documented configuration options (typed as `StraumurCheckoutUpdateOptions`). `sessionId` and `environment` are fixed for an instance's lifetime — they are ignored with a console warning; create a new `StraumurCheckout` instead. Use `localizations` (as in the constructor); `customLocalizations` still works but is deprecated.
 - `submitDetails(redirectResult)` now invokes `onPaymentCompleted` / `onPaymentFailed`.
 - Result routing now follows Adyen Web 6: a `Refused`, `Cancelled`, or `Error` outcome invokes `onPaymentFailed` (in 1.x every gateway response, including refusals, invoked `onPaymentCompleted`). If your integration branched on `resultCode` inside `onPaymentCompleted`, move the failure branches to `onPaymentFailed`.
 - `onPaymentFailed`'s argument is no longer optional — it always carries a `resultCode`.

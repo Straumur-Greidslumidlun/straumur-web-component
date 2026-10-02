@@ -1,4 +1,5 @@
 import { Language } from "./translations";
+import type { CustomLocalizations, Localizations } from "../models/models";
 
 /** The locale vocabulary of the public API: short codes only. */
 export type PublicLocale = "is" | "en";
@@ -19,4 +20,35 @@ export function normalizeLocale(locale: PublicLocale | Language | undefined): La
     default:
       return "is-IS";
   }
+}
+
+const LOCALIZATION_LANGUAGES: Record<string, Language> = {
+  is: "is-IS",
+  "is-IS": "is-IS",
+  en: "en-US",
+  "en-US": "en-US",
+};
+
+/**
+ * Re-keys public `localizations` (short codes, or legacy full tags) by the internal Language tag,
+ * merging "en" and "en-US" entries when both are given. Unknown language keys are dropped with a
+ * warning — unlike normalizeLocale, they must not fall back to Icelandic and overwrite its copy.
+ */
+export function normalizeLocalizations(localizations: Localizations | undefined): CustomLocalizations | undefined {
+  if (!localizations) {
+    return undefined;
+  }
+
+  const normalized: CustomLocalizations = {};
+  for (const [key, overrides] of Object.entries(localizations)) {
+    const language = LOCALIZATION_LANGUAGES[key];
+    if (!language) {
+      console.warn(`[StraumurCheckout] localizations: unsupported language "${key}" ignored (use "is" or "en").`);
+      continue;
+    }
+    if (overrides) {
+      normalized[language] = { ...normalized[language], ...overrides };
+    }
+  }
+  return normalized;
 }
