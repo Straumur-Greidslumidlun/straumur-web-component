@@ -1,4 +1,5 @@
 import { Fragment, h } from "preact";
+import { LoadingIndicator } from "../shared/loading-indicator";
 import { useRef, useState, useEffect, StateUpdater, Dispatch } from "preact/hooks";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
 import { AdyenCheckout, AdyenCheckoutError, CustomCard, ICore, UIElement, UIElementProps } from "@adyen/adyen-web";
@@ -6,7 +7,6 @@ import { useI18n } from "../../localizations/i18n-context";
 import { Tooltip } from "../tooltip/tooltip";
 import InfoIcon from "../../assets/icons/info";
 import { BrandHidden } from "../../utils/renderBrandIcons";
-import LoaderIcon from "../../assets/icons/loader";
 import CheckmarkIcon from "../../assets/icons/checkmark";
 import { RenderDualBrandComponent, DualBrandConfiguration } from "../render-dual-brand/render-dual-brand";
 import { StraumurCheckoutConfiguration } from "../../models/models";
@@ -334,7 +334,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       >
         {!isPaymentMethodInitialized.card && (
           <div className="straumur__card-component__loading-text">
-            <LoaderIcon />
+            <LoadingIndicator label={i18n.t("payment.loading")} />
           </div>
         )}
 
@@ -422,7 +422,11 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                     </span>
                   )}
                   <div className="straumur__card-component__form--wrapper--label--info">
-                    <Tooltip content={<span>{i18n.t("cards.securityCode3DigitsInfo")}</span>} placement="top">
+                    <Tooltip
+                      content={<span>{i18n.t("cards.securityCode3DigitsInfo")}</span>}
+                      placement="top"
+                      label={i18n.t("cards.securityCode3DigitsInfo")}
+                    >
                       <InfoIcon />
                     </Tooltip>
                   </div>

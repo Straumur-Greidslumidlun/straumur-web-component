@@ -78,7 +78,7 @@
 }
 
 .straumur__stored-card-component__form--wrapper--error {
-  color: var(--straumur__color-red-beta);
+  color: var(--straumur__color-error-text);
   font-size: 12px;
 }
 
@@ -101,7 +101,7 @@
 }
 
 .straumur__stored-card-component__form--wrapper--label--error {
-  color: var(--straumur__color-red-beta);
+  color: var(--straumur__color-error-text);
   background: linear-gradient(to top, var(--straumur__color-red-gamma) 53%, var(--straumur__color-transparent) 50%);
   font-size: 13px;
   font-weight: 500;

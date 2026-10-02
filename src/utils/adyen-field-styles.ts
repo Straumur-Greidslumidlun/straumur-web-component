@@ -6,7 +6,7 @@ import { ResolvedTheme } from "../models/models";
  * Those fields render inside cross-origin iframes our CSS cannot reach, so their text,
  * placeholder, and error colors must be passed to Adyen as literal values — they cannot use
  * the CSS custom properties in styles/main.css. Keep these in sync with the palette tokens
- * there (the light values mirror --straumur__color-text / -secondary / -red-beta, the dark
+ * there (the light values mirror --straumur__color-text / -secondary / -error-text, the dark
  * values mirror their [data-theme="dark"] overrides).
  *
  * Structurally compatible with Adyen's StylesObject (which the SDK does not export).
@@ -24,6 +24,6 @@ export function getAdyenFieldStyles(theme: ResolvedTheme) {
   return {
     base: { color: "#00112c" },
     placeholder: { color: "#72889d" },
-    error: { color: "#d96666" },
+    error: { color: "#c03030" },
   };
 }

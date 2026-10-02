@@ -59,7 +59,10 @@ class StraumurCheckout {
         return;
       }
 
-      render(<LoaderScreen theme={this.configuration.theme} />, this.mountElement);
+      render(
+        <LoaderScreen theme={this.configuration.theme} label={this.i18n.t("payment.loading")} />,
+        this.mountElement
+      );
 
       const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
 
@@ -142,7 +145,10 @@ class StraumurCheckout {
 
       // The shopper just landed back from the 3DS/Kortalán redirect: show progress while /details runs.
       if (this.mountElement) {
-        render(<LoaderScreen theme={this.configuration.theme} />, this.mountElement);
+        render(
+          <LoaderScreen theme={this.configuration.theme} label={this.i18n.t("payment.loading")} />,
+          this.mountElement
+        );
       }
 
       const { resultCode, errorMessage } = await this.configuration.paymentFlow.submitAdditionalDetails({

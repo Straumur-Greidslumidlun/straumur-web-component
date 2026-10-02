@@ -1,7 +1,7 @@
 import { h, ComponentChildren } from "preact";
 import SuccessIcon from "../../assets/icons/success";
 import FailureIcon from "../../assets/icons/failure";
-import LoaderIcon from "../../assets/icons/loader";
+import { LoadingIndicator } from "./loading-indicator";
 import { ResultMessage, Theme } from "../../models/models";
 import { I18nService } from "../../localizations/i18n-service";
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
@@ -18,11 +18,11 @@ export function RootComponent({ children, theme = "light" }: { children: Compone
 }
 
 /** Full-widget loader shown while session mode fetches its payment methods. */
-export function LoaderScreen({ theme }: { theme?: Theme }) {
+export function LoaderScreen({ theme, label }: { theme?: Theme; label: string }) {
   return (
     <RootComponent theme={theme}>
       <div className="straumur__component">
-        <LoaderIcon />
+        <LoadingIndicator label={label} />
       </div>
     </RootComponent>
   );

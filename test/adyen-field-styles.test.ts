@@ -6,7 +6,7 @@ describe("getAdyenFieldStyles", () => {
     const styles = getAdyenFieldStyles("light");
     expect(styles.base.color).toBe("#00112c");
     expect(styles.placeholder.color).toBe("#72889d");
-    expect(styles.error.color).toBe("#d96666");
+    expect(styles.error.color).toBe("#c03030");
   });
 
   it("returns light-on-dark field colors for the dark theme", () => {

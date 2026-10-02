@@ -2,7 +2,8 @@ import { Fragment, h, ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import "./payment-methods-wrapper.css";
 import { usePaymentMethodGroup } from "../../components/payment-method-group/payment-method-group-context";
-import LoaderIcon from "../../assets/icons/loader";
+import { LoadingIndicator } from "../../components/shared/loading-indicator";
+import { useI18n } from "../../localizations/i18n-context";
 
 interface PaymentMethodsWrapperProps {
   children: ComponentChildren;
@@ -24,6 +25,7 @@ function PaymentMethodsWrapper({ children }: PaymentMethodsWrapperProps): h.JSX.
     activeStoredPaymentMethodId,
   } = usePaymentMethodGroup();
 
+  const { i18n } = useI18n();
   const [revealed, setRevealed] = useState(false);
 
   // Wallets initialize on mount regardless of selection, so always wait for the ones that exist.
@@ -61,8 +63,8 @@ function PaymentMethodsWrapper({ children }: PaymentMethodsWrapperProps): h.JSX.
   return (
     <Fragment>
       {!revealed && (
-        <div className="straumur__master-loader" role="status">
-          <LoaderIcon />
+        <div className="straumur__master-loader">
+          <LoadingIndicator label={i18n.t("payment.loading")} />
         </div>
       )}
       {/* The methods are always rendered so each one can initialize, but they're kept visually hidden

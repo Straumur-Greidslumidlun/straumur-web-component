@@ -26,6 +26,7 @@ export const translations = {
 
     "success.paymentAuthorized": "Payment authorized",
     "payment.processing": "Processing payment…",
+    "payment.loading": "Loading…",
 
     "error.unknownError": "Unknown error occurred",
     "error.failedToInitializeStraumurWebComponent": "Failed to initialize Straumur Web component",
@@ -67,6 +68,7 @@ export const translations = {
 
     "success.paymentAuthorized": "Greiðsla samþykkt",
     "payment.processing": "Greiðsla í vinnslu…",
+    "payment.loading": "Hleður…",
 
     "error.unknownError": "Óþekkt villa kom upp",
     "error.failedToInitializeStraumurWebComponent": "Mistókst að sækja Straumur Web hluta",

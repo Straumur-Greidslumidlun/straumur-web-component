@@ -49,6 +49,9 @@
   --straumur__color-warning-text: #775d00;
   --straumur__color-warning-bg: #fff7db;
   --straumur__color-danger-text: #d03e00;
+  /* Field error text (labels + messages). Same hue as -red-beta, darkened to meet WCAG AA 4.5:1 on
+     the white surface and the input/error-input fills; -red-beta stays for error borders (3:1). */
+  --straumur__color-error-text: #c03030;
   --straumur__color-success: #1f9d57;
 
   --straumur__border-radius-xxs: 4px;
@@ -140,7 +143,24 @@
   --straumur__color-warning-text: #e6c766;
   --straumur__color-warning-bg: #2f2a17;
   --straumur__color-danger-text: #f0895f;
+  --straumur__color-error-text: #e08a8a;
   --straumur__color-success: #3fd98a;
+}
+
+/* Text for screen readers only (e.g. a spinner's accessible name). */
+.straumur__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.straumur__loading-indicator,
+.straumur__loading-indicator__icon {
+  display: inline-flex;
 }
 
 .straumur__component * {
