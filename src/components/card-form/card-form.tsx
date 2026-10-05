@@ -56,6 +56,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   const [isDualBrand, setIsDualBrand] = useState(false);
   const [dualBrandConfiguration, setDualBrandConfiguration] = useState<DualBrandConfiguration | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  // Brand Adyen detected from the number (independent of the dual-brand selection); drives the CVC hint.
+  const [detectedBrand, setDetectedBrand] = useState<string | null>(null);
   const storePaymentMethodRef = useRef(false);
   const [formErrors, setFormErrors] = useState<CardFormError>({
     encryptedCardNumber: { visible: false },
@@ -229,6 +231,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       },
       onBrand: (event) => {
         setSecurityCodePolicy(event.cvcPolicy);
+        setDetectedBrand(event.brand === "card" ? null : event.brand);
         if (event.brand === "card") {
           onBrandHidden([]);
           setSelectedBrand(null);
@@ -316,6 +319,14 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
 
   // When the 3DS challenge replaces the card fields, move focus into the container.
   useFocusOnActivate(cardElementRef, threeDSecureActive && activePaymentMethod === "card");
+
+  const securityCodeLabel =
+    securityCodePolicy === "optional"
+      ? i18n.t("cards.securityCode3DigitsOptional")
+      : i18n.t("cards.securityCode3Digits");
+  // Amex prints a 4-digit code on the front; every other scheme a 3-digit one on the back.
+  const securityCodeHint =
+    detectedBrand === "amex" ? i18n.t("cards.securityCode4DigitsInfo") : i18n.t("cards.securityCode3DigitsInfo");
 
   // Render guards live below all hooks so hook order is identical on every render.
   if (!hasCard || isObscuredByThreeDS("card")) {
@@ -408,9 +419,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                         : ""
                     }`}
                   >
-                    {securityCodePolicy === "optional"
-                      ? i18n.t("cards.securityCode3DigitsOptional")
-                      : i18n.t("cards.securityCode3Digits")}
+                    {securityCodeLabel}
                   </label>
                   <span
                     className={`${"straumur__card-component__form--wrapper--input"} ${
@@ -420,7 +429,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                     }`}
                     data-cse="encryptedSecurityCode"
                     role="group"
-                    aria-label={i18n.t("cards.securityCode3Digits")}
+                    aria-label={securityCodeLabel}
                   />
                   {formErrors.encryptedSecurityCode.visible && (
                     <span className="straumur__card-component__form--wrapper--error">
@@ -428,11 +437,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
                     </span>
                   )}
                   <div className="straumur__card-component__form--wrapper--label--info">
-                    <Tooltip
-                      content={<span>{i18n.t("cards.securityCode3DigitsInfo")}</span>}
-                      placement="top"
-                      label={i18n.t("cards.securityCode3DigitsInfo")}
-                    >
+                    <Tooltip content={<span>{securityCodeHint}</span>} placement="top" label={securityCodeHint}>
                       <InfoIcon />
                     </Tooltip>
                   </div>
@@ -446,6 +451,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
               dualBrandConfiguration={dualBrandConfiguration}
               selectedBrand={selectedBrand}
               onBrandClick={dualBrandListener}
+              label={i18n.t("cards.cardBrand")}
             />
           )}
 

@@ -7,7 +7,14 @@ const config = { brand1: "visa", brand1Name: "Visa", brand2: "cartebancaire", br
 
 describe("RenderDualBrandComponent", () => {
   it("exposes the options as a radiogroup of radios with the selected one checked", () => {
-    render(<RenderDualBrandComponent dualBrandConfiguration={config} selectedBrand="visa" onBrandClick={vi.fn()} />);
+    render(
+      <RenderDualBrandComponent
+        dualBrandConfiguration={config}
+        selectedBrand="visa"
+        onBrandClick={vi.fn()}
+        label="Card brand"
+      />
+    );
 
     expect(screen.getByRole("radiogroup")).toBeTruthy();
     const radios = screen.getAllByRole("radio");
@@ -19,17 +26,71 @@ describe("RenderDualBrandComponent", () => {
     expect(cb.getAttribute("aria-checked")).toBe("false");
   });
 
-  it("makes each option keyboard-focusable", () => {
-    render(<RenderDualBrandComponent dualBrandConfiguration={config} selectedBrand={null} onBrandClick={vi.fn()} />);
-    for (const radio of screen.getAllByRole("radio")) {
-      expect(radio.getAttribute("tabindex")).toBe("0");
+  it("has one tab stop: the selected option, or the first while none is selected", () => {
+    const { rerender } = render(
+      <RenderDualBrandComponent
+        dualBrandConfiguration={config}
+        selectedBrand={null}
+        onBrandClick={vi.fn()}
+        label="Card brand"
+      />
+    );
+    const tabIndexes = () => screen.getAllByRole("radio").map((radio) => radio.getAttribute("tabindex"));
+    expect(tabIndexes()).toEqual(["0", "-1"]);
+
+    rerender(
+      <RenderDualBrandComponent
+        dualBrandConfiguration={config}
+        selectedBrand="cartebancaire"
+        onBrandClick={vi.fn()}
+        label="Card brand"
+      />
+    );
+    expect(tabIndexes()).toEqual(["-1", "0"]);
+  });
+
+  it.each(["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"])(
+    "%s moves focus to the other option and selects it",
+    (key) => {
+      const onBrandClick = vi.fn();
+      render(
+        <RenderDualBrandComponent
+          dualBrandConfiguration={config}
+          selectedBrand="visa"
+          onBrandClick={onBrandClick}
+          label="Card brand"
+        />
+      );
+      const cb = screen.getByRole("radio", { name: "Carte Bancaire" });
+
+      fireEvent.keyDown(screen.getByRole("radio", { name: "Visa" }), { key });
+
+      expect(document.activeElement).toBe(cb);
+      expect(onBrandClick.mock.calls[0][0].target.getAttribute("data-value")).toBe("cartebancaire");
     }
+  );
+
+  it("names the group with the caller's (localized) label", () => {
+    render(
+      <RenderDualBrandComponent
+        dualBrandConfiguration={config}
+        selectedBrand={null}
+        onBrandClick={vi.fn()}
+        label="Kortategund"
+      />
+    );
+    expect(screen.getByRole("radiogroup", { name: "Kortategund" })).toBeTruthy();
   });
 
   it.each(["Enter", " "])("selects an option when %s is pressed", (key) => {
     const onBrandClick = vi.fn();
     render(
-      <RenderDualBrandComponent dualBrandConfiguration={config} selectedBrand={null} onBrandClick={onBrandClick} />
+      <RenderDualBrandComponent
+        dualBrandConfiguration={config}
+        selectedBrand={null}
+        onBrandClick={onBrandClick}
+        label="Card brand"
+      />
     );
 
     fireEvent.keyDown(screen.getByRole("radio", { name: "Carte Bancaire" }), { key });
@@ -44,7 +105,12 @@ describe("RenderDualBrandComponent", () => {
   it("does not select on other keys", () => {
     const onBrandClick = vi.fn();
     render(
-      <RenderDualBrandComponent dualBrandConfiguration={config} selectedBrand={null} onBrandClick={onBrandClick} />
+      <RenderDualBrandComponent
+        dualBrandConfiguration={config}
+        selectedBrand={null}
+        onBrandClick={onBrandClick}
+        label="Card brand"
+      />
     );
 
     fireEvent.keyDown(screen.getByRole("radio", { name: "Visa" }), { key: "a" });

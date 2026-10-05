@@ -283,6 +283,12 @@ function StoredCardComponent({
     }
   }
 
+  // Amex prints a 4-digit code on the front; every other scheme a 3-digit one on the back.
+  const storedSecurityCodeHint =
+    storedPaymentMethod.brand === "amex"
+      ? i18n.t("stored-cards.securityCode4DigitsInfo")
+      : i18n.t("stored-cards.securityCode3DigitsInfo");
+
   const canRemoveStoredCard = configuration.paymentFlow.disableToken !== undefined;
 
   const headerRight =
@@ -411,14 +417,14 @@ function StoredCardComponent({
                       }`}
                       data-cse="encryptedSecurityCode"
                       role="group"
-                      aria-label={i18n.t("stored-cards.securityCode3Digits")}
+                      aria-label={
+                        securityCodePolicy === "optional"
+                          ? i18n.t("stored-cards.securityCode3DigitsOptional")
+                          : i18n.t("stored-cards.securityCode3Digits")
+                      }
                     >
                       <div className="straumur__stored-card-component__form--wrapper--label--info">
-                        <Tooltip
-                          content={i18n.t("stored-cards.securityCode3DigitsInfo")}
-                          placement="top"
-                          label={i18n.t("stored-cards.securityCode3DigitsInfo")}
-                        >
+                        <Tooltip content={storedSecurityCodeHint} placement="top" label={storedSecurityCodeHint}>
                           <InfoIcon />
                         </Tooltip>
                       </div>

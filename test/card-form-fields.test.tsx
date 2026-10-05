@@ -192,3 +192,24 @@ describe("CardForm store-consent checkbox", () => {
     expect(createPayment).toHaveBeenCalledWith("test", expect.objectContaining({ storePaymentMethod: false }));
   });
 });
+
+describe("CardForm CVC hint per brand", () => {
+  it("says 4 digits on the front for Amex, 3 on the back otherwise", async () => {
+    const card = await setup();
+    const hint = () => screen.getByRole("button", { name: /digit/ }).getAttribute("aria-label");
+
+    await act(async () => card.onBrand({ brand: "visa", cvcPolicy: "required" }));
+    expect(hint()).toBe("3-digit on the back of the card");
+
+    await act(async () => card.onBrand({ brand: "amex", cvcPolicy: "required" }));
+    expect(hint()).toBe("4-digit on the front of the card");
+  });
+
+  it("gives the CVC field the same accessible name as its visible label", async () => {
+    const card = await setup();
+
+    await act(async () => card.onBrand({ brand: "visa", cvcPolicy: "optional" }));
+
+    expect(screen.getByRole("group", { name: "Security code (optional)" })).toBeTruthy();
+  });
+});
