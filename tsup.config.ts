@@ -18,6 +18,8 @@ export default defineConfig({
   minify: true, // means your output code will be compressed and optimized to be as small as possible by removing whitespace, shortening variable names, and other tricks
   loader: {
     ".svg": "jsx",
+    // The @font-face files in styles/main.css are inlined, keeping the IIFE a single self-contained file.
+    ".woff2": "dataurl",
   },
   outExtension({ format }) {
     if (format === "esm") return { js: ".mjs" };

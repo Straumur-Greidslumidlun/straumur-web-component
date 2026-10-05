@@ -83,8 +83,9 @@
   --apple-pay-button-border-radius: var(--straumur__border-radius-lg);
 }
 
+/* Family registered from JS by styles/fonts.ts (tsup's injectStyle doesn't resolve url() in CSS). */
 .straumur__root-component {
-  font-family: "AkzidenzGroteskPro", sans-serif;
+  font-family: "StraumurAkzidenzGroteskPro", sans-serif;
   /* Self-contained base text color per theme, so text (e.g. the floating field labels, which set
      no color of their own) doesn't inherit an unpredictable color from the host page — and is
      readable in dark mode instead of dark-on-dark. */

@@ -24,8 +24,16 @@ const { window } = dom;
 window.fetch = async () => ({ ok: false, json: async () => ({}) });
 window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
 
+const iifeSource = readFileSync("dist/index.js", "utf8");
+// The widget fonts must be inlined: a leftover relative url() would 404 on the merchant's page.
+check(
+  (iifeSource.match(/data:font\/woff2;base64,/g) ?? []).length === 3,
+  "IIFE: the 3 widget fonts are not inlined as woff2 data URLs"
+);
+check(!/akzidenz-grotesk-pro-[a-z]+\.woff2/.test(iifeSource), "IIFE: references an un-inlined .woff2 file");
+
 const script = window.document.createElement("script");
-script.textContent = readFileSync("dist/index.js", "utf8");
+script.textContent = iifeSource;
 window.document.head.appendChild(script);
 
 const Checkout = window.StraumurWeb?.StraumurCheckout;
@@ -60,4 +68,4 @@ if (failures.length > 0) {
   console.error(`Dist smoke test FAILED:\n  - ${failures.join("\n  - ")}`);
   process.exit(1);
 }
-console.log("Dist smoke test passed (IIFE mount/render/destroy, ESM, CJS, types).");
+console.log("Dist smoke test passed (IIFE mount/render/destroy, inlined fonts, ESM, CJS, types).");

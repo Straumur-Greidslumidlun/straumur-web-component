@@ -1,5 +1,6 @@
 import { h, render } from "preact";
 import "./styles/main.css";
+import { registerWidgetFonts } from "./styles/fonts";
 import {
   ResultMessage,
   StraumurCheckoutConfiguration,
@@ -45,6 +46,7 @@ class StraumurCheckout {
   }
 
   async mount(selector: HTMLElement | string): Promise<void> {
+    registerWidgetFonts();
     try {
       this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
       this.resultScreen = null;
@@ -137,6 +139,7 @@ class StraumurCheckout {
   // The backend routes the continuation to the correct provider by paymentCheckoutReference. selector
   // lets a page that never called mount() (a fresh redirect-return page) show the result screens.
   async submitDetails(redirectResult: string, paymentCheckoutReference?: string, selector?: HTMLElement | string) {
+    registerWidgetFonts();
     try {
       if (selector) {
         this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
