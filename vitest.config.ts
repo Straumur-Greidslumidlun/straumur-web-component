@@ -19,11 +19,12 @@ export default defineConfig({
       include: ["src/**/*.{ts,tsx}"],
       reporter: ["text", "html", "lcov"],
       // Ratchet-only floor: raise these as coverage improves, never lower them.
+      // Measured 2026-10-05: lines/statements 97.7, branches 93.1, functions 91.3.
       thresholds: {
-        lines: 83,
-        functions: 78,
-        branches: 85,
-        statements: 83,
+        lines: 95,
+        functions: 89,
+        branches: 91,
+        statements: 95,
       },
     },
   },
