@@ -21,7 +21,7 @@ type StraumurWebBaseConfiguration = {
    * "googlepay", "applepay", and "instantpayments" (the express row). A method listed in
    * `instantPayments` renders only inside the "instantpayments" slot, never standalone, so its
    * standalone token here is effectively ignored. Any available method you omit is appended in the
-   * default order. Defaults to ["instantpayments", "storedcard", "card", "kortalan", "googlepay", "applepay"].
+   * default order. Defaults to ["instantpayments", "kortalan", "storedcard", "card", "googlepay", "applepay"].
    */
   orderPaymentMethods?: PaymentMethodOrder[];
   /**
