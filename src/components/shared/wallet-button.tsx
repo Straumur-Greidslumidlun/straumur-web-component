@@ -16,6 +16,7 @@ import { AdyenPaymentHandlers, createAdyenErrorHandler, createAdyenPaymentHandle
 import { createBeforeSubmitClickHandler } from "./before-submit-click";
 import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-reinit";
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
+import "./wallet-button.css";
 import { ProcessingOverlay } from "./processing-overlay";
 import { resolveApplePayButtonColor, resolveGooglePayButtonColor } from "../../utils/wallet-button-theme";
 
@@ -295,7 +296,9 @@ function WalletButton({
         </div>
       )}
       <div
-        className="straumur__processing-host"
+        className={`straumur__processing-host${
+          threeDSecureActive && isInstantPayment ? " straumur__wallet-button--3ds-tile" : ""
+        }`}
         style={{
           width: threeDSecureActive ? "100%" : undefined,
         }}

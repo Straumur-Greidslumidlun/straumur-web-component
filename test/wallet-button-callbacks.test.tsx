@@ -94,11 +94,15 @@ const wallets = [
 
 wallets.forEach(({ name, Comp, method }) => {
   describe(`${name} payment flow`, () => {
-    async function setup(config = baseConfig(), isInstantPayment = false) {
+    async function setup(
+      config = baseConfig(),
+      isInstantPayment = false,
+      initialValue: "googlepay" | "applepay" | null = null
+    ) {
       render(
         <I18nProvider i18nService={new I18nService("en-US")}>
           <PaymentMethodGroupContext
-            initialValue={null}
+            initialValue={initialValue}
             isSolePaymentMethod={false}
             hasCard={false}
             hasGooglePay={true}
@@ -184,6 +188,7 @@ wallets.forEach(({ name, Comp, method }) => {
       const mountNode = A.cap.mountNodes[A.cap.mountNodes.length - 1] as HTMLElement;
       expect(mountNode.style.height).toBe("48px");
       expect(mountNode.style.background).toBe("");
+      expect(mountNode.parentElement!.classList.contains("straumur__wallet-button--3ds-tile")).toBe(false);
 
       await act(async () => {
         await onSubmit(submitState, {}, actions());
@@ -195,6 +200,24 @@ wallets.forEach(({ name, Comp, method }) => {
       expect(mountNode.style.width).toBe("100%");
       // Same surface as the card's 3DS container (theme token), not the page behind the widget.
       expect(mountNode.style.background).toContain("var(--straumur__color-white)");
+      // Express-row wallet (no payment-method tile of its own): the wrapper takes the card tile's look.
+      // It is the SAME wrapper element as before 3DS — a new element would remount Adyen's node.
+      expect(mountNode.parentElement!.classList.contains("straumur__wallet-button--3ds-tile")).toBe(true);
+      expect(A.cap.mountNodes[A.cap.mountNodes.length - 1]).toBe(mountNode);
+    });
+
+    it("adds no extra tile in the radio list, where the wallet already sits inside a tile", async () => {
+      createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "ChallengeShopper" }) } as any);
+      // In the radio list the shopper has selected this wallet before paying.
+      const { onSubmit } = await setup(baseConfig(), false, method);
+      const mountNode = A.cap.mountNodes[A.cap.mountNodes.length - 1] as HTMLElement;
+
+      await act(async () => {
+        await onSubmit(submitState, {}, actions());
+      });
+
+      await waitFor(() => expect(mountNode.style.height).toBe("600px"));
+      expect(mountNode.parentElement!.classList.contains("straumur__wallet-button--3ds-tile")).toBe(false);
     });
 
     it("rejects and surfaces an error when the request is not ok", async () => {
