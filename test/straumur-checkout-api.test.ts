@@ -41,6 +41,7 @@ vi.mock("../src/adapter/straumur-adapter", () => ({
 }));
 
 import StraumurCheckout from "../src/straumur-checkout";
+import { ResultMessage } from "../src/models/models";
 import { setupPaymentMethods } from "../src/services/straumur-service";
 
 const setup = vi.mocked(setupPaymentMethods);
@@ -53,6 +54,9 @@ const emptySuccess = {
 };
 
 const root = () => document.querySelector("#root")!;
+/** handleSuccess/handleError are private (internal result screens); tests drive them directly. */
+const internals = (checkout: StraumurCheckout) =>
+  checkout as unknown as { handleSuccess(m: ResultMessage): void; handleError(m: ResultMessage): void };
 const en = (k: TranslationKey) => translations["en-US"][k as keyof (typeof translations)["en-US"]];
 const is = (k: TranslationKey) => translations["is-IS"][k as keyof (typeof translations)["is-IS"]];
 
@@ -70,21 +74,21 @@ describe("StraumurCheckout locale mapping", () => {
   it("defaults to Icelandic when no locale is given", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test" });
     await checkout.mount("#root");
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 
   it("maps 'en' to en-US", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(en("error.unknownError"));
   });
 
   it("maps 'is' to is-IS", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "is" });
     await checkout.mount("#root");
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 });
@@ -107,7 +111,7 @@ describe("StraumurCheckout theme", () => {
   it("applies the theme to the failure screen too", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "dark" });
     await checkout.mount("#root");
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
 
     expect(root().querySelector('.straumur__root-component[data-theme="dark"]')).toBeTruthy();
   });
@@ -127,7 +131,7 @@ describe("StraumurCheckout status screen accessibility", () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
 
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
 
     const alert = root().querySelector('[role="alert"]');
     expect(alert?.textContent).toContain(en("error.unknownError"));
@@ -137,7 +141,7 @@ describe("StraumurCheckout status screen accessibility", () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
 
-    checkout.handleSuccess({ key: "success.paymentAuthorized" });
+    internals(checkout).handleSuccess({ key: "success.paymentAuthorized" });
 
     const status = root().querySelector('[role="status"]');
     expect(status?.textContent).toContain(en("success.paymentAuthorized"));
@@ -150,7 +154,7 @@ describe("StraumurCheckout config updates", () => {
     await checkout.mount("#root");
 
     checkout.updateConfig({ locale: "is" });
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 
@@ -159,7 +163,7 @@ describe("StraumurCheckout config updates", () => {
     await checkout.mount("#root");
 
     checkout.setLanguage("is");
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 
@@ -169,11 +173,11 @@ describe("StraumurCheckout config updates", () => {
 
     // 1.x accepted "is-IS"/"en-US" here; IIFE consumers get no compile-time narrowing.
     checkout.setLanguage("is-IS" as any);
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
 
     checkout.updateConfig({ locale: "en-US" as any });
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(en("error.unknownError"));
   });
 
@@ -182,7 +186,7 @@ describe("StraumurCheckout config updates", () => {
     await checkout.mount("#root");
 
     checkout.updateConfig({ customLocalizations: { "en-US": { "error.unknownError": "Custom boom" } } });
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain("Custom boom");
   });
 });
@@ -441,7 +445,7 @@ describe("StraumurCheckout updateConfig public options", () => {
     await checkout.mount("#root");
 
     checkout.updateConfig({ localizations: { en: { "error.unknownError": "Custom boom" } } });
-    checkout.handleError({ key: "error.unknownError" });
+    internals(checkout).handleError({ key: "error.unknownError" });
 
     expect(root().textContent).toContain("Custom boom");
   });

@@ -113,11 +113,12 @@ class StraumurCheckout {
     );
   }
 
-  handleSuccess(message: ResultMessage) {
+  // Internal: the class-level result screens (init failure, redirect return). Not part of the public API.
+  private handleSuccess(message: ResultMessage) {
     this.showResultScreen("success", message);
   }
 
-  handleError(message: ResultMessage) {
+  private handleError(message: ResultMessage) {
     this.showResultScreen("failure", message);
   }
 

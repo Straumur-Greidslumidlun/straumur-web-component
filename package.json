@@ -28,7 +28,7 @@
     "./dist/index.mjs",
     "./dist/index.cjs"
   ],
-  "description": "",
+  "description": "Embeddable Straumur checkout widget: card, stored card, Google Pay, Apple Pay and Kortalán, built on Adyen Web.",
   "keywords": [
     "straumur",
     "checkout",
@@ -44,7 +44,8 @@
     "url": "https://github.com/Straumur-Greidslumidlun/straumur-web-component/issues"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map"
   ],
   "scripts": {
     "dev": "tsup src/index.ts --watch",
@@ -73,7 +74,6 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^25.0.1",
-    "postcss": "^8.5.3",
     "prettier": "^3.9.4",
     "tslib": "^2.8.1",
     "tsup": "^8.5.1",
