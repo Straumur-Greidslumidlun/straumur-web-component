@@ -111,6 +111,10 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       unregisterSubmitHandler(handleSubmitClick);
       configuration.onCardValidityChanged?.(false, false);
     };
+    // Keyed on activation only. configuration / handleSubmitClick are fresh every render; re-running on
+    // them would bounce the host's external submit button through (false, false) -> (false, true) on
+    // every config change, disabling it while the card is valid.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activePaymentMethod,
     isPaymentMethodInitialized.card,
@@ -292,6 +296,10 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     if (hasCard && activePaymentMethod === "card" && !isPaymentMethodInitialized.card) {
       initializeAdyenComponent();
     }
+    // Init is triggered by a config identity change or activation; the initialized flag is a guard, not
+    // a trigger, and initializeAdyenComponent is a fresh closure every render (listing it would rebuild
+    // Adyen on every render). Re-init of a live element goes through useAdyenLocaleReinit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configuration, activePaymentMethod]);
 
   useEffect(() => {

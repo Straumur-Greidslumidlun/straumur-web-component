@@ -131,9 +131,11 @@ export const PaymentMethodGroupContext = ({
     return true;
   }, []);
 
+  // triggerSubmit is stable; onSubmitApiReady is an inline arrow re-created on each class render, so this
+  // re-hands the same API on re-render — harmless, and it can never point at a stale provider.
   useLayoutEffect(() => {
     onSubmitApiReady?.({ triggerSubmit });
-  }, []);
+  }, [onSubmitApiReady, triggerSubmit]);
   const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] = useState<string | null>(
     initialStoredPaymentMethodId
   );

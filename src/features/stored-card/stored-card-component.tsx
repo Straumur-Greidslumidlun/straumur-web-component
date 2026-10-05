@@ -69,6 +69,7 @@ function StoredCardComponent({
   const isActive = isSolePaymentMethod
     ? activePaymentMethod === "storedcard"
     : activePaymentMethod === "storedcard" && activeStoredPaymentMethodId === storedPaymentMethod.id;
+  const isThisCardInitialized = Boolean(isStoredCardInitialized[storedPaymentMethod.id]);
 
   const resolvedTheme = useResolvedTheme(configuration.theme);
 
@@ -98,13 +99,11 @@ function StoredCardComponent({
       unregisterSubmitHandler(handleSubmitClick);
       configuration.onCardValidityChanged?.(false, false);
     };
-  }, [
-    isActive,
-    isStoredCardInitialized[storedPaymentMethod.id],
-    threeDSecureActive,
-    registerSubmitHandler,
-    unregisterSubmitHandler,
-  ]);
+    // Keyed on activation only. configuration / handleSubmitClick are fresh every render; re-running on
+    // them would bounce the host's external submit button through (false, false) -> (false, true) on
+    // every config change, disabling it while the card is valid.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive, isThisCardInitialized, threeDSecureActive, registerSubmitHandler, unregisterSubmitHandler]);
 
   const {
     handleOnSubmit,
@@ -229,6 +228,10 @@ function StoredCardComponent({
     if (isActive && !isStoredCardInitialized[storedPaymentMethod.id]) {
       initializeAdyenComponent();
     }
+    // Init is triggered by a config identity change or activation; the initialized flag is a guard, not
+    // a trigger, and initializeAdyenComponent is a fresh closure every render (listing it would rebuild
+    // Adyen on every render). Re-init of a live element goes through useAdyenLocaleReinit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configuration, isActive]);
 
   useEffect(() => {

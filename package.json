@@ -55,7 +55,7 @@
     "test:coverage": "vitest run --coverage",
     "test:smoke": "node scripts/smoke-dist.mjs",
     "typecheck": "tsc -p tsconfig.test.json",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

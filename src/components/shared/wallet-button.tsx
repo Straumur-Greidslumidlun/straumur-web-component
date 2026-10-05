@@ -263,6 +263,10 @@ function WalletButton({
     if (!isPaymentMethodInitialized[method]) {
       initializeAdyenComponent();
     }
+    // Init is triggered by a config identity change or activation; the initialized flag is a guard, not
+    // a trigger, and initializeAdyenComponent is a fresh closure every render (listing it would rebuild
+    // Adyen on every render). Re-init of a live element goes through useAdyenLocaleReinit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configuration]);
 
   if (isObscuredByThreeDS(method)) {
