@@ -15,6 +15,7 @@ const { FakeCustomCard } = vi.hoisted(() => {
   class FakeCustomCard {
     static instances: FakeCustomCard[] = [];
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     constructor(_core: unknown, opts: any) {
       FakeCustomCard.instances.push(this);

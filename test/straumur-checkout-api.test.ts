@@ -6,6 +6,7 @@ const A = vi.hoisted(() => {
   const cap: any = { card: [], instances: [], checkout: [], submitDetails: [] };
   class FakeCustomCard {
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     submit = vi.fn();
     constructor(_core: unknown, opts: any) {

@@ -151,6 +151,18 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
 
   const handleOnError = createAdyenErrorHandler(handleError, "card");
 
+  // Tear down the Adyen element when this method unmounts (another method's result screen, destroy()).
+  // Without it the secure-field iframes and its core stay alive after the widget is gone. Bumping the generation makes
+  // an init still awaiting AdyenCheckout discard itself instead of mounting into a removed node.
+  useEffect(
+    () => () => {
+      initGenerationRef.current += 1;
+      customCardRef.current?.remove();
+      customCardRef.current = undefined;
+    },
+    []
+  );
+
   const { markBuilt } = useAdyenLocaleReinit({
     configuration,
     resolvedTheme,

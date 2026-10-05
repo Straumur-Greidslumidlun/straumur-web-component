@@ -172,3 +172,33 @@ describe("CardForm Adyen re-initialization guards", () => {
     consoleError.mockRestore();
   });
 });
+
+describe("CardForm Adyen teardown on unmount", () => {
+  const config = { sessionId: "s1", environment: "test", locale: "en-US" } as any;
+
+  beforeEach(() => {
+    FakeCustomCard.instances.length = 0;
+    vi.mocked(AdyenCheckout).mockImplementation(async () => ({}) as any);
+  });
+
+  it("removes the mounted CustomCard when the form unmounts (result screen, destroy())", async () => {
+    const { unmount } = render(tree(config));
+    await waitFor(() => expect(FakeCustomCard.instances).toHaveLength(1));
+
+    unmount();
+
+    expect(FakeCustomCard.instances[0].remove).toHaveBeenCalledTimes(1);
+  });
+
+  it("an init still awaiting AdyenCheckout at unmount never creates a CustomCard", async () => {
+    let resolveCore!: (core: unknown) => void;
+    vi.mocked(AdyenCheckout).mockImplementation(() => new Promise((resolve) => (resolveCore = resolve)) as any);
+    const { unmount } = render(tree(config));
+    await waitFor(() => expect(resolveCore).toBeTypeOf("function"));
+
+    unmount();
+    await act(async () => resolveCore({}));
+
+    expect(FakeCustomCard.instances).toHaveLength(0);
+  });
+});

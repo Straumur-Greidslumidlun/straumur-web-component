@@ -18,6 +18,7 @@ import { makePaymentMethods, scheme, googlePayMethod, applePayMethod } from "./h
 const A = vi.hoisted(() => {
   class FakeCustomCard {
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     constructor(_c: unknown, opts: any) {
       opts.onConfigSuccess?.();

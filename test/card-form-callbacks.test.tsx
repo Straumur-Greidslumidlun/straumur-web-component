@@ -8,6 +8,7 @@ const A = vi.hoisted(() => {
   const cap: any = { checkout: [], card: [] };
   class FakeCustomCard {
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     submit = vi.fn();
     dualBrandingChangeHandler = vi.fn();

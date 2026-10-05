@@ -177,6 +177,18 @@ function WalletButton({
     onUnavailable?.();
   }
 
+  // Tear down the Adyen element when this method unmounts (another method's result screen, destroy()).
+  // Without it the wallet button and its core stay alive after the widget is gone. Bumping the generation makes
+  // an init still awaiting AdyenCheckout discard itself instead of mounting into a removed node.
+  useEffect(
+    () => () => {
+      initGenerationRef.current += 1;
+      walletRef.current?.remove();
+      walletRef.current = undefined;
+    },
+    []
+  );
+
   const { markBuilt } = useAdyenLocaleReinit({
     configuration,
     resolvedTheme,
