@@ -4,7 +4,7 @@
 > documented in the README, and not supported for external integrators. Its only consumer is
 > `Payfac.HostedCheckout.Web` (`Views/Checkout/IndexStraumur.cshtml` + `wwwroot/js/checkoutStraumur.js`
 > in straumur-backend-ai), which loads the IIFE bundle (`window.StraumurWeb`) so no TypeScript types
-> are involved. This file (`docs/`) is excluded from the npm package (`files: ["dist"]`).
+> are involved. This file (`docs/`) is excluded from the npm package (`files` in package.json publishes only `dist/`).
 
 In advanced mode the component renders the payment UI, but every backend call is made by the host
 page. The mode is detected at runtime: a configuration **without** `sessionId` and **with**
