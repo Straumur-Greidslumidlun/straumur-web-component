@@ -196,3 +196,39 @@ describe("Stored card theme", () => {
     expect(A.cap.card[0].styles.placeholder.color).toBe("#aab4bf");
   });
 });
+
+describe("Stored card field callbacks", () => {
+  it("shows Adyen's CVC error message", async () => {
+    await setup();
+    const card = A.cap.card[0];
+
+    await act(async () => {
+      card.onValidationError([{ fieldType: "encryptedSecurityCode", error: "error-1", errorI18n: "Incomplete code" }]);
+    });
+
+    expect(screen.getByText("Incomplete code")).toBeTruthy();
+  });
+
+  it("enables the pay button and notifies the host once the CVC is valid", async () => {
+    const onCardValidityChanged = vi.fn();
+    await setup(baseConfig({ onCardValidityChanged }));
+    const card = A.cap.card[0];
+    const payButton = screen.getByRole("button", { name: paymentMethods.formattedAmount }) as HTMLButtonElement;
+    expect(payButton.disabled).toBe(true);
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
+
+    await act(async () => card.onAllValid({ allValid: true }));
+
+    expect(payButton.disabled).toBe(false);
+    expect(onCardValidityChanged).toHaveBeenLastCalledWith(true, true);
+  });
+
+  it("labels the CVC as optional when the brand's cvcPolicy is optional", async () => {
+    await setup();
+    const card = A.cap.card[0];
+
+    await act(async () => card.onBrand({ brand: "visa", cvcPolicy: "optional" }));
+
+    expect(screen.getByText("Security code (optional)", { selector: "label" })).toBeTruthy();
+  });
+});
