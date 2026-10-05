@@ -297,9 +297,6 @@ function WalletButton({
       <div
         className="straumur__processing-host"
         style={{
-          // While 3DS runs in this tile, reserve the challenge's footprint so the overlay is visible
-          // during the fingerprint step too (its iframe is display:none, so the tile would collapse).
-          minHeight: threeDSecureActive && showProcessing ? "400px" : undefined,
           width: threeDSecureActive ? "100%" : undefined,
         }}
       >
@@ -309,10 +306,12 @@ function WalletButton({
             // Button tile: fixed 48px (matching the Apple Pay button height) so Google Pay and Apple
             // Pay render at the same height — an "auto" height let a shorter wallet leave a few px of
             // dead space below.
-            // 3DS challenge: drop the fixed height/min-width and go full width so the Adyen challenge
-            // iframe (min-height:400px, height:inherit) governs the size — identical to the card flow,
-            // which mounts the same challenge into an auto-height, full-width container.
-            height: threeDSecureActive ? undefined : "48px",
+            // 3DS: a DEFINITE 600px, exactly like the card container. Adyen's challenge div has
+            // `height: inherit` and its iframe `height="100%"`; with an auto-height parent the percentage
+            // can't resolve and the iframe falls back to the 150px <iframe> default (min-height on the
+            // challenge div doesn't help — percentages don't resolve against min-height). The fixed
+            // height also keeps the processing overlay visible during the hidden fingerprint step.
+            height: threeDSecureActive ? "600px" : "48px",
             width: threeDSecureActive ? "100%" : undefined,
             position: isPaymentMethodInitialized[method] ? "static" : "absolute",
             // Lock the Adyen-drawn wallet button while a payment is in flight (can't add `disabled` to

@@ -5,9 +5,9 @@ import { render, screen, waitFor, act } from "@testing-library/preact";
 
 /** Capture store for the wallet onSubmit and the AdyenCheckout result callbacks. */
 const A = vi.hoisted(() => {
-  const cap: any = { checkout: [], wallet: [] };
+  const cap: any = { checkout: [], wallet: [], mountNodes: [] };
   class FakeWallet {
-    mount = vi.fn();
+    mount = vi.fn((node: HTMLElement) => cap.mountNodes.push(node));
     remove = vi.fn();
     constructor(_core: unknown, config: any) {
       cap.wallet.push(config);
@@ -83,6 +83,7 @@ const submitState = { data: { paymentMethod: { type: "wallet" } } };
 beforeEach(() => {
   A.cap.checkout.length = 0;
   A.cap.wallet.length = 0;
+  A.cap.mountNodes.length = 0;
   createPayment.mockReset();
 });
 
@@ -175,6 +176,22 @@ wallets.forEach(({ name, Comp, method }) => {
       });
 
       await waitFor(() => expect(screen.getByTestId("tds").textContent).toBe("true"));
+    });
+
+    it("gives the 3DS challenge a definite height (not the 150px iframe default)", async () => {
+      createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "ChallengeShopper" }) } as any);
+      const { onSubmit } = await setup(baseConfig(), true);
+      const mountNode = A.cap.mountNodes[A.cap.mountNodes.length - 1] as HTMLElement;
+      expect(mountNode.style.height).toBe("48px");
+
+      await act(async () => {
+        await onSubmit(submitState, {}, actions());
+      });
+
+      // Adyen's challenge iframe is height="100%" under a `height: inherit` div: it only fills the
+      // space if the mount node's height is definite — same 600px as the card container.
+      await waitFor(() => expect(mountNode.style.height).toBe("600px"));
+      expect(mountNode.style.width).toBe("100%");
     });
 
     it("rejects and surfaces an error when the request is not ok", async () => {
