@@ -1,6 +1,6 @@
 import { h } from "preact";
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/preact";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/preact";
 import { RenderBrandIcons, RenderBrandIcon } from "../src/utils/renderBrandIcons";
 
 const asBrands = (brands: string[]) => brands.map((brand) => ({ brand, brandFullName: brand }));
@@ -94,7 +94,8 @@ describe("RenderBrandIcons", () => {
 
   it("orders known brands by the preferred sequence, pushing unknown brands to the end", () => {
     const { container } = render(<RenderBrandIcons brands={asBrands(["mystery", "amex", "visa"])} />);
-    const children = Array.from(container.children);
+    // Icons sit inside the display:contents measuring anchor.
+    const children = Array.from(container.firstElementChild!.children);
     // Preferred order is visa, mc, maestro, amex, jcb, cup, then anything unlisted.
     expect(children[0].tagName.toLowerCase()).toBe("svg"); // visa
     expect(children[1].tagName.toLowerCase()).toBe("svg"); // amex
@@ -103,8 +104,51 @@ describe("RenderBrandIcons", () => {
 
   it("keeps the original order among unlisted brands (stable sort)", () => {
     const { container } = render(<RenderBrandIcons brands={asBrands(["zeta", "alpha"])} />);
-    const children = Array.from(container.children);
+    // Icons sit inside the display:contents measuring anchor.
+    const children = Array.from(container.firstElementChild!.children);
     expect(children[0].textContent).toBe("zeta");
     expect(children[1].textContent).toBe("alpha");
+  });
+});
+
+describe("RenderBrandIcons width limit (widget width, not viewport)", () => {
+  const fiveBrands = asBrands(["visa", "mc", "maestro", "amex", "jcb"]);
+
+  function stubWidgetWidth(width: number) {
+    class FakeResizeObserver {
+      constructor(private callback: ResizeObserverCallback) {}
+      observe() {
+        this.callback([{ contentBoxSize: [{ inlineSize: width }] } as any], this as any);
+      }
+      disconnect() {}
+    }
+    vi.stubGlobal("ResizeObserver", FakeResizeObserver);
+  }
+
+  const renderInWidget = () =>
+    render(
+      <div className="straumur__root-component">
+        <RenderBrandIcons brands={fiveBrands} />
+      </div>
+    );
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it.each([
+    [500, "+1"],
+    [380, "+3"],
+    [335, "+4"],
+  ])("at a %ipx widget shows the overflow counter %s", async (width, counter) => {
+    stubWidgetWidth(width);
+    renderInWidget();
+
+    await waitFor(() => expect(screen.getByText(counter)).toBeTruthy());
+  });
+
+  it("falls back to the default limit where ResizeObserver is unavailable", () => {
+    vi.stubGlobal("ResizeObserver", undefined);
+    renderInWidget();
+
+    expect(screen.getByText("+1")).toBeTruthy();
   });
 });

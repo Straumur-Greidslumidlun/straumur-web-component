@@ -1,4 +1,5 @@
 import { Fragment, h } from "preact";
+import { useRef } from "preact/hooks";
 import MasterCardIcon from "../assets/icons/mastercard";
 import VisaIcon from "../assets/icons/visa";
 import MaestroIcon from "../assets/icons/maestro";
@@ -8,7 +9,7 @@ import DinersIcon from "../assets/icons/diners";
 import DiscoverIcon from "../assets/icons/discover";
 import CupIcon from "../assets/icons/cup";
 import { Tooltip } from "../components/tooltip/tooltip";
-import { useMediaQuery } from "./custom-hooks/use-media-query";
+import { useWidgetWidth } from "./custom-hooks/use-widget-width";
 import { ResolvedTheme } from "../models/models";
 
 interface BrandIcon {
@@ -44,16 +45,19 @@ export function RenderBrandIcons({
   limit = 4,
   theme = "light",
 }: RenderBrandIconsProps): h.JSX.Element {
-  const isWidth380 = useMediaQuery("(max-width: 380px)");
-  const isWidth335 = useMediaQuery("(max-width: 335px)");
-  const widthLimit = isWidth335 ? 1 : isWidth380 ? 2 : limit;
+  // Keyed on the WIDGET's width (the host container decides it), not the viewport — a narrow host
+  // column on a wide screen must still collapse the brands.
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const widgetWidth = useWidgetWidth(anchorRef);
+  const widthLimit = widgetWidth === null ? limit : widgetWidth <= 335 ? 1 : widgetWidth <= 380 ? 2 : limit;
 
   const brandToShow = brands
     .filter((brand) => !brandHidden.some((x) => x.brand === brand.brand))
     .sort((a, b) => brandRank(a.brand) - brandRank(b.brand));
 
   return (
-    <Fragment>
+    // display: contents — a box-less anchor for measuring, so the icons still lay out in the parent row.
+    <span ref={anchorRef} style={{ display: "contents" }}>
       {brandToShow.map(({ brand }, index) => {
         if (index >= Math.min(limit, widthLimit)) {
           if (index === Math.min(limit, widthLimit)) {
@@ -78,7 +82,7 @@ export function RenderBrandIcons({
 
         return <RenderBrandIcon key={brand} brand={brand} theme={theme} />;
       })}
-    </Fragment>
+    </span>
   );
 }
 
