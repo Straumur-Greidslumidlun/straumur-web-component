@@ -26,6 +26,11 @@ export default tseslint.config(
     },
   },
   {
+    // Node scripts (e.g. the dist smoke test).
+    files: ["scripts/**/*.mjs"],
+    languageOptions: { globals: { console: "readonly", process: "readonly", URL: "readonly" } },
+  },
+  {
     files: ["test/**/*.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",

@@ -4,6 +4,8 @@ on:
   push:
     branches: [dev, main]
   pull_request:
+  # Reused by publish-to-npmjs.yml so nothing is published that wouldn't pass CI.
+  workflow_call:
 
 jobs:
   test:
@@ -32,3 +34,7 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Loads the built IIFE the way a merchant page does and mounts it; checks the ESM/CJS exports.
+      - name: Smoke-test dist
+        run: npm run test:smoke
