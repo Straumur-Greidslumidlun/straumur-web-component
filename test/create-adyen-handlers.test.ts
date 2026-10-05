@@ -159,22 +159,15 @@ describe("handleOnSubmitAdditionalData", () => {
     expect(options.handleError).toHaveBeenCalledWith({ key: "error.failedToSubmitPaymentDetails" });
   });
 
-  it.each([true, false])(
-    "fires onPaymentFailed exactly once on a thrown details call (dispatchResultFromAdditionalDetails=%s)",
-    async (dispatchResultFromAdditionalDetails) => {
-      const { handlers, options } = setup(
-        { submitAdditionalDetails: vi.fn().mockRejectedValue(new Error("boom")) },
-        { dispatchResultFromAdditionalDetails }
-      );
+  it("fires onPaymentFailed exactly once on a thrown details call (via Adyen's follow-up callback)", async () => {
+    const { handlers, options } = setup({ submitAdditionalDetails: vi.fn().mockRejectedValue(new Error("boom")) });
 
-      await handlers.handleOnSubmitAdditionalData(detailsState, element, actions());
-      // Mounted components get Adyen's follow-up onPaymentFailed; the redirect bootstrap does not.
-      if (!dispatchResultFromAdditionalDetails) handlers.handlePaymentFailed(undefined);
+    await handlers.handleOnSubmitAdditionalData(detailsState, element, actions());
+    handlers.handlePaymentFailed(undefined);
 
-      expect(options.configuration.onPaymentFailed).toHaveBeenCalledTimes(1);
-      expect(options.handleError).toHaveBeenLastCalledWith({ key: "error.failedToSubmitPaymentDetails" });
-    }
-  );
+    expect(options.configuration.onPaymentFailed).toHaveBeenCalledTimes(1);
+    expect(options.handleError).toHaveBeenLastCalledWith({ key: "error.failedToSubmitPaymentDetails" });
+  });
 });
 
 describe("result dispatch", () => {

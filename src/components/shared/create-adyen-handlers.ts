@@ -35,13 +35,6 @@ export interface AdyenPaymentHandlersOptions {
   setPaymentProcessing?: (value: boolean) => void;
   enrichSubmitData?: (data: SubmitData["data"]) => AdvancedSubmitState["data"];
   onSubmitStart?: () => void;
-  /**
-   * Redirect-return path only (submitDetails after a 3DS redirect): that Adyen bootstrap wires
-   * no core-level onPaymentCompleted/onPaymentFailed, so the additional-details handler must
-   * dispatch the final result itself. Leave unset for mounted components — Adyen invokes the
-   * core-level callbacks there, and dispatching here too would double-fire the merchant callbacks.
-   */
-  dispatchResultFromAdditionalDetails?: boolean;
 }
 
 export interface AdyenPaymentHandlers {
@@ -67,7 +60,6 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     setPaymentProcessing,
     enrichSubmitData,
     onSubmitStart,
-    dispatchResultFromAdditionalDetails,
   } = options;
 
   // Buyer-friendly failure message from the host (advanced mode). Set on submit, shown when the payment fails.
@@ -142,19 +134,14 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       // You must call this, even if the result of the payment is unsuccessful.
       actions.resolve({ resultCode, action } as Parameters<AdditionalDetailsActions["resolve"]>[0]);
 
-      if (dispatchResultFromAdditionalDetails) {
-        dispatchResult(resultCode);
-      }
+      // No dispatch here: Adyen invokes the core-level onPaymentCompleted/onPaymentFailed with this
+      // result, and dispatching as well would double-fire the merchant callbacks. (The redirect return,
+      // submitDetails, doesn't use these handlers — it calls the payment flow directly.)
     } catch (error) {
       setPaymentProcessing?.(false);
       thrownFailure = toResultMessage(error, "error.failedToSubmitPaymentDetails");
+      // Adyen answers the reject with onPaymentFailed, which shows thrownFailure.
       actions.reject();
-
-      // Mounted components: Adyen answers the reject with onPaymentFailed (-> thrownFailure). The
-      // redirect-return bootstrap wires no such callback, so dispatch here instead.
-      if (dispatchResultFromAdditionalDetails) {
-        dispatchResult("Error");
-      }
     }
   }
 

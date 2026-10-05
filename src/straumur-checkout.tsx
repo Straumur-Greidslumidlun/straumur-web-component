@@ -95,13 +95,7 @@ class StraumurCheckout {
 
     render(
       <RootComponent theme={this.configuration.theme}>
-        <I18nProvider
-          i18nService={this.i18n}
-          onLanguageChange={(language) => {
-            this.configuration.locale = language;
-            this.renderComponent();
-          }}
-        >
+        <I18nProvider i18nService={this.i18n}>
           <StraumurCheckoutContainer
             configuration={this.configuration}
             paymentMethods={this.paymentMethods!}

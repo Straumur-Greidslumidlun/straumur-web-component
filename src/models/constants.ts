@@ -13,10 +13,5 @@ export type PaymentMethodOrder = PaymentMethod | "instantpayments";
  */
 export type OpenDefaultPaymentMethod = "card" | "firstStoredCard" | "googlepay" | "applepay";
 
-export const NETWORK_ERROR = "NETWORK_ERROR";
+/** AdyenCheckoutError name for a shopper-initiated cancel (e.g. closing a wallet sheet). */
 export const CANCEL = "CANCEL";
-export const IMPLEMENTATION_ERROR = "IMPLEMENTATION_ERROR";
-export const API_ERROR = "API_ERROR";
-export const ERROR = "ERROR";
-export const SCRIPT_ERROR = "SCRIPT_ERROR";
-export const SDK_ERROR = "SDK_ERROR";

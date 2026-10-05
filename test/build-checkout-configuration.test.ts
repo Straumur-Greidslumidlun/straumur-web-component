@@ -25,7 +25,6 @@ describe("buildCheckoutConfiguration", () => {
     });
     expect(result.configuration.paymentFlow.submitPayment).toBeTypeOf("function");
     expect(result.configuration.paymentFlow.disableToken).toBeTypeOf("function");
-    expect(result.advancedConfiguration).toBeNull();
     expect(result.paymentMethods).toBeNull();
     expect(result.initializationFailed).toBe(false);
   });
@@ -84,7 +83,6 @@ describe("buildCheckoutConfiguration", () => {
     const result = buildCheckoutConfiguration(asPublic(config));
 
     expect(result.configuration).toMatchObject({ mode: "advanced", countryCode: "DE", locale: "en-US" });
-    expect(result.advancedConfiguration).toBe(config);
     expect(result.paymentMethods).toMatchObject({
       resultCode: "Success",
       minorUnitsAmount: 2500,
@@ -99,7 +97,6 @@ describe("buildCheckoutConfiguration", () => {
     const result = buildCheckoutConfiguration(asPublic(advancedConfig({ clientKey: "" })));
 
     expect(result.configuration.mode).toBe("advanced");
-    expect(result.advancedConfiguration).toBeNull();
     expect(result.paymentMethods).toBeNull();
     expect(result.initializationFailed).toBe(true);
   });

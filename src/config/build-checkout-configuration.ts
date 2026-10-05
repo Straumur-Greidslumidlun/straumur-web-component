@@ -59,8 +59,6 @@ export function isValidAdvancedConfiguration(config: StraumurWebAdvancedConfigur
 
 export interface CheckoutInitialization {
   configuration: StraumurCheckoutConfiguration;
-  /** The raw advanced configuration when valid; null in session mode or when invalid. */
-  advancedConfiguration: StraumurWebAdvancedConfiguration | null;
   /** Advanced mode only: the configuration normalized into a session-style Success response. */
   paymentMethods: SuccessResponse | null;
   initializationFailed: boolean;
@@ -102,16 +100,15 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
   };
 
   if (isSession) {
-    return { configuration, advancedConfiguration: null, paymentMethods: null, initializationFailed: false };
+    return { configuration, paymentMethods: null, initializationFailed: false };
   }
 
   if (!isValidAdvancedConfiguration(config)) {
-    return { configuration, advancedConfiguration: null, paymentMethods: null, initializationFailed: true };
+    return { configuration, paymentMethods: null, initializationFailed: true };
   }
 
   return {
     configuration,
-    advancedConfiguration: config,
     paymentMethods: normalizeAdvancedConfiguration(config, locale),
     initializationFailed: false,
   };

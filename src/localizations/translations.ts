@@ -40,8 +40,6 @@ export const translations = {
     "error.paymentDetailsFailed": "Payment details failed",
     "error.paymentNotConfirmed":
       "We couldn't confirm your payment. Please check whether it went through before trying again.",
-    "error.googlePayNotAvailable": "Google Pay not available",
-    "error.applePayNotAvailable": "Apple Pay not available",
     "error.failedToSubmitRemoveStoredPaymentCard": "Failed to remove stored payment card",
     "error.failedToRemoveStoredPaymentCard": "Stored payment card was not removed",
   },
@@ -86,8 +84,6 @@ export const translations = {
     "error.paymentDetailsFailed": "Mistókst að sækja greiðsluupplýsingar",
     "error.paymentNotConfirmed":
       "Ekki tókst að staðfesta greiðsluna. Athugaðu hvort hún hafi farið í gegn áður en þú reynir aftur.",
-    "error.googlePayNotAvailable": "Google Pay ekki í boði",
-    "error.applePayNotAvailable": "Apple Pay ekki í boði",
     "error.failedToSubmitRemoveStoredPaymentCard": "Mistókst að fjarlægja geymdan greiðslumáta",
     "error.failedToRemoveStoredPaymentCard": "Geymdur greiðslumáti var ekki fjarlægður",
   },
