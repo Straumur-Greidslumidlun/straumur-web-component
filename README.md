@@ -65,7 +65,7 @@ resolves to 1.x:
 
 ```html
 <div id="component-container"></div>
-<script src="https://unpkg.com/straumur-web-component@2.0.0-beta.2"></script>
+<script src="https://unpkg.com/straumur-web-component@2.0.0-beta.3"></script>
 <script>
   const checkout = new StraumurWeb.StraumurCheckout({
     environment: "test",
