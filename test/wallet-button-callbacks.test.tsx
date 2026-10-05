@@ -183,6 +183,7 @@ wallets.forEach(({ name, Comp, method }) => {
       const { onSubmit } = await setup(baseConfig(), true);
       const mountNode = A.cap.mountNodes[A.cap.mountNodes.length - 1] as HTMLElement;
       expect(mountNode.style.height).toBe("48px");
+      expect(mountNode.style.background).toBe("");
 
       await act(async () => {
         await onSubmit(submitState, {}, actions());
@@ -192,6 +193,8 @@ wallets.forEach(({ name, Comp, method }) => {
       // space if the mount node's height is definite — same 600px as the card container.
       await waitFor(() => expect(mountNode.style.height).toBe("600px"));
       expect(mountNode.style.width).toBe("100%");
+      // Same surface as the card's 3DS container (theme token), not the page behind the widget.
+      expect(mountNode.style.background).toContain("var(--straumur__color-white)");
     });
 
     it("rejects and surfaces an error when the request is not ok", async () => {

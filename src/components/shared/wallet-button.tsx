@@ -313,6 +313,10 @@ function WalletButton({
             // height also keeps the processing overlay visible during the hidden fingerprint step.
             height: threeDSecureActive ? "600px" : "48px",
             width: threeDSecureActive ? "100%" : undefined,
+            // The challenge needs the widget's surface behind it, like the card's container
+            // (.straumur__card-component__expandable). The express row has no tile of its own, so without
+            // this it shows whatever is behind the widget. Token, so it follows the theme.
+            background: threeDSecureActive ? "var(--straumur__color-white)" : undefined,
             position: isPaymentMethodInitialized[method] ? "static" : "absolute",
             // Lock the Adyen-drawn wallet button while a payment is in flight (can't add `disabled` to
             // Adyen's element). Never while THIS wallet is showing a 3DS challenge in the same div —
