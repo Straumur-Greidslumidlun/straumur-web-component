@@ -72,13 +72,13 @@ jobs:
           VERSION: ${{ steps.pkg.outputs.version }}
         run: |
           DEST="s3://$BUCKET/libs/straumur-web-component/$VERSION/"
+          # IIFE only: the ESM build leaves preact/@adyen/adyen-web as bare imports for a bundler to
+          # resolve, so it can't load from a CDN <script type="module">.
           aws s3 cp dist/ "$DEST" \
             --recursive \
             --exclude "*" \
             --include "index.js" \
-            --include "index.mjs" \
             --include "index.js.map" \
-            --include "index.mjs.map" \
             --include "index.d.ts" \
             --cache-control "public, max-age=31536000, immutable" \
             --only-show-errors
@@ -88,7 +88,6 @@ jobs:
           VERSION: ${{ steps.pkg.outputs.version }}
         run: |
           sri_js=$(openssl dgst -sha384 -binary dist/index.js | openssl base64 -A)
-          sri_mjs=$(openssl dgst -sha384 -binary dist/index.mjs | openssl base64 -A)
           DIR="libs/straumur-web-component/$VERSION"
 
           {
@@ -99,5 +98,4 @@ jobs:
             echo "| Bundle | Path | Integrity |"
             echo "|---|---|---|"
             echo "| IIFE (global \`StraumurWeb\`) | \`$DIR/index.js\` | \`sha384-$sri_js\` |"
-            echo "| ESM | \`$DIR/index.mjs\` | \`sha384-$sri_mjs\` |"
           } >> "$GITHUB_STEP_SUMMARY"

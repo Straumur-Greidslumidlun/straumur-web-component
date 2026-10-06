@@ -59,12 +59,10 @@ checkout.mount("#component-container");
 
 ### Using the CDN / script tag (no bundler)
 
-The package also ships an IIFE build that exposes a global `StraumurWeb`, plus an ESM build you can
-import directly from a `<script type="module">`. Both are published to Straumur's CDN on every
-GitHub Release, under an immutable, version-pinned path. There is deliberately no `latest/` alias:
-a breaking release must never reach a merchant page without the merchant changing the URL.
-
-**IIFE bundle** — exposes the global `StraumurWeb`:
+The package also ships a self-contained IIFE build that exposes a global `StraumurWeb`. It is
+published to Straumur's CDN on every GitHub Release, under an immutable, version-pinned path. There
+is deliberately no `latest/` alias: a breaking release must never reach a merchant page without the
+merchant changing the URL.
 
 ```html
 <div id="component-container"></div>
@@ -82,20 +80,8 @@ a breaking release must never reach a merchant page without the merchant changin
 </script>
 ```
 
-**ESM module:**
-
-```html
-<div id="component-container"></div>
-<script type="module">
-  import { StraumurCheckout } from "https://<your-cdn-domain>/libs/straumur-web-component/<version>/index.mjs";
-
-  const checkout = new StraumurCheckout({
-    environment: "test",
-    sessionId: "ftsdre3h...e5h5as2q4",
-  });
-  checkout.mount("#component-container");
-</script>
-```
+The ESM build is for bundlers only (install from npm): it imports `preact` and `@adyen/adyen-web` as
+bare module names, so it is not published to the CDN.
 
 The exact versioned URL and the matching [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
 (`integrity`) hash for each release are printed in that release's GitHub Actions run summary (the
