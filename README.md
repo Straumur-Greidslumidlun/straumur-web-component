@@ -61,8 +61,8 @@ checkout.mount("#component-container");
 
 The package also ships an IIFE build that exposes a global `StraumurWeb`, plus an ESM build you can
 import directly from a `<script type="module">`. Both are published to Straumur's CDN on every
-GitHub Release, under an immutable, version-pinned path (recommended for production) and a mutable
-`latest/` path.
+GitHub Release, under an immutable, version-pinned path. There is deliberately no `latest/` alias:
+a breaking release must never reach a merchant page without the merchant changing the URL.
 
 **IIFE bundle** — exposes the global `StraumurWeb`:
 
@@ -99,8 +99,7 @@ GitHub Release, under an immutable, version-pinned path (recommended for product
 
 The exact versioned URL and the matching [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
 (`integrity`) hash for each release are printed in that release's GitHub Actions run summary (the
-"Publish Package to CDN" workflow). Always pin to a specific version with its SRI hash in
-production; the `latest/` path is convenient for testing but is not integrity-pinned.
+"Publish Package to CDN" workflow). Always include the SRI hash in production.
 
 The npm package is also available from public CDNs such as `https://unpkg.com/straumur-web-component`,
 which is handy for quick prototypes but is not covered by Straumur's availability guarantees.
