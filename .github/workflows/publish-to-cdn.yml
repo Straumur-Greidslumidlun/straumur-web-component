@@ -50,6 +50,22 @@ jobs:
           role-session-name: gha-publish-to-cdn-${{ github.run_id }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      # Merchants pin a version together with its SRI hash, so a published version must never change:
+      # a re-run or manual dispatch with differing bytes would get their script blocked.
+      # Needs s3:ListBucket on the bucket (prefix libs/*) — without it this step fails, never passes.
+      - name: Refuse to overwrite a published version
+        env:
+          BUCKET: ${{ secrets.CDN_S3_BUCKET }}
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: |
+          PREFIX="libs/straumur-web-component/$VERSION/"
+          # Prints "None" when the prefix is empty; a failed call (e.g. AccessDenied) exits non-zero under bash -e.
+          FIRST=$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix "$PREFIX" --max-items 1 --query 'Contents[0].Key' --output text)
+          if [ "$FIRST" != "None" ]; then
+            echo "::error::$PREFIX already exists on the CDN. Bump the version in package.json instead of republishing."
+            exit 1
+          fi
+
       - name: Upload versioned build (immutable)
         env:
           BUCKET: ${{ secrets.CDN_S3_BUCKET }}
