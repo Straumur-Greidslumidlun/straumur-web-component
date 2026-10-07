@@ -18,6 +18,7 @@ import { useAdyenLocaleReinit } from "../../utils/custom-hooks/use-adyen-locale-
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
 import "./wallet-button.css";
 import { ProcessingOverlay } from "./processing-overlay";
+import { createApplePayMerchantValidation } from "./apple-pay-merchant-validation";
 import { resolveApplePayButtonColor, resolveGooglePayButtonColor } from "../../utils/wallet-button-theme";
 
 export type WalletMethod = "applepay" | "googlepay";
@@ -73,6 +74,11 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
           ...walletConfig,
           merchantName: paymentMethods.merchantName,
         },
+        // Merchant's own Apple Pay certificate: they validate the merchant session themselves. Without it
+        // Adyen's default validation runs (Adyen's certificate) — unchanged behaviour.
+        ...(configuration.onApplePayValidateMerchant
+          ? { onValidateMerchant: createApplePayMerchantValidation(configuration.onApplePayValidateMerchant) }
+          : {}),
       };
 
       return new ApplePay(core, applePayConfiguration);

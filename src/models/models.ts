@@ -15,6 +15,16 @@ type StraumurWebBaseConfiguration = {
   instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+  /**
+   * Apple Pay with the merchant's OWN Apple Pay certificate. Called on every Apple Pay tap with Apple's
+   * `validationURL`; send it to your server, which must POST to it with your Merchant Identity Certificate
+   * (mutual TLS) and return Apple's merchant session object **unmodified**. Resolve with that object.
+   *
+   * Omit it to use Adyen's certificate (the default): Adyen then validates the merchant itself. With your own
+   * certificate, your Payment Processing Certificate must also be set up in Straumur's Adyen account, or the
+   * payment fails at decryption. A rejection aborts the Apple Pay sheet and shows the failure screen.
+   */
+  onApplePayValidateMerchant?: (validationURL: string) => Promise<ApplePayMerchantSession>;
   allowedPaymentMethods?: PaymentMethod[];
   /**
    * Top-to-bottom order of the payment-method options. Tokens: "card", "storedcard", "kortalan",
@@ -52,6 +62,12 @@ export type LocalizationLanguage = PublicLocale | Language;
 
 /** Internal form of {@link Localizations}: always keyed by the full Language tag. */
 export type CustomLocalizations = Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+
+/**
+ * Apple's opaque merchant session, as returned by Apple's `validationURL` to the merchant's server. Pass it
+ * through unchanged — it is signed by Apple.
+ */
+export type ApplePayMerchantSession = Record<string, unknown>;
 
 export type Theme = "light" | "dark" | "system";
 
@@ -214,6 +230,7 @@ export type StraumurCheckoutConfiguration = {
   instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+  onApplePayValidateMerchant?: (validationURL: string) => Promise<ApplePayMerchantSession>;
   allowedPaymentMethods?: PaymentMethod[];
   orderPaymentMethods?: PaymentMethodOrder[];
   openDefaultPaymentMethod?: OpenDefaultPaymentMethod;
@@ -238,6 +255,7 @@ export type StraumurCheckoutUpdateOptions = Partial<
     | "instantPayments"
     | "hideSubmitButton"
     | "onCardValidityChanged"
+    | "onApplePayValidateMerchant"
     | "allowedPaymentMethods"
     | "orderPaymentMethods"
     | "openDefaultPaymentMethod"

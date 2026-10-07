@@ -148,6 +148,36 @@ wallets.forEach(({ name, Comp, method }) => {
       expect(A.cap.wallet[0].buttonColor).toBe(method === "googlepay" ? "white" : "white-outline");
     });
 
+    it("keeps Adyen's own merchant validation when onApplePayValidateMerchant is not set", async () => {
+      await setup();
+      expect(A.cap.wallet[0].onValidateMerchant).toBeUndefined();
+    });
+
+    it(
+      method === "applepay"
+        ? "routes Apple Pay merchant validation to the merchant's onApplePayValidateMerchant"
+        : "ignores onApplePayValidateMerchant (Google Pay has no merchant validation)",
+      async () => {
+        const session = { merchantSessionIdentifier: "s" };
+        const onApplePayValidateMerchant = vi.fn().mockResolvedValue(session);
+        await setup(baseConfig({ onApplePayValidateMerchant }));
+        const { onValidateMerchant } = A.cap.wallet[0];
+
+        if (method !== "applepay") {
+          expect(onValidateMerchant).toBeUndefined();
+          return;
+        }
+
+        const resolved = await new Promise((resolve, reject) =>
+          onValidateMerchant(resolve, reject, "https://apple-pay-gateway.apple.com/paymentservices/startSession")
+        );
+        expect(onApplePayValidateMerchant).toHaveBeenCalledWith(
+          "https://apple-pay-gateway.apple.com/paymentservices/startSession"
+        );
+        expect(resolved).toBe(session);
+      }
+    );
+
     it("gives the wallet a black button for the dark theme", async () => {
       await setup(baseConfig({ theme: "dark" }));
       expect(A.cap.wallet[0].buttonColor).toBe("black");

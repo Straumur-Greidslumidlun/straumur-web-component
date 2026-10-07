@@ -2,6 +2,7 @@ export { default as StraumurCheckout } from "./straumur-checkout";
 export type {
   StraumurWebConfiguration,
   StraumurCheckoutUpdateOptions,
+  ApplePayMerchantSession,
   Localizations,
   LocalizationLanguage,
   PaymentCompletedData,

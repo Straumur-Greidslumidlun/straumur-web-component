@@ -108,4 +108,15 @@ describe("buildCheckoutConfiguration", () => {
     expect(without.configuration.paymentFlow.disableToken).toBeUndefined();
     expect(withToken.configuration.paymentFlow.disableToken).toBeTypeOf("function");
   });
+
+  it("passes onApplePayValidateMerchant through to the internal configuration", () => {
+    const onApplePayValidateMerchant = async () => ({});
+    const { configuration } = buildCheckoutConfiguration({
+      sessionId: "s1",
+      environment: "test",
+      onApplePayValidateMerchant,
+    });
+
+    expect(configuration.onApplePayValidateMerchant).toBe(onApplePayValidateMerchant);
+  });
 });

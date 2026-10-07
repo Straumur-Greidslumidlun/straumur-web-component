@@ -91,6 +91,7 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     instantPayments: config.instantPayments,
     hideSubmitButton: config.hideSubmitButton,
     onCardValidityChanged: config.onCardValidityChanged,
+    onApplePayValidateMerchant: config.onApplePayValidateMerchant,
     allowedPaymentMethods: config.allowedPaymentMethods,
     orderPaymentMethods: config.orderPaymentMethods,
     openDefaultPaymentMethod: config.openDefaultPaymentMethod,
