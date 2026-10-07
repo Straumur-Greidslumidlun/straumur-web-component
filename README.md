@@ -242,13 +242,17 @@ const checkout = new StraumurCheckout({
 
 It is called on every Apple Pay tap with Apple's `validationURL`. Your server endpoint must:
 
-1. Check that `validationURL` is an Apple Pay gateway host (`apple-pay-gateway.apple.com` or
-   `apple-pay-gateway-*.apple.com`). Never call a URL taken from the browser without checking it.
+1. Check that `validationURL`'s host is exactly one of Apple's Apple Pay gateways:
+   `apple-pay-gateway.apple.com` and `cn-apple-pay-gateway.apple.com` (production), and
+   `apple-pay-gateway-cert.apple.com` and `cn-apple-pay-gateway-cert.apple.com` (sandbox). See Apple's
+   [Setting up your server](https://developer.apple.com/documentation/applepayontheweb/setting-up-your-server).
+   Never call a URL taken from the browser without checking it.
 2. `POST` to it over mutual TLS with your **Merchant Identity Certificate**, with the body
    `{ "merchantIdentifier": "<your merchant id>", "displayName": "<shop name>", "initiative": "web",
 "initiativeContext": "<your checkout domain>" }`.
-3. Return Apple's response to the browser unchanged. It's short-lived, so request a fresh one on every
-   tap.
+3. Return Apple's response to the browser unchanged. It's an opaque session that expires after five
+   minutes, so request a fresh one on every tap. See Apple's
+   [Requesting an Apple Pay payment session](https://developer.apple.com/documentation/applepayontheweb/requesting-an-apple-pay-payment-session).
 
 Before you start:
 
