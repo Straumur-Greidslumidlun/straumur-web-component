@@ -7,6 +7,11 @@ on:
 
   workflow_dispatch:
 
+  # TEMP (SD-3134 testing): workflow_dispatch only works once this file is on the default branch,
+  # so pushes to this branch run it instead. Remove before merging.
+  push:
+    branches: [feat/cdn-deploy-versioned-only]
+
 permissions:
   contents: read
   id-token: write # mint the OIDC token AWS exchanges for short-lived creds
@@ -22,6 +27,7 @@ jobs:
     # Only after a successful npm publish from a Release — not a `next` pre-release.
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'release')
 
