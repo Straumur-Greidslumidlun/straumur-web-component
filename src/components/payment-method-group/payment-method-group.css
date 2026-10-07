@@ -3,4 +3,6 @@
   flex-direction: column;
   gap: var(--straumur__space-xxlg);
   width: 100%;
+  /* Positioning context for the master loader's hidden-methods layer (.straumur__methods--loading). */
+  position: relative;
 }

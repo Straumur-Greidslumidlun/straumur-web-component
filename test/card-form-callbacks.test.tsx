@@ -1,4 +1,5 @@
-import { h, Fragment } from "preact";
+﻿import { h, Fragment } from "preact";
+import { ResultMessage } from "../src/models/models";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/preact";
 
@@ -7,6 +8,7 @@ const A = vi.hoisted(() => {
   const cap: any = { checkout: [], card: [] };
   class FakeCustomCard {
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     submit = vi.fn();
     dualBrandingChangeHandler = vi.fn();
@@ -50,13 +52,16 @@ const createDetails = vi.mocked(createDetailsRequest);
 
 const paymentMethods = makePaymentMethods({ paymentMethods: { paymentMethods: [scheme(["visa", "mc"])] } });
 
+const messageText = (message: ResultMessage | null) =>
+  message === null ? String(message) : "key" in message ? message.key : message.text;
+
 function Probe() {
   const { threeDSecureActive, error, success } = usePaymentMethodGroup();
   return (
     <Fragment>
       <span data-testid="tds">{String(threeDSecureActive)}</span>
-      <span data-testid="error">{String(error)}</span>
-      <span data-testid="success">{String(success)}</span>
+      <span data-testid="error">{messageText(error)}</span>
+      <span data-testid="success">{messageText(success)}</span>
     </Fragment>
   );
 }
@@ -70,6 +75,7 @@ async function setup(config = baseConfig()) {
         hasCard={true}
         hasGooglePay={false}
         hasApplePay={false}
+        hasKortalan={false}
         hasStoredPaymentMethods={false}
       >
         <Probe />
@@ -82,6 +88,16 @@ async function setup(config = baseConfig()) {
 }
 
 const actions = () => ({ resolve: vi.fn(), reject: vi.fn() });
+
+/**
+ * Like real Adyen: a reject() in onSubmit/onAdditionalDetails is answered (a microtask later) with the
+ * core-level onPaymentFailed — which is where the failure screen comes from.
+ */
+const adyenActions = (checkout: any) => ({
+  resolve: vi.fn(),
+  reject: vi.fn(() => queueMicrotask(() => checkout.onPaymentFailed(undefined))),
+});
+
 const submitState = { data: { paymentMethod: { type: "scheme" } } };
 
 beforeEach(() => {
@@ -93,7 +109,10 @@ beforeEach(() => {
 
 describe("CardForm.handleOnSubmit", () => {
   it("posts the payment with sessionId + storePaymentMethod and resolves on Authorised", async () => {
-    createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "Authorised", action: null }) } as any);
+    createPayment.mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised", action: null }),
+    } as any);
     const { onSubmit } = await setup();
     const act1 = actions();
 
@@ -139,8 +158,8 @@ describe("CardForm.handleOnSubmit", () => {
 
   it("rejects and surfaces an error when the request is not ok", async () => {
     createPayment.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
-    const { onSubmit } = await setup();
-    const act1 = actions();
+    const { onSubmit, checkout } = await setup();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await onSubmit(submitState, {}, act1);
@@ -152,8 +171,8 @@ describe("CardForm.handleOnSubmit", () => {
 
   it("rejects with paymentFailed when the response has no resultCode", async () => {
     createPayment.mockResolvedValue({ ok: true, json: async () => ({}) } as any);
-    const { onSubmit } = await setup();
-    const act1 = actions();
+    const { onSubmit, checkout } = await setup();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await onSubmit(submitState, {}, act1);
@@ -177,19 +196,21 @@ describe("CardForm payment result callbacks", () => {
     await waitFor(() => expect(screen.getByTestId("success").textContent).toBe("success.paymentAuthorized"));
   });
 
-  it("fires onPaymentCompleted and shows error on a non-authorised result", async () => {
+  it("fires onPaymentFailed and shows error on a refused result (Adyen 6 routing)", async () => {
     const onPaymentCompleted = vi.fn();
-    const { checkout } = await setup(baseConfig({ onPaymentCompleted }));
+    const onPaymentFailed = vi.fn();
+    const { checkout } = await setup(baseConfig({ onPaymentCompleted, onPaymentFailed }));
 
     await act(async () => {
       checkout.onPaymentCompleted({ resultCode: "Refused" });
     });
 
-    expect(onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(onPaymentCompleted).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByTestId("error").textContent).toBe("error.paymentUnsuccessful"));
   });
 
-  it("fires onPaymentFailed with no argument when called without data", async () => {
+  it("fires onPaymentFailed with a synthesized Error resultCode when called without data", async () => {
     const onPaymentFailed = vi.fn();
     const { checkout } = await setup(baseConfig({ onPaymentFailed }));
 
@@ -197,7 +218,7 @@ describe("CardForm payment result callbacks", () => {
       checkout.onPaymentFailed(undefined);
     });
 
-    expect(onPaymentFailed).toHaveBeenCalledWith();
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
   });
 });
 
@@ -237,6 +258,30 @@ describe("CardForm submit button visibility", () => {
   });
 });
 
+describe("CardForm accessibility", () => {
+  it("labels each secure card field as a named group for screen readers", async () => {
+    await setup();
+    // The visible <label> can't associate with a secure iframe via htmlFor, so each field
+    // mount span carries role="group" + a localized aria-label instead.
+    expect(screen.getByRole("group", { name: "Card number" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Expiry date" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Security code" })).toBeTruthy();
+  });
+});
+
+describe("CardForm theme", () => {
+  it("passes light field styles to the Adyen card by default", async () => {
+    const { card } = await setup();
+    expect(card.styles.base.color).toBe("#00112c");
+  });
+
+  it("passes dark field styles to the Adyen card when the theme is dark", async () => {
+    const { card } = await setup(baseConfig({ theme: "dark" }));
+    expect(card.styles.base.color).toBe("#e8edf2");
+    expect(card.styles.placeholder.color).toBe("#aab4bf");
+  });
+});
+
 describe("CardForm onCardValidityChanged", () => {
   it("reports (false, false) while the card method isn't the active/initialized one", async () => {
     const onCardValidityChanged = vi.fn();
@@ -248,6 +293,7 @@ describe("CardForm onCardValidityChanged", () => {
           hasCard={true}
           hasGooglePay={false}
           hasApplePay={false}
+          hasKortalan={false}
           hasStoredPaymentMethods={false}
         >
           <CardForm
@@ -277,15 +323,44 @@ describe("CardForm onCardValidityChanged", () => {
     });
     expect(onCardValidityChanged).toHaveBeenCalledWith(false, true);
   });
+
+  it("reports (false, true) as soon as the card becomes active, so a custom submit button can appear disabled", async () => {
+    const onCardValidityChanged = vi.fn();
+    await setup(baseConfig({ onCardValidityChanged }));
+
+    // Fires on activation (before any onAllValid), so a host's hidden-internal-button setup can
+    // reveal its external button immediately rather than waiting for the first validity event.
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
+  });
+
+  it("reports (false, false) when a 3DS challenge starts, so the custom submit button hides", async () => {
+    createPayment.mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "ChallengeShopper", action: { type: "threeDS2" } }),
+    } as any);
+    const onCardValidityChanged = vi.fn();
+    const { onSubmit } = await setup(baseConfig({ onCardValidityChanged }));
+    onCardValidityChanged.mockClear();
+
+    await act(async () => {
+      await onSubmit(submitState, {}, actions());
+    });
+
+    // The card is no longer "active" while the challenge takes over the container.
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, false));
+  });
 });
 
 describe("CardForm additional details (3-D Secure continuation)", () => {
   const detailsState = { data: { details: { threeDSResult: "tds-result" } } };
 
   it("posts the details with sessionId and resolves on a valid result", async () => {
-    createDetails.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "Authorised", action: null }) } as any);
+    createDetails.mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised", action: null }),
+    } as any);
     const { checkout } = await setup();
-    const act1 = actions();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await checkout.onAdditionalDetails(detailsState, {}, act1);
@@ -298,7 +373,7 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
   it("rejects and surfaces an error when the details request is not ok", async () => {
     createDetails.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
     const { checkout } = await setup();
-    const act1 = actions();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await checkout.onAdditionalDetails(detailsState, {}, act1);
@@ -311,7 +386,7 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
   it("rejects with paymentDetailsFailed when the response has no resultCode", async () => {
     createDetails.mockResolvedValue({ ok: true, json: async () => ({}) } as any);
     const { checkout } = await setup();
-    const act1 = actions();
+    const act1 = adyenActions(checkout);
 
     await act(async () => {
       await checkout.onAdditionalDetails(detailsState, {}, act1);
@@ -319,5 +394,35 @@ describe("CardForm additional details (3-D Secure continuation)", () => {
 
     expect(act1.reject).toHaveBeenCalled();
     await waitFor(() => expect(screen.getByTestId("error").textContent).toBe("error.paymentDetailsFailed"));
+  });
+});
+
+describe("CardForm processing overlay", () => {
+  it("shows the overlay from submit until the 3DS challenge iframe has loaded", async () => {
+    let respond!: (value: unknown) => void;
+    createPayment.mockReturnValue(new Promise((resolve) => (respond = resolve)) as any);
+    const { onSubmit, checkout } = await setup();
+
+    expect(screen.queryByText("Processing payment…")).toBeNull();
+
+    let submission!: Promise<void>;
+    await act(async () => {
+      submission = onSubmit(submitState, {}, actions());
+    });
+    // /payments in flight.
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Processing payment…"));
+
+    await act(async () => {
+      respond({ ok: true, json: async () => ({ resultCode: "ChallengeShopper", action: { type: "threeDS2" } }) });
+      await submission;
+    });
+    // 3DS active, challenge iframe not loaded yet: still covered.
+    expect(screen.getByTestId("tds").textContent).toBe("true");
+    expect(screen.getByText("Processing payment…")).toBeTruthy();
+
+    await act(async () => {
+      checkout.onActionHandled({ componentType: "3DS2Challenge", actionDescription: "3DS2 challenge iframe loaded" });
+    });
+    expect(screen.queryByText("Processing payment…")).toBeNull();
   });
 });

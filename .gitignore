@@ -2,3 +2,7 @@
 node_modules
 .vscode
 .idea
+coverage
+
+dist
+.claude/analytics.json

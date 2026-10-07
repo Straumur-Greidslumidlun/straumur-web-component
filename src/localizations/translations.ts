@@ -6,21 +6,29 @@ export const translations = {
     "cards.securityCode3Digits": "Security code",
     "cards.securityCode3DigitsOptional": "Security code (optional)",
     "cards.securityCode3DigitsInfo": "3-digit on the back of the card",
-    "cards.securityCode4DigitsInfo": "4-digit on the back of the card",
+    "cards.securityCode4DigitsInfo": "4-digit on the front of the card",
     "cards.storePaymentMethod": "Store payment information",
+    "cards.saveCardDetails": "Save card details",
+    "cards.cardBrand": "Card brand",
     "googlePay.title": "Google Pay",
     "applePay.title": "Apple Pay",
+    "kortalan.title": "Kortalán",
+    "kortalan.payButton": "Continue to Kortalán",
     "stored-cards.expiryDate": "Expiry date",
     "stored-cards.securityCode3Digits": "Security code",
     "stored-cards.securityCode3DigitsOptional": "Security code (optional)",
     "stored-cards.securityCode3DigitsInfo": "3-digit on the back of the card",
-    "stored-cards.securityCode4DigitsInfo": "4-digit on the back of the card",
+    "stored-cards.securityCode4DigitsInfo": "4-digit on the front of the card",
     "stored-cards.removeStoredCard": "Remove",
     "stored-cards.removeStoredCardQuestion": "Remove stored payment method?",
     "stored-cards.removeStoredCardQuestionYesRemove": "Yes, remove",
     "stored-cards.removeStoredCardQuestionCancel": "Cancel",
+    "stored-cards.saveCardDetails": "Save card details",
 
     "success.paymentAuthorized": "Payment authorized",
+    "success.paymentPending": "Payment received and being processed",
+    "payment.processing": "Processing payment…",
+    "payment.loading": "Loading…",
 
     "error.unknownError": "Unknown error occurred",
     "error.failedToInitializeStraumurWebComponent": "Failed to initialize Straumur Web component",
@@ -30,8 +38,8 @@ export const translations = {
     "error.paymentUnsuccessful": "Payment unsuccessful",
     "error.failedToSubmitPaymentDetails": "Failed to submit payment details",
     "error.paymentDetailsFailed": "Payment details failed",
-    "error.googlePayNotAvailable": "Google Pay not available",
-    "error.applePayNotAvailable": "Apple Pay not available",
+    "error.paymentNotConfirmed":
+      "We couldn't confirm your payment. Please check whether it went through before trying again.",
     "error.failedToSubmitRemoveStoredPaymentCard": "Failed to remove stored payment card",
     "error.failedToRemoveStoredPaymentCard": "Stored payment card was not removed",
   },
@@ -42,21 +50,29 @@ export const translations = {
     "cards.securityCode3Digits": "Öryggiskóði",
     "cards.securityCode3DigitsOptional": "Öryggiskóði (valkvætt)",
     "cards.securityCode3DigitsInfo": "3 tölustafir aftan á kortinu",
-    "cards.securityCode4DigitsInfo": "4 tölustafir aftan á kortinu",
+    "cards.securityCode4DigitsInfo": "4 tölustafir framan á kortinu",
     "cards.storePaymentMethod": "Vista greiðsluupplýsingar",
+    "cards.saveCardDetails": "Vista kortaupplýsingar",
+    "cards.cardBrand": "Kortategund",
     "googlePay.title": "Google Pay",
     "applePay.title": "Apple Pay",
+    "kortalan.title": "Kortalán",
+    "kortalan.payButton": "Áfram í Kortalán",
     "stored-cards.expiryDate": "Gildisdagur",
     "stored-cards.securityCode3Digits": "Öryggiskóði",
     "stored-cards.securityCode3DigitsOptional": "Öryggiskóði (valkvætt)",
     "stored-cards.securityCode3DigitsInfo": "3 tölustafir aftan á kortinu",
-    "stored-cards.securityCode4DigitsInfo": "4 tölustafir aftan á kortinu",
+    "stored-cards.securityCode4DigitsInfo": "4 tölustafir framan á kortinu",
     "stored-cards.removeStoredCard": "Fjarlægja",
     "stored-cards.removeStoredCardQuestion": "Fjarlægja geymdan greiðslumáta?",
     "stored-cards.removeStoredCardQuestionYesRemove": "Já, fjarlægja",
     "stored-cards.removeStoredCardQuestionCancel": "Hætta við",
+    "stored-cards.saveCardDetails": "Vista kortaupplýsingar",
 
     "success.paymentAuthorized": "Greiðsla samþykkt",
+    "success.paymentPending": "Greiðsla móttekin og er í vinnslu",
+    "payment.processing": "Greiðsla í vinnslu…",
+    "payment.loading": "Hleður…",
 
     "error.unknownError": "Óþekkt villa kom upp",
     "error.failedToInitializeStraumurWebComponent": "Mistókst að sækja Straumur Web hluta",
@@ -66,8 +82,8 @@ export const translations = {
     "error.paymentUnsuccessful": "Greiðsla ekki tekin",
     "error.failedToSubmitPaymentDetails": "Mistókst að senda greiðsluupplýsingar",
     "error.paymentDetailsFailed": "Mistókst að sækja greiðsluupplýsingar",
-    "error.googlePayNotAvailable": "Google Pay ekki í boði",
-    "error.applePayNotAvailable": "Apple Pay ekki í boði",
+    "error.paymentNotConfirmed":
+      "Ekki tókst að staðfesta greiðsluna. Athugaðu hvort hún hafi farið í gegn áður en þú reynir aftur.",
     "error.failedToSubmitRemoveStoredPaymentCard": "Mistókst að fjarlægja geymdan greiðslumáta",
     "error.failedToRemoveStoredPaymentCard": "Geymdur greiðslumáti var ekki fjarlægður",
   },
@@ -75,3 +91,8 @@ export const translations = {
 
 export type Language = keyof typeof translations;
 export type TranslationKey = keyof (typeof translations)["en-US"] | keyof (typeof translations)["is-IS"];
+
+/** Narrows an untrusted string (e.g. a server error code) to a known translation key. */
+export function isTranslationKey(value: unknown): value is TranslationKey {
+  return typeof value === "string" && (value in translations["en-US"] || value in translations["is-IS"]);
+}

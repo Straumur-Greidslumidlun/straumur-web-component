@@ -1,7 +1,7 @@
 import { h } from "preact";
 
 const LoaderIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" stroke="#002649">
+  <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
     <g fill="none" fill-rule="evenodd">
       <g transform="translate(2 2)" stroke-width="4">
         <circle stroke-opacity=".3" cx="18" cy="18" r="18" />

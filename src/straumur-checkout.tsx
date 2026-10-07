@@ -1,25 +1,26 @@
 import { h, render } from "preact";
 import "./styles/main.css";
-import { StraumurCheckoutConfiguration, StraumurWebConfiguration } from "./models/models";
+import { registerWidgetFonts } from "./styles/fonts";
+import {
+  ResultMessage,
+  StraumurCheckoutConfiguration,
+  StraumurCheckoutUpdateOptions,
+  StraumurWebConfiguration,
+} from "./models/models";
 import { setupPaymentMethods } from "./services/straumur-service";
-import { Language, TranslationKey } from "./localizations/translations";
+import { normalizeLocale, normalizeLocalizations, PublicLocale } from "./localizations/locale";
 import StraumurCheckoutContainer from "./features/straumur-checkout-container";
 import { SuccessResponse } from "./services/models";
-import FailureIcon from "./assets/icons/failure";
-import LoaderIcon from "./assets/icons/loader";
-import {
-  AdyenCheckout,
-  AdditionalDetailsData,
-  UIElement,
-  UIElementProps,
-  AdditionalDetailsActions,
-} from "@adyen/adyen-web";
-import { ICreateDetailsBody } from "./adapter/models";
-import { createDetailsRequest } from "./adapter/straumur-adapter";
-import SuccessIcon from "./assets/icons/success";
 import { I18nProvider } from "./localizations/i18n-context";
 import { I18nService } from "./localizations/i18n-service";
 import { SubmitApi } from "./components/payment-method-group/payment-method-group-context";
+import { dispatchFinalResult } from "./components/shared/dispatch-final-result";
+import { LoaderScreen, RootComponent, StatusScreen } from "./components/shared/status-screen";
+import { buildCheckoutConfiguration, normalizeTheme } from "./config/build-checkout-configuration";
+
+// Captured by the payment flow at construction; changing them later would load one session and pay
+// into another.
+const FIXED_CONFIG_KEYS = ["sessionId", "environment", "countryCode", "mode", "paymentFlow"] as const;
 
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
@@ -27,74 +28,74 @@ class StraumurCheckout {
   private mountElement: HTMLElement | null = null;
   private i18n: I18nService;
   private submitApi: SubmitApi | null = null;
+  private initializationFailed = false;
+  // Set once a class-level result screen is showing (init failure, redirect-return result). A later
+  // updateConfig/setLanguage must re-render THAT screen, never bring the checkout form back — after a
+  // success that would let the shopper pay twice.
+  private resultScreen: { variant: "success" | "failure"; message: ResultMessage } | null = null;
 
-  constructor(config: StraumurWebConfiguration) {
-    this.configuration = {
-      ...config,
-      locale: determineLocale(config.locale),
-      customLocalizations: config.localizations,
-    };
+  // Public signature accepts the session configuration only. The advanced-mode configuration
+  // (internal, used by Straumur Hosted Checkout via the IIFE bundle) is detected at runtime.
+  constructor(publicConfig: StraumurWebConfiguration) {
+    const initialization = buildCheckoutConfiguration(publicConfig);
 
-    // Create i18n instance
+    this.configuration = initialization.configuration;
+    this.paymentMethods = initialization.paymentMethods;
+    this.initializationFailed = initialization.initializationFailed;
     this.i18n = new I18nService(this.configuration.locale, this.configuration.customLocalizations);
-
-    function determineLocale(locale: "is" | "en" | undefined): Language {
-      switch (locale) {
-        case "is":
-          return "is-IS";
-        case "en":
-          return "en-US";
-        default:
-          return "is-IS";
-      }
-    }
   }
 
   async mount(selector: HTMLElement | string): Promise<void> {
+    registerWidgetFonts();
     try {
       this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
+      this.resultScreen = null;
 
       if (!this.mountElement) {
-        this.handleError("error.failedToInitializeStraumurWebComponent");
+        return;
+      }
+
+      if (this.initializationFailed) {
+        this.handleError({ key: "error.failedToInitializeStraumurWebComponent" });
+        return;
+      }
+
+      if (this.configuration.mode === "advanced") {
+        this.renderComponent();
         return;
       }
 
       render(
-        <RootComponent>
-          <div className="straumur__component">
-            <LoaderIcon />
-          </div>
-        </RootComponent>,
+        <LoaderScreen theme={this.configuration.theme} label={this.i18n.t("payment.loading")} />,
         this.mountElement
       );
 
-      const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
+      const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
 
       if (response.resultCode === "Error") {
-        this.handleError(response.error);
+        this.handleError({ key: response.error });
         return;
       }
 
       this.paymentMethods = response;
 
-      this.configuration.locale = this.configuration.locale || this.paymentMethods.locale;
-
       this.renderComponent();
-    } catch (error) {}
+    } catch (error) {
+      // Never throw into the host page, but leave a trace for the merchant's console — and replace
+      // the loader, which would otherwise spin forever.
+      console.error("[StraumurCheckout] mount() failed:", error);
+      this.handleError({ key: "error.failedToInitializePaymentMethods" });
+    }
   }
 
   private renderComponent(): void {
-    if (!this.mountElement) return;
+    // No payment methods yet (session fetch in flight, it failed, or a redirect-return page that only
+    // called submitDetails): nothing to render. A pending mount() picks up the new configuration.
+    if (!this.mountElement || !this.paymentMethods) return;
 
     render(
-      <RootComponent>
-        <I18nProvider
-          i18nService={this.i18n}
-          onLanguageChange={(language) => {
-            this.configuration.locale = language;
-            this.renderComponent();
-          }}
-        >
+      <RootComponent theme={this.configuration.theme}>
+        <I18nProvider i18nService={this.i18n}>
           <StraumurCheckoutContainer
             configuration={this.configuration}
             paymentMethods={this.paymentMethods!}
@@ -108,114 +109,115 @@ class StraumurCheckout {
     );
   }
 
-  handleSuccess(message: TranslationKey) {
+  // Internal: the class-level result screens (init failure, redirect return). Not part of the public API.
+  private handleSuccess(message: ResultMessage) {
+    this.showResultScreen("success", message);
+  }
+
+  private handleError(message: ResultMessage) {
+    this.showResultScreen("failure", message);
+  }
+
+  private showResultScreen(variant: "success" | "failure", message: ResultMessage): void {
+    if (!this.mountElement) return;
+
+    this.resultScreen = { variant, message };
     render(
-      <RootComponent>
-        <div className="straumur__component">
-          <SuccessIcon />
-          <p>{this.i18n.t(message)}</p>
-        </div>
-      </RootComponent>,
-      this.mountElement!
+      <StatusScreen variant={variant} message={message} i18n={this.i18n} theme={this.configuration.theme} />,
+      this.mountElement
     );
   }
 
-  handleError(message: TranslationKey) {
-    render(
-      <RootComponent>
-        <div className="straumur__component">
-          <FailureIcon />
-          <p>{this.i18n.t(message)}</p>
-        </div>
-      </RootComponent>,
-      this.mountElement!
-    );
+  // Redirect return (both Adyen redirect-3DS and Kortalán): POST /additional-details directly through
+  // the payment flow — no Adyen SDK, so it also works for a native-only terminal that has no clientKey.
+  // The backend routes the continuation to the correct provider by paymentCheckoutReference. selector
+  // lets a page that never called mount() (a fresh redirect-return page) show the result screens.
+  async submitDetails(redirectResult: string, paymentCheckoutReference?: string, selector?: HTMLElement | string) {
+    registerWidgetFonts();
+    try {
+      if (selector) {
+        this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
+      }
+
+      // Advanced (hosted) mode with an invalid configuration has no working flow to continue on.
+      if (this.initializationFailed) {
+        this.handleError({ key: "error.failedToInitializeStraumurWebComponent" });
+        return;
+      }
+
+      // The shopper just landed back from the 3DS/Kortalán redirect: show progress while /details runs.
+      if (this.mountElement) {
+        render(
+          <LoaderScreen theme={this.configuration.theme} label={this.i18n.t("payment.loading")} />,
+          this.mountElement
+        );
+      }
+
+      const { resultCode, errorMessage } = await this.configuration.paymentFlow.submitAdditionalDetails({
+        paymentCheckoutReference,
+        details: { redirectResult },
+      });
+
+      dispatchFinalResult(resultCode, {
+        configuration: this.configuration,
+        handleSuccess: (message) => this.handleSuccess(message),
+        handleError: (message) => this.handleError(message),
+        failureMessage: errorMessage,
+      });
+    } catch (error) {
+      // Same no-throw philosophy as mount(): render the failure in-place, log for the console.
+      console.error("[StraumurCheckout] submitDetails() failed:", error);
+      this.handleError({ key: "error.failedToSubmitPaymentDetails" });
+      this.configuration.onPaymentFailed?.({ resultCode: "Error" });
+    }
   }
 
-  async submitDetails(redirectResult: string) {
-    const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId);
+  updateConfig(newConfig: StraumurCheckoutUpdateOptions): void {
+    const { locale, localizations, customLocalizations, theme, ...rest } = newConfig;
 
-    if (response.resultCode === "Error") {
-      this.handleError(response.error);
-      return;
+    // IIFE consumers get no type checking: refuse the fields that are fixed for the instance's
+    // lifetime instead of silently storing values the payment flow will never use.
+    const fixed = rest as Partial<Record<(typeof FIXED_CONFIG_KEYS)[number], unknown>>;
+    for (const key of FIXED_CONFIG_KEYS) {
+      if (key in fixed) {
+        console.warn(`[StraumurCheckout] updateConfig: "${key}" cannot change after construction; ignored.`);
+        delete fixed[key];
+      }
     }
 
-    const checkout = await AdyenCheckout({
-      environment: this.configuration.environment,
-      clientKey: response.clientKey,
-      paymentMethodsResponse: response.paymentMethods,
-      countryCode: "IS",
-      onAdditionalDetails: this.handleOnSubmitAdditionalData,
-    });
+    // `localizations` is the public name (as in the constructor); `customLocalizations` is the legacy alias.
+    const normalizedLocalizations = normalizeLocalizations(localizations ?? customLocalizations);
 
-    checkout.submitDetails({
-      details: {
-        redirectResult,
-      },
-    });
-  }
-
-  private handleOnSubmitAdditionalData = async (
-    state: AdditionalDetailsData,
-    _: UIElement<UIElementProps>,
-    actions: AdditionalDetailsActions
-  ) => {
-    const data: ICreateDetailsBody = {
-      ...state.data,
-      sessionId: this.configuration.sessionId,
-    };
-
-    const fetchResponse = await createDetailsRequest(this.configuration.environment, data);
-
-    // We will always get 200 OK unless there is an error in our server code.
-    // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
-    if (!fetchResponse.ok) {
-      actions.reject();
-      this.handleError("error.failedToSubmitPaymentDetails");
-      return;
-    }
-
-    const response = await fetchResponse.json();
-
-    // ResultCode should always be either Authorised or Refused or IdentifyShopper. Never empty.
-    if (!response.resultCode) {
-      actions.reject();
-      this.handleError("error.paymentDetailsFailed");
-      return;
-    }
-
-    const { resultCode, action } = response;
-
-    actions.resolve({ resultCode, action });
-
-    if (resultCode === "Authorised") {
-      this.handleSuccess("success.paymentAuthorized");
-    } else {
-      this.handleError("error.paymentUnsuccessful");
-    }
-  };
-
-  updateConfig(newConfig: Partial<StraumurCheckoutConfiguration>): void {
     this.configuration = {
       ...this.configuration,
-      ...newConfig,
+      ...rest,
+      // A theme object carries button overrides; flatten it exactly like the constructor does.
+      ...(theme !== undefined ? normalizeTheme(theme) : {}),
+      // Deprecated flat overrides still win when passed explicitly.
+      ...(rest.googlePayButtonTheme ? { googlePayButtonTheme: rest.googlePayButtonTheme } : {}),
+      ...(rest.applePayButtonTheme ? { applePayButtonTheme: rest.applePayButtonTheme } : {}),
+      // The public vocabulary is short codes; normalizeLocale also tolerates legacy full tags at runtime.
+      ...(locale ? { locale: normalizeLocale(locale) } : {}),
+      ...(normalizedLocalizations ? { customLocalizations: normalizedLocalizations } : {}),
     };
 
-    // Update i18n if locale or customLocalizations changed
-    if (newConfig.locale) {
-      this.i18n.setLanguage(newConfig.locale);
+    if (locale) {
+      this.i18n.setLanguage(this.configuration.locale);
     }
-    if (newConfig.customLocalizations) {
-      this.i18n.updateCustomLocalizations(newConfig.customLocalizations);
+    if (normalizedLocalizations) {
+      this.i18n.updateCustomLocalizations(normalizedLocalizations);
     }
 
-    // Re-render the component with new config
-    if (this.mountElement) {
+    // Re-render with the new config: the result screen if one is showing (so a language/theme change
+    // still applies to it), otherwise the checkout.
+    if (this.resultScreen) {
+      this.showResultScreen(this.resultScreen.variant, this.resultScreen.message);
+    } else {
       this.renderComponent();
     }
   }
 
-  setLanguage(locale: Language): void {
+  setLanguage(locale: PublicLocale): void {
     this.updateConfig({
       locale: locale,
     });
@@ -227,6 +229,7 @@ class StraumurCheckout {
       render(null, this.mountElement);
       this.mountElement = null;
     }
+    this.resultScreen = null;
     this.submitApi = null;
   }
 
@@ -254,7 +257,3 @@ class StraumurCheckout {
 }
 
 export default StraumurCheckout;
-
-function RootComponent({ children }: { children: h.JSX.Element }) {
-  return <div className="straumur__root-component">{children}</div>;
-}

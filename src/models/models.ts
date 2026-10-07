@@ -1,36 +1,153 @@
 import { Language, TranslationKey } from "../localizations/translations";
-import { PaymentMethod } from "./constants";
+import { PublicLocale } from "../localizations/locale";
+import { OpenDefaultPaymentMethod, PaymentMethod, PaymentMethodOrder } from "./constants";
+import { ICreateDetailsBody, ICreatePaymentBody } from "../adapter/models";
+import { PaymentMethodsResponse } from "../services/models";
 
-// this will be used to create a type for the configuration object
-export type StraumurWebConfiguration = {
-  sessionId: string;
+// configuration options shared by both session and advanced mode
+type StraumurWebBaseConfiguration = {
   environment: "test" | "live";
   onPaymentCompleted?: (data: PaymentCompletedData) => void;
-  onPaymentFailed?: (data?: PaymentFailedData) => void;
-  submitDetails?: (details: any) => void;
+  onPaymentFailed?: (data: PaymentFailedData) => void;
   placeholders?: Placeholders;
-  locale?: "is" | "en";
-  localizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-  instantPayments?: UniqueInstantPayments;
+  locale?: PublicLocale;
+  localizations?: Localizations;
+  instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+  /**
+   * Apple Pay with the merchant's OWN Apple Pay certificate. Called on every Apple Pay tap with Apple's
+   * `validationURL`; send it to your server, which must POST to it with your Merchant Identity Certificate
+   * (mutual TLS) and return Apple's merchant session object **unmodified**. Resolve with that object.
+   *
+   * Omit it to use Adyen's certificate (the default): Adyen then validates the merchant itself. With your own
+   * certificate, your Payment Processing Certificate must also be set up in Straumur's Adyen account, or the
+   * payment fails at decryption. A rejection aborts the Apple Pay sheet and shows the failure screen.
+   */
+  onApplePayValidateMerchant?: (validationURL: string) => Promise<ApplePayMerchantSession>;
   allowedPaymentMethods?: PaymentMethod[];
+  /**
+   * Top-to-bottom order of the payment-method options. Tokens: "card", "storedcard", "kortalan",
+   * "googlepay", "applepay", and "instantpayments" (the express row). A method listed in
+   * `instantPayments` renders only inside the "instantpayments" slot, never standalone, so its
+   * standalone token here is effectively ignored. Any available method you omit is appended in the
+   * default order. Defaults to ["instantpayments", "kortalan", "storedcard", "card", "googlepay", "applepay"].
+   */
+  orderPaymentMethods?: PaymentMethodOrder[];
+  /**
+   * Which payment method to open (expand) on load: "card", "firstStoredCard", "googlepay" or
+   * "applepay". If that method isn't available — a wallet that's in `instantPayments`, or
+   * "firstStoredCard" with no saved cards — it's ignored and no method is pre-opened (the chooser
+   * stays collapsed). Omit for the same collapsed default.
+   */
+  openDefaultPaymentMethod?: OpenDefaultPaymentMethod;
+  /**
+   * Color theme for the widget. Accepts a mode ("light" | "dark" | "system"), or a
+   * {@link ThemeConfiguration} object to also override the wallet / Kortalán button styling. "system" follows
+   * the shopper's OS/browser preference (`prefers-color-scheme`) and updates live if it changes.
+   * Defaults to "light".
+   */
+  theme?: Theme | ThemeConfiguration;
 };
 
-type ResultCode =
-  | "AuthenticationFinished"
-  | "AuthenticationNotRequired"
-  | "Authorised"
-  | "Cancelled"
-  | "ChallengeShopper"
-  | "Error"
-  | "IdentifyShopper"
-  | "PartiallyAuthorised"
-  | "Pending"
-  | "PresentToShopper"
-  | "Received"
-  | "RedirectShopper"
-  | "Refused";
+/**
+ * Per-language overrides of the built-in copy, keyed by language then TranslationKey. Language keys
+ * are the public short codes ("is" / "en"); the full tags ("is-IS" / "en-US") are still accepted for
+ * 1.x compatibility.
+ */
+export type Localizations = Partial<Record<LocalizationLanguage, Partial<Record<TranslationKey, string>>>>;
+
+/** A `localizations` key: the public short code, or (legacy, still accepted) the full tag. */
+export type LocalizationLanguage = PublicLocale | Language;
+
+/** Internal form of {@link Localizations}: always keyed by the full Language tag. */
+export type CustomLocalizations = Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
+
+/**
+ * Apple's opaque merchant session, as returned by Apple's `validationURL` to the merchant's server. Pass it
+ * through unchanged — it is signed by Apple.
+ */
+export type ApplePayMerchantSession = Record<string, unknown>;
+
+export type Theme = "light" | "dark" | "system";
+
+/** The resolved theme actually applied to the DOM ("system" collapses to one of these). */
+export type ResolvedTheme = "light" | "dark";
+
+/** Google Pay button style override: "white" = light button, "dark" = black button. */
+export type GooglePayButtonTheme = "dark" | "white";
+
+/** Apple Pay button style override: "light" = white button, "dark" = black button. */
+export type ApplePayButtonTheme = "dark" | "light";
+
+/** Kortalán express-button style override: "light" = whitish button, "dark" = blackish button. */
+/**
+ * Object form of `theme`: the widget color `mode` plus optional per-button style overrides.
+ * When an override is omitted the button follows the mode — a light widget gets a light/whitish
+ * button, a dark widget gets a black/blackish one.
+ */
+export type ThemeConfiguration = {
+  mode: Theme;
+  googlePayButtonTheme?: GooglePayButtonTheme;
+  applePayButtonTheme?: ApplePayButtonTheme;
+};
+
+// the public configuration (session mode): the component loads everything itself from the Straumur API using the sessionId
+export type StraumurWebConfiguration = StraumurWebBaseConfiguration & {
+  sessionId: string;
+};
+
+// INTERNAL — advanced mode: the host page provides the payment methods and controls all network calls
+// through onSubmit / onAdditionalDetails (and optionally onDisableToken).
+// Used only by Straumur's own Hosted Checkout page; not exported from the package entry point,
+// not documented for integrators, and not part of the supported public API.
+export type StraumurWebAdvancedConfiguration = StraumurWebBaseConfiguration & {
+  sessionId?: never;
+  clientKey: string;
+  countryCode: string;
+  paymentMethods: PaymentMethodsResponse;
+  /**
+   * The amount of the transaction, in minor units. For example, value 1000 means 10.00.
+   */
+  amount: { value: number; currency: string };
+  formattedAmount: string;
+  merchantName: string;
+  enableStoreDetails: "Enabled" | "Disabled" | "AskForConsent";
+  onSubmit: (state: AdvancedSubmitState, actions: AdvancedPaymentActions) => void | Promise<void>;
+  onAdditionalDetails: (state: AdvancedAdditionalDetailsState, actions: AdvancedPaymentActions) => void | Promise<void>;
+  onDisableToken?: (data: DisableTokenData, actions: DisableTokenActions) => void | Promise<void>;
+  /**
+   * Called before a payment is submitted. Return false to abort the submission.
+   * Keep it synchronous when Apple Pay is offered — the payment sheet must open within the user gesture.
+   */
+  onBeforeSubmit?: () => boolean | Promise<boolean>;
+};
+
+// INTERNAL — union the constructor actually accepts at runtime (public signature stays session-only)
+export type StraumurWebInternalConfiguration = StraumurWebConfiguration | StraumurWebAdvancedConfiguration;
+
+const RESULT_CODES = [
+  "AuthenticationFinished",
+  "AuthenticationNotRequired",
+  "Authorised",
+  "Cancelled",
+  "ChallengeShopper",
+  "Error",
+  "IdentifyShopper",
+  "PartiallyAuthorised",
+  "Pending",
+  "PresentToShopper",
+  "Received",
+  "RedirectShopper",
+  "Refused",
+] as const;
+
+export type ResultCode = (typeof RESULT_CODES)[number];
+
+/** Narrows a resultCode string from the Adyen boundary to our ResultCode union; unknown values map to "Error". */
+export function toResultCode(value: string | undefined): ResultCode {
+  return value && (RESULT_CODES as readonly string[]).includes(value) ? (value as ResultCode) : "Error";
+}
 
 export type PaymentCompletedData = {
   resultCode: ResultCode;
@@ -40,34 +157,121 @@ export type PaymentFailedData = {
   resultCode: ResultCode;
 };
 
-type UniqueInstantPayments =
-    | [Extract<PaymentMethod, "googlepay">]
-    | [Extract<PaymentMethod, "applepay">]
-    | [Extract<PaymentMethod, "googlepay">, Extract<PaymentMethod, "applepay">]
-    | [Extract<PaymentMethod, "applepay">, Extract<PaymentMethod, "googlepay">];
+export type AdvancedSubmitState = {
+  data: Omit<ICreatePaymentBody, "sessionId">;
+};
+
+export type AdvancedAdditionalDetailsState = {
+  data: Omit<ICreateDetailsBody, "sessionId">;
+};
+
+export type PaymentFlowResult = {
+  resultCode: ResultCode;
+  action?: unknown;
+  /**
+   * Optional buyer-friendly failure message shown on the built-in failure screen
+   * instead of the generic localized one (advanced mode only).
+   */
+  errorMessage?: string;
+  /**
+   * The per-attempt reference from the /payment response. In advanced mode the host surfaces it here so the
+   * component can auto-attach it to a native (in-component) 3DS /details continuation. Redirect continuations
+   * pass it explicitly via submitDetails instead.
+   */
+  paymentCheckoutReference?: string;
+};
+
+export type AdvancedPaymentActions = {
+  resolve: (result: PaymentFlowResult) => void;
+  reject: (errorMessage?: string) => void;
+};
+
+export type DisableTokenData = {
+  storedPaymentMethodId: string;
+};
+
+export type DisableTokenActions = {
+  resolve: () => void;
+  reject: () => void;
+};
+
+// abstraction over how payments reach the backend: session mode calls the Straumur API itself,
+// advanced mode delegates to the host page's handlers
+export interface PaymentFlow {
+  submitPayment(data: AdvancedSubmitState["data"]): Promise<PaymentFlowResult>;
+  submitAdditionalDetails(data: AdvancedAdditionalDetailsState["data"]): Promise<PaymentFlowResult>;
+  disableToken?: (storedPaymentMethodId: string) => Promise<void>;
+  beforeSubmit?: () => boolean | Promise<boolean>;
+}
+
+// message shown on the built-in result screens: either a translation key or raw text supplied by the host
+export type ResultMessage = { key: TranslationKey } | { text: string };
+
+/**
+ * A payment method that can be placed in `instantPayments` to render as an express button at the top
+ * of the widget: the two Adyen wallets. Kortalán is deliberately NOT expressible here — it cannot be
+ * rendered in the express strip. Duplicates are ignored at runtime (the instant strip dedupes), so
+ * this is a plain array rather than a unique-tuple union.
+ */
+export type InstantPaymentMethod = Extract<PaymentMethod, "googlepay" | "applepay">;
 
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {
-  sessionId: string;
+  mode: "session" | "advanced";
+  sessionId?: string;
   environment: "test" | "live";
+  countryCode: string;
+  paymentFlow: PaymentFlow;
   onPaymentCompleted?: (data: PaymentCompletedData) => void;
-  onPaymentFailed?: (data?: PaymentFailedData) => void;
+  onPaymentFailed?: (data: PaymentFailedData) => void;
   placeholders?: Placeholders;
   locale: Language;
-  customLocalizations?: Partial<Record<Language, Partial<Record<TranslationKey, string>>>>;
-  instantPayments?: UniqueInstantPayments;
+  customLocalizations?: CustomLocalizations;
+  instantPayments?: InstantPaymentMethod[];
   hideSubmitButton?: boolean;
   onCardValidityChanged?: (isValid: boolean, isActive: boolean) => void;
+  onApplePayValidateMerchant?: (validationURL: string) => Promise<ApplePayMerchantSession>;
   allowedPaymentMethods?: PaymentMethod[];
+  orderPaymentMethods?: PaymentMethodOrder[];
+  openDefaultPaymentMethod?: OpenDefaultPaymentMethod;
+  theme: Theme;
+  googlePayButtonTheme?: GooglePayButtonTheme;
+  applePayButtonTheme?: ApplePayButtonTheme;
+};
+
+/**
+ * What updateConfig() accepts: the public configuration options that can change after construction.
+ * The session itself (sessionId, environment) is fixed for the instance's lifetime — the payment flow
+ * captures it at construction — so it is not updatable; create a new StraumurCheckout instead.
+ */
+export type StraumurCheckoutUpdateOptions = Partial<
+  Pick<
+    StraumurWebBaseConfiguration,
+    | "onPaymentCompleted"
+    | "onPaymentFailed"
+    | "placeholders"
+    | "locale"
+    | "localizations"
+    | "instantPayments"
+    | "hideSubmitButton"
+    | "onCardValidityChanged"
+    | "onApplePayValidateMerchant"
+    | "allowedPaymentMethods"
+    | "orderPaymentMethods"
+    | "openDefaultPaymentMethod"
+    | "theme"
+  >
+> & {
+  /** @deprecated Use `localizations` (same shape; the name the constructor uses). */
+  customLocalizations?: Localizations;
+  /** @deprecated Use `theme: { mode, googlePayButtonTheme }`. */
+  googlePayButtonTheme?: GooglePayButtonTheme;
+  /** @deprecated Use `theme: { mode, applePayButtonTheme }`. */
+  applePayButtonTheme?: ApplePayButtonTheme;
 };
 
 type PlaceholderKeys =
-  | "cardNumber"
-  | "expiryDate"
-  | "expiryMonth"
-  | "expiryYear"
-  | "securityCodeThreeDigits"
-  | "securityCodeFourDigits";
+  "cardNumber" | "expiryDate" | "expiryMonth" | "expiryYear" | "securityCodeThreeDigits" | "securityCodeFourDigits";
 
 // Partial makes all records optional so we can have a configuration without placeholders
 // Record creates a type with keys of type PlaceholderKeys and values of type string

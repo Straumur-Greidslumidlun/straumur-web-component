@@ -1,14 +1,27 @@
 .instant-payments {
   display: grid;
-  gap: var(--straumur__space-md);
-  grid-template-columns: 1fr 1fr;
+  /* Standard intra-row gap between paired controls (matches the card expiry/CVC row). */
+  gap: var(--straumur__space-lg);
+  /* minmax(0, 1fr) (not plain 1fr) keeps the two wallet buttons exactly equal width even when
+     Google Pay's content is wider (e.g. the 3-preview-card variant) — it fits the column instead
+     of widening it past Apple Pay. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .instant-payments--single {
   grid-template-columns: 1fr;
 }
 
-@media (max-width: 527px) {
+/* Kortalán always spans the full row, sitting above the wallet buttons that share the row below it.
+   grid-column: 1 / -1 works in both the two-column (Kortalán + two wallets) and single-column
+   (Kortalán alone, or Kortalán + one wallet, or the stacked < 500px layout) grids. */
+.instant-payments__full {
+  grid-column: 1 / -1;
+}
+
+/* Stack the wallets once the WIDGET is under 500px, so they sit side by side only at a full-width
+   (~500px) column and stack on anything narrower — independent of the host container/viewport. */
+@container straumur (max-width: 499px) {
   .instant-payments {
     grid-template-columns: 1fr;
   }

@@ -1,10 +1,12 @@
 import { Language } from "../localizations/translations";
 import { ErrorCode } from "../models/models";
 
+// clientKey / enableStoreDetails are optional on the base type (absent for native-only terminals),
+// so a plain intersection is used rather than Required<> — every other field is already required.
 export type SuccessResponse = {
   resultCode: "Success";
   message?: string;
-} & Required<StraumurCheckoutPaymentMethods>;
+} & StraumurCheckoutPaymentMethods;
 
 export type ErrorResponse = {
   resultCode: "Error";
@@ -20,18 +22,19 @@ export type StraumurCheckoutPaymentMethods = {
    */
   amount: number;
   /**
-   * Public key used for client-side authentication.
+   * Public key used for client-side authentication. Absent when the terminal has no Adyen methods
+   * (native-only, e.g. Kortalan) — the Adyen SDK is not initialised in that case.
    */
-  clientKey: string;
+  clientKey?: string;
   /**
    * The three-character ISO currency code.
    */
   currency: string;
   /**
    * Config option related to whether we set storePaymentMethod in the card data, and showing/hiding the "store details" checkbox
-   * - merchant set config option
+   * - merchant set config option. Absent when the terminal has no Adyen methods (tokenization is Adyen-only).
    */
-  enableStoreDetails: "Enabled" | "Disabled" | "AskForConsent";
+  enableStoreDetails?: "Enabled" | "Disabled" | "AskForConsent";
   /**
    * The formatted amount of the transaction. For example, EUR 10.00.
    */
@@ -54,11 +57,11 @@ export type StraumurCheckoutPaymentMethods = {
   paymentMethods: PaymentMethodsResponse;
 };
 
-interface PaymentMethodsResponse {
+export interface PaymentMethodsResponse {
   /**
    * Detailed list of payment methods required to generate payment forms.
    */
-  paymentMethods?: PaymentMethod[];
+  paymentMethods?: ApiPaymentMethod[];
   /**
    * List of all stored payment methods.
    */
@@ -83,7 +86,8 @@ type Issuer = {
   name: string;
 };
 
-type PaymentMethod = {
+// Named ApiPaymentMethod to avoid colliding with the PaymentMethod string union in models/constants.ts.
+type ApiPaymentMethod = {
   /**
    * Brand for the selected gift card. For example: plastix, hmclub.
    */
@@ -119,7 +123,7 @@ type PaymentMethod = {
   type: string;
 };
 
-export type StoredPaymentMethod = PaymentMethod & {
+export type StoredPaymentMethod = ApiPaymentMethod & {
   /**
    * The bank account number (without separators).
    */

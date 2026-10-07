@@ -1,16 +1,18 @@
 import { h } from "preact";
 import { createContext, ComponentChildren } from "preact";
-import {
-  useState,
-  useContext,
-  useCallback,
-  useRef,
-  useLayoutEffect,
-} from "preact/hooks";
+import { useState, useContext, useCallback, useRef, useLayoutEffect } from "preact/hooks";
 import { PaymentMethod } from "../../models/constants";
-import { TranslationKey } from "../../localizations/translations";
+import { ResultMessage } from "../../models/models";
+
+/** A submit trigger registered by the active card-type component. May be async — see SubmitApi. */
+export type SubmitHandler = () => void | Promise<void>;
 
 export type SubmitApi = {
+  /**
+   * Invokes the active card form's submit handler. The boolean only says a handler existed
+   * and was invoked — the submission itself runs asynchronously and reports its outcome
+   * through onPaymentCompleted/onPaymentFailed.
+   */
   triggerSubmit: () => boolean;
 };
 
@@ -20,68 +22,96 @@ type PaymentMethodContextType = {
   activeStoredPaymentMethodId: string | null;
   setActiveStoredPaymentMethodId: (value: string) => void;
   isPaymentMethodInitialized: Record<PaymentMethod, boolean>;
-  updatePaymentMethodInitialization: (
-    paymentMethod: PaymentMethod,
-    isInitialized: boolean,
-  ) => void;
+  updatePaymentMethodInitialization: (paymentMethod: PaymentMethod, isInitialized: boolean) => void;
   isStoredCardInitialized: Record<string, boolean>;
-  updateStoredCardInitialization: (
-    storedPaymentMethod: string,
-    isInitialized: boolean,
-  ) => void;
-  handleSuccess: (success: TranslationKey) => void;
-  success: TranslationKey | null;
-  handleError: (error: TranslationKey) => void;
-  error: TranslationKey | null;
+  updateStoredCardInitialization: (storedPaymentMethod: string, isInitialized: boolean) => void;
+  handleSuccess: (success: ResultMessage) => void;
+  success: ResultMessage | null;
+  handleError: (error: ResultMessage) => void;
+  error: ResultMessage | null;
   threeDSecureActive: boolean;
   setThreeDSecureActive: (value: boolean) => void;
+  /**
+   * True while any payment method's submission is in flight (from the moment its /payments call
+   * starts until the outcome takes over the widget or the call fails). Used to lock the rest of the
+   * UI — other method rows, wallet buttons, submit buttons — so the shopper can't start a second,
+   * concurrent attempt. (The backend also serializes attempts, so this is UX, not the safety net.)
+   */
+  paymentInProgress: boolean;
+  setPaymentInProgress: (value: boolean) => void;
+  /**
+   * Synchronously claims the in-progress lock (sets paymentInProgress); false if a submission is
+   * already running. Use at every submit entry point — the state flag alone only updates on the next
+   * render, so two clicks in one tick would both pass a `paymentInProgress` check.
+   */
+  tryStartPayment: () => boolean;
+  /** Synchronous read of the lock, for event-time checks in Adyen callbacks. */
+  isPaymentLocked: () => boolean;
+  /**
+   * True while the shopper is waiting on us with nothing interactive to look at: from the moment a
+   * submission passes the beforeSubmit gate, through the /payments call and the invisible 3DS
+   * fingerprint step, until the 3DS challenge iframe has loaded — and again while /payments/details
+   * runs after the challenge. Drives the processing overlay (see ProcessingOverlay).
+   */
+  paymentProcessing: boolean;
+  setPaymentProcessing: (value: boolean) => void;
+  /**
+   * True while a 3DS challenge run by ANOTHER payment method takes over the widget —
+   * the asking component must render nothing. Components matching a specific stored card
+   * additionally check their own card id (see stored-card-component).
+   */
+  isObscuredByThreeDS: (method: PaymentMethod) => boolean;
   isSolePaymentMethod: boolean;
   hasCard: boolean;
   hasGooglePay: boolean;
   hasApplePay: boolean;
+  hasKortalan: boolean;
   hasStoredPaymentMethods: boolean;
-  registerSubmitHandler: (handler: () => void) => void;
-  unregisterSubmitHandler: (handler: () => void) => void;
+  registerSubmitHandler: (handler: SubmitHandler) => void;
+  unregisterSubmitHandler: (handler: SubmitHandler) => void;
 };
 
-const PaymentMethodContext = createContext<
-  PaymentMethodContextType | undefined
->(undefined);
+const PaymentMethodContext = createContext<PaymentMethodContextType | undefined>(undefined);
 
 const defaultIsInitialized: Record<PaymentMethod, boolean> = {
   card: false,
   storedcard: false,
   googlepay: false,
   applepay: false,
+  kortalan: false,
 };
 
 export const PaymentMethodGroupContext = ({
   children,
   initialValue,
+  initialStoredPaymentMethodId = null,
   isSolePaymentMethod,
   hasCard,
   hasGooglePay,
   hasApplePay,
+  hasKortalan,
   hasStoredPaymentMethods,
   onSubmitApiReady,
 }: {
   children: ComponentChildren;
   initialValue: PaymentMethod | null;
+  initialStoredPaymentMethodId?: string | null;
   isSolePaymentMethod: boolean;
   hasCard: boolean;
   hasGooglePay: boolean;
   hasApplePay: boolean;
+  hasKortalan: boolean;
   hasStoredPaymentMethods: boolean;
   onSubmitApiReady?: (api: SubmitApi) => void;
 }): h.JSX.Element => {
   const [activePaymentMethod, setActivePaymentMethod] = useState(initialValue);
-  const activeSubmitHandlerRef = useRef<(() => void) | null>(null);
+  const activeSubmitHandlerRef = useRef<SubmitHandler | null>(null);
 
-  const registerSubmitHandler = useCallback((handler: () => void): void => {
+  const registerSubmitHandler = useCallback((handler: SubmitHandler): void => {
     activeSubmitHandlerRef.current = handler;
   }, []);
 
-  const unregisterSubmitHandler = useCallback((handler: () => void): void => {
+  const unregisterSubmitHandler = useCallback((handler: SubmitHandler): void => {
     // Identity check guards against effect-cleanup ordering races when switching
     // between card-type payment methods: an outgoing form's cleanup must not
     // clobber a handler an incoming form already registered.
@@ -101,46 +131,60 @@ export const PaymentMethodGroupContext = ({
     return true;
   }, []);
 
+  // triggerSubmit is stable; onSubmitApiReady is an inline arrow re-created on each class render, so this
+  // re-hands the same API on re-render — harmless, and it can never point at a stale provider.
   useLayoutEffect(() => {
     onSubmitApiReady?.({ triggerSubmit });
-  }, []);
-  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] =
-    useState<string | null>(null);
+  }, [onSubmitApiReady, triggerSubmit]);
+  const [activeStoredPaymentMethodId, setActiveStoredPaymentMethodId] = useState<string | null>(
+    initialStoredPaymentMethodId
+  );
   const [threeDSecureActive, setThreeDSecureActive] = useState<boolean>(false);
-  const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] =
-    useState(defaultIsInitialized);
-  const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<
-    Record<string, boolean>
-  >({});
+  const [paymentInProgress, setPaymentInProgressState] = useState<boolean>(false);
+  const paymentInProgressRef = useRef(false);
+  const setPaymentInProgress = useCallback((value: boolean): void => {
+    paymentInProgressRef.current = value;
+    setPaymentInProgressState(value);
+  }, []);
+  const tryStartPayment = useCallback((): boolean => {
+    if (paymentInProgressRef.current) {
+      return false;
+    }
+    setPaymentInProgress(true);
+    return true;
+  }, [setPaymentInProgress]);
+  const isPaymentLocked = useCallback((): boolean => paymentInProgressRef.current, []);
+  const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
+  const [isPaymentMethodInitialized, setIsPaymentMethodInitialized] = useState(defaultIsInitialized);
+  const [isStoredCardInitialized, setIsStoredCardInitialized] = useState<Record<string, boolean>>({});
 
-  const [success, setSuccess] = useState<TranslationKey | null>(null);
-  const [error, setError] = useState<TranslationKey | null>(null);
+  const [success, setSuccess] = useState<ResultMessage | null>(null);
+  const [error, setError] = useState<ResultMessage | null>(null);
 
-  const updatePaymentMethodInitialization = (
-    paymentMethod: PaymentMethod,
-    isInitialized: boolean,
-  ) => {
+  const updatePaymentMethodInitialization = (paymentMethod: PaymentMethod, isInitialized: boolean) => {
     setIsPaymentMethodInitialized((prevState) => ({
       ...prevState,
       [paymentMethod]: isInitialized,
     }));
   };
 
-  const updateStoredCardInitialization = (
-    storedPaymentMethod: string,
-    isInitialized: boolean,
-  ) => {
+  const updateStoredCardInitialization = (storedPaymentMethod: string, isInitialized: boolean) => {
     setIsStoredCardInitialized((prevState) => ({
       ...prevState,
       [storedPaymentMethod]: isInitialized,
     }));
   };
 
-  const handleError = (error: TranslationKey) => {
+  const isObscuredByThreeDS = useCallback(
+    (method: PaymentMethod): boolean => threeDSecureActive && activePaymentMethod !== method,
+    [threeDSecureActive, activePaymentMethod]
+  );
+
+  const handleError = (error: ResultMessage) => {
     setError(error);
   };
 
-  const handleSuccess = (success: TranslationKey) => {
+  const handleSuccess = (success: ResultMessage) => {
     setSuccess(success);
   };
 
@@ -161,10 +205,18 @@ export const PaymentMethodGroupContext = ({
         error,
         threeDSecureActive,
         setThreeDSecureActive,
+        paymentInProgress,
+        setPaymentInProgress,
+        tryStartPayment,
+        isPaymentLocked,
+        paymentProcessing,
+        setPaymentProcessing,
+        isObscuredByThreeDS,
         isSolePaymentMethod,
         hasCard,
         hasGooglePay,
         hasApplePay,
+        hasKortalan,
         hasStoredPaymentMethods,
         registerSubmitHandler,
         unregisterSubmitHandler,
@@ -178,9 +230,7 @@ export const PaymentMethodGroupContext = ({
 export const usePaymentMethodGroup = (): PaymentMethodContextType => {
   const context = useContext(PaymentMethodContext);
   if (context === undefined) {
-    throw new Error(
-      "usePaymentMethodGroup must be used within a PaymentMethodGroup",
-    );
+    throw new Error("usePaymentMethodGroup must be used within a PaymentMethodGroup");
   }
   return context as PaymentMethodContextType;
 };

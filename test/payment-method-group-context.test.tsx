@@ -88,7 +88,7 @@ describe("PaymentMethodGroup submit handler registry", () => {
     useEffect(() => {
       registerSubmitHandler(handler);
       return () => unregisterSubmitHandler(handler);
-    }, [handler]);
+    }, [handler, registerSubmitHandler, unregisterSubmitHandler]);
     return null;
   }
 
@@ -131,7 +131,7 @@ describe("PaymentMethodGroup submit handler registry", () => {
         registerSubmitHandler(handlerA);
         // Simulate the previously-active form's cleanup running after handlerA already took over.
         unregisterSubmitHandler(handlerB);
-      }, []);
+      }, [registerSubmitHandler, unregisterSubmitHandler]);
       return null;
     }
 

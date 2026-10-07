@@ -1,0 +1,203 @@
+import { ICreateDetailsBody, ICreatePaymentBody, IPostDisableTokenBody } from "../adapter/models";
+import { createDetailsRequest, createPaymentRequest, postDisableTokenRequest } from "../adapter/straumur-adapter";
+import { RequestTimeoutError } from "../adapter/request-timeout-error";
+import { PaymentFlow, PaymentFlowResult, ResultMessage, StraumurWebAdvancedConfiguration } from "../models/models";
+import { TranslationKey } from "../localizations/translations";
+
+export class PaymentFlowError extends Error {
+  messageKey: TranslationKey;
+  messageText?: string;
+
+  constructor(messageKey: TranslationKey, messageText?: string) {
+    super(messageText ?? messageKey);
+    this.messageKey = messageKey;
+    this.messageText = messageText;
+  }
+}
+
+export function toResultMessage(error: unknown, fallbackKey: TranslationKey): ResultMessage {
+  if (error instanceof PaymentFlowError) {
+    return error.messageText ? { text: error.messageText } : { key: error.messageKey };
+  }
+
+  return { key: fallbackKey };
+}
+
+/**
+ * A /payment or /details call that timed out may still have succeeded on the backend, so it is never
+ * reported as "failed" (the shopper might pay twice) — they are told it couldn't be confirmed.
+ */
+async function withNotConfirmedOnTimeout(request: () => Promise<Response>): Promise<Response> {
+  try {
+    return await request();
+  } catch (error) {
+    if (error instanceof RequestTimeoutError) {
+      throw new PaymentFlowError("error.paymentNotConfirmed");
+    }
+    throw error;
+  }
+}
+
+export function createSessionPaymentFlow(environment: "test" | "live", sessionId: string): PaymentFlow {
+  // Remembered from the /payment response so a native (in-component) 3DS continuation can auto-attach it to
+  // /details. A redirect continuation supplies it explicitly via submitDetails instead.
+  let capturedPaymentCheckoutReference: string | undefined;
+
+  return {
+    async submitPayment(data) {
+      const body: ICreatePaymentBody = { ...data, sessionId };
+
+      const fetchResponse = await withNotConfirmedOnTimeout(() => createPaymentRequest(environment, body));
+
+      // We will always get 200 OK unless there is an error in our server code.
+      // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
+      if (!fetchResponse.ok) {
+        throw new PaymentFlowError("error.failedToSubmitPayment");
+      }
+
+      const response = await fetchResponse.json();
+
+      capturedPaymentCheckoutReference = response.paymentCheckoutReference ?? capturedPaymentCheckoutReference;
+
+      // ResultCode should never be empty.
+      if (!response.resultCode) {
+        throw new PaymentFlowError("error.paymentFailed");
+      }
+
+      return { resultCode: response.resultCode, action: response.action };
+    },
+    async submitAdditionalDetails(data) {
+      const body: ICreateDetailsBody = {
+        ...data,
+        paymentCheckoutReference: data.paymentCheckoutReference ?? capturedPaymentCheckoutReference,
+        sessionId,
+      };
+
+      const fetchResponse = await withNotConfirmedOnTimeout(() => createDetailsRequest(environment, body));
+
+      // We will always get 200 OK unless there is an error in our server code.
+      // Payment unsuccessful still returns 200 OK, but with resultCode Refused.
+      if (!fetchResponse.ok) {
+        throw new PaymentFlowError("error.failedToSubmitPaymentDetails");
+      }
+
+      const response = await fetchResponse.json();
+
+      // ResultCode should always be either Authorised or Refused or IdentifyShopper. Never empty.
+      if (!response.resultCode) {
+        throw new PaymentFlowError("error.paymentDetailsFailed");
+      }
+
+      return { resultCode: response.resultCode, action: response.action };
+    },
+    async disableToken(storedPaymentMethodId) {
+      const body: IPostDisableTokenBody = { storedPaymentMethodId, sessionId };
+
+      const fetchResponse = await postDisableTokenRequest(environment, body);
+
+      if (!fetchResponse.ok) {
+        throw new PaymentFlowError("error.failedToSubmitRemoveStoredPaymentCard");
+      }
+
+      const disableTokenResponse = await fetchResponse.json();
+
+      if (!disableTokenResponse.success) {
+        throw new PaymentFlowError("error.failedToRemoveStoredPaymentCard");
+      }
+    },
+  };
+}
+
+export function createAdvancedPaymentFlow(configuration: StraumurWebAdvancedConfiguration): PaymentFlow {
+  // Wraps whatever the host handler throws (synchronously or asynchronously) in a PaymentFlowError,
+  // so callers can rely on a single error contract.
+  function invokeHostHandler<T>(
+    invoke: (resolve: (value: T) => void, reject: (error: PaymentFlowError) => void) => void | Promise<void>,
+    resolve: (value: T) => void,
+    reject: (error: unknown) => void,
+    thrownErrorKey: TranslationKey
+  ): void {
+    const rejectWithFlowError = (error: unknown) =>
+      reject(error instanceof PaymentFlowError ? error : new PaymentFlowError(thrownErrorKey));
+
+    try {
+      Promise.resolve(invoke(resolve, reject)).catch(rejectWithFlowError);
+    } catch (error) {
+      rejectWithFlowError(error);
+    }
+  }
+
+  // Captured from the host's onSubmit resolve (the host made the /payment call, so only it sees the
+  // reference). Reused to auto-attach on a native (in-component) 3DS /details; redirect passes it explicitly.
+  let capturedPaymentCheckoutReference: string | undefined;
+
+  const flow: PaymentFlow = {
+    submitPayment(data) {
+      return new Promise<PaymentFlowResult>((resolve, reject) => {
+        invokeHostHandler(
+          (res, rej) =>
+            configuration.onSubmit(
+              { data },
+              {
+                resolve: (result) => {
+                  capturedPaymentCheckoutReference =
+                    result.paymentCheckoutReference ?? capturedPaymentCheckoutReference;
+                  res(result);
+                },
+                reject: (errorMessage) => rej(new PaymentFlowError("error.failedToSubmitPayment", errorMessage)),
+              }
+            ),
+          resolve,
+          reject,
+          "error.failedToSubmitPayment"
+        );
+      });
+    },
+    submitAdditionalDetails(data) {
+      return new Promise<PaymentFlowResult>((resolve, reject) => {
+        invokeHostHandler(
+          (res, rej) =>
+            configuration.onAdditionalDetails(
+              {
+                data: {
+                  ...data,
+                  paymentCheckoutReference: data.paymentCheckoutReference ?? capturedPaymentCheckoutReference,
+                },
+              },
+              {
+                resolve: res,
+                reject: (errorMessage) => rej(new PaymentFlowError("error.failedToSubmitPaymentDetails", errorMessage)),
+              }
+            ),
+          resolve,
+          reject,
+          "error.failedToSubmitPaymentDetails"
+        );
+      });
+    },
+    beforeSubmit: configuration.onBeforeSubmit,
+  };
+
+  const { onDisableToken } = configuration;
+
+  if (onDisableToken) {
+    flow.disableToken = (storedPaymentMethodId) =>
+      new Promise<void>((resolve, reject) => {
+        invokeHostHandler(
+          (res, rej) =>
+            onDisableToken(
+              { storedPaymentMethodId },
+              {
+                resolve: () => res(),
+                reject: () => rej(new PaymentFlowError("error.failedToRemoveStoredPaymentCard")),
+              }
+            ),
+          resolve,
+          reject,
+          "error.failedToSubmitRemoveStoredPaymentCard"
+        );
+      });
+  }
+
+  return flow;
+}
