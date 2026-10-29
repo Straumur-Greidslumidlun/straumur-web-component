@@ -301,12 +301,14 @@ before fulfilling or cancelling an order.
 
 ## Breaking changes in v2.0.0
 
-- Removed the config field `submitDetails?: (details: any) => void` (it was never invoked). Use the `submitDetails(redirectResult)` method on the class instead.
-- `updateConfig()` accepts only the documented configuration options (typed as `StraumurCheckoutUpdateOptions`). `sessionId` and `environment` are fixed for an instance's lifetime — they are ignored with a console warning; create a new `StraumurCheckout` instead. Use `localizations` (as in the constructor); `customLocalizations` still works but is deprecated.
-- `submitDetails(redirectResult)` now invokes `onPaymentCompleted` / `onPaymentFailed`.
-- Result routing now follows Adyen Web 6: a `Refused`, `Cancelled`, or `Error` outcome invokes `onPaymentFailed` (in 1.x every gateway response, including refusals, invoked `onPaymentCompleted`). If your integration branched on `resultCode` inside `onPaymentCompleted`, move the failure branches to `onPaymentFailed`.
-- `onPaymentFailed`'s argument is no longer optional — it always carries a `resultCode`.
-- Locale short codes everywhere: `setLanguage()` and `updateConfig()` now take `"en"` / `"is"` like the constructor's `locale` option. The 1.x full tags (`"en-US"` / `"is-IS"`) are still accepted at runtime but are no longer part of the public types.
+1. **`onPaymentFailed`**: a `Refused`, `Cancelled` or `Error` outcome now invokes
+   `onPaymentFailed({ resultCode })` instead of `onPaymentCompleted` (in 1.x every gateway response,
+   including refusals, invoked `onPaymentCompleted`). If your integration branched on `resultCode` inside
+   `onPaymentCompleted`, move the failure branches to `onPaymentFailed`.
+2. **`setLanguage`**: takes `"is"` / `"en"`, the same codes as the `locale` option, instead of `"is-IS"` /
+   `"en-US"`.
+
+Neither affects rendering; they change how your code handles results and switches language.
 
 ## License
 
