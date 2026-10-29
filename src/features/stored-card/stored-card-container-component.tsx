@@ -17,12 +17,9 @@ function StoredCardContainerComponent({
   const [storedPaymentMethods, setStoredPaymentMethods] = useState<StoredPaymentMethod[]>(
     paymentMethods.paymentMethods.storedPaymentMethods ?? []
   );
-  const { activePaymentMethod, threeDSecureActive, hasStoredPaymentMethods } = usePaymentMethodGroup();
+  const { isObscuredByThreeDS, hasStoredPaymentMethods } = usePaymentMethodGroup();
 
-  if (
-    !hasStoredPaymentMethods ||
-    (activePaymentMethod !== "storedcard" && threeDSecureActive) // if threeDSecureActive for some other payment method, do not show stored cards
-  ) {
+  if (!hasStoredPaymentMethods || isObscuredByThreeDS("storedcard")) {
     return null;
   }
 

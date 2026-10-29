@@ -6,10 +6,12 @@ import { PaymentMethod } from "../../models/constants";
 interface PaymentMethodGroupProps {
   children: ComponentChildren;
   initialValue: PaymentMethod | null;
+  initialStoredPaymentMethodId?: string | null;
   isSolePaymentMethod: boolean;
   hasCard: boolean;
   hasGooglePay: boolean;
   hasApplePay: boolean;
+  hasKortalan: boolean;
   hasStoredPaymentMethods: boolean;
   onSubmitApiReady?: (api: SubmitApi) => void;
 }
@@ -17,20 +19,24 @@ interface PaymentMethodGroupProps {
 function PaymentMethodGroup({
   children,
   initialValue,
+  initialStoredPaymentMethodId,
   isSolePaymentMethod,
   hasCard,
   hasGooglePay,
   hasApplePay,
+  hasKortalan,
   hasStoredPaymentMethods,
   onSubmitApiReady,
 }: PaymentMethodGroupProps): h.JSX.Element | null {
   return (
     <PaymentMethodGroupContext
       initialValue={initialValue}
+      initialStoredPaymentMethodId={initialStoredPaymentMethodId}
       isSolePaymentMethod={isSolePaymentMethod}
       hasCard={hasCard}
       hasGooglePay={hasGooglePay}
       hasApplePay={hasApplePay}
+      hasKortalan={hasKortalan}
       hasStoredPaymentMethods={hasStoredPaymentMethods}
       onSubmitApiReady={onSubmitApiReady}
     >

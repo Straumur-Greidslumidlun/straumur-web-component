@@ -1,0 +1,45 @@
+/* Kortalán as the widget's only payment method, per Figma node 2253:2713: brand-blue fill, green
+   symbol + label, 16px radius, 30px side padding, 8px gap.
+
+   Height deliberately matches a COLLAPSED payment-method row rather than the design's 76px, so a
+   Kortalán-only widget is the same size as the same widget with other methods present. That height is
+   the row's own box model: its vertical padding twice, plus the tallest thing in the row header (the
+   26px Straumur x Kortalán lockup). Keep this in sync if either changes.
+
+   The colors are the provider's, so — exactly like the Google Pay / Apple Pay buttons, which can only
+   be the literal black or white the wallet ships — they are fixed and NOT overridden by the dark
+   theme. The button takes no theme input; there is deliberately no light/dark variant. */
+.straumur__kortalan-standalone-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--straumur__space-s);
+  width: 100%;
+  height: calc(var(--straumur__space-xxlg) * 2 + 26px);
+  padding: 0 30px;
+  background: var(--straumur__color-kortalan-standalone-bg);
+  color: var(--straumur__color-kortalan-standalone-ink);
+  border: none;
+  border-radius: var(--straumur__border-radius-xxlg);
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+  transition: opacity 0.2s ease-out;
+}
+
+/* The symbol is 32x8 by design and must not be stretched by the flex row. */
+.straumur__kortalan-standalone-button svg {
+  flex-shrink: 0;
+  width: 32px;
+  height: 8px;
+}
+
+.straumur__kortalan-standalone-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.straumur__kortalan-standalone-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

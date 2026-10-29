@@ -1,12 +1,13 @@
-import { h, Fragment } from "preact";
+﻿import { h, Fragment } from "preact";
+import { ResultMessage } from "../src/models/models";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/preact";
 
 /** Capture store for the wallet onSubmit and the AdyenCheckout result callbacks. */
 const A = vi.hoisted(() => {
-  const cap: any = { checkout: [], wallet: [] };
+  const cap: any = { checkout: [], wallet: [], mountNodes: [] };
   class FakeWallet {
-    mount = vi.fn();
+    mount = vi.fn((node: HTMLElement) => cap.mountNodes.push(node));
     remove = vi.fn();
     constructor(_core: unknown, config: any) {
       cap.wallet.push(config);
@@ -51,24 +52,38 @@ const paymentMethods = makePaymentMethods({
   paymentMethods: { paymentMethods: [googlePayMethod(), applePayMethod()] },
 });
 
+const messageText = (message: ResultMessage | null) =>
+  message === null ? String(message) : "key" in message ? message.key : message.text;
+
 function Probe() {
   const { activePaymentMethod, threeDSecureActive, error, success } = usePaymentMethodGroup();
   return (
     <Fragment>
       <span data-testid="active">{String(activePaymentMethod)}</span>
       <span data-testid="tds">{String(threeDSecureActive)}</span>
-      <span data-testid="error">{String(error)}</span>
-      <span data-testid="success">{String(success)}</span>
+      <span data-testid="error">{messageText(error)}</span>
+      <span data-testid="success">{messageText(success)}</span>
     </Fragment>
   );
 }
 
 const actions = () => ({ resolve: vi.fn(), reject: vi.fn() });
+
+/**
+ * Like real Adyen: a reject() in onSubmit/onAdditionalDetails is answered (a microtask later) with the
+ * core-level onPaymentFailed — which is where the failure screen comes from.
+ */
+const adyenActions = (checkout: any) => ({
+  resolve: vi.fn(),
+  reject: vi.fn(() => queueMicrotask(() => checkout.onPaymentFailed(undefined))),
+});
+
 const submitState = { data: { paymentMethod: { type: "wallet" } } };
 
 beforeEach(() => {
   A.cap.checkout.length = 0;
   A.cap.wallet.length = 0;
+  A.cap.mountNodes.length = 0;
   createPayment.mockReset();
 });
 
@@ -79,15 +94,20 @@ const wallets = [
 
 wallets.forEach(({ name, Comp, method }) => {
   describe(`${name} payment flow`, () => {
-    async function setup(config = baseConfig(), isInstantPayment = false) {
+    async function setup(
+      config = baseConfig(),
+      isInstantPayment = false,
+      initialValue: "googlepay" | "applepay" | null = null
+    ) {
       render(
         <I18nProvider i18nService={new I18nService("en-US")}>
           <PaymentMethodGroupContext
-            initialValue={null}
+            initialValue={initialValue}
             isSolePaymentMethod={false}
             hasCard={false}
             hasGooglePay={true}
             hasApplePay={true}
+            hasKortalan={false}
             hasStoredPaymentMethods={false}
           >
             <Probe />
@@ -106,7 +126,10 @@ wallets.forEach(({ name, Comp, method }) => {
     }
 
     it("posts the payment with sessionId and resolves on Authorised", async () => {
-      createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "Authorised", action: null }) } as any);
+      createPayment.mockResolvedValue({
+        ok: true,
+        json: async () => ({ resultCode: "Authorised", action: null }),
+      } as any);
       const { onSubmit } = await setup();
       const act1 = actions();
 
@@ -117,6 +140,54 @@ wallets.forEach(({ name, Comp, method }) => {
       expect(createPayment).toHaveBeenCalledWith("test", expect.objectContaining({ sessionId: "s1" }));
       expect(act1.resolve).toHaveBeenCalledWith({ resultCode: "Authorised", action: null });
       expect(act1.reject).not.toHaveBeenCalled();
+    });
+
+    it("gives the wallet a light button for the light theme", async () => {
+      await setup(baseConfig({ theme: "light" }));
+      // Google Pay uses plain white; Apple Pay uses white-outline so it stays visible on white.
+      expect(A.cap.wallet[0].buttonColor).toBe(method === "googlepay" ? "white" : "white-outline");
+    });
+
+    it("keeps Adyen's own merchant validation when onApplePayValidateMerchant is not set", async () => {
+      await setup();
+      expect(A.cap.wallet[0].onValidateMerchant).toBeUndefined();
+    });
+
+    it(
+      method === "applepay"
+        ? "routes Apple Pay merchant validation to the merchant's onApplePayValidateMerchant"
+        : "ignores onApplePayValidateMerchant (Google Pay has no merchant validation)",
+      async () => {
+        const session = { merchantSessionIdentifier: "s" };
+        const onApplePayValidateMerchant = vi.fn().mockResolvedValue(session);
+        await setup(baseConfig({ onApplePayValidateMerchant }));
+        const { onValidateMerchant } = A.cap.wallet[0];
+
+        if (method !== "applepay") {
+          expect(onValidateMerchant).toBeUndefined();
+          return;
+        }
+
+        const resolved = await new Promise((resolve, reject) =>
+          onValidateMerchant(resolve, reject, "https://apple-pay-gateway.apple.com/paymentservices/startSession")
+        );
+        expect(onApplePayValidateMerchant).toHaveBeenCalledWith(
+          "https://apple-pay-gateway.apple.com/paymentservices/startSession"
+        );
+        expect(resolved).toBe(session);
+      }
+    );
+
+    it("gives the wallet a black button for the dark theme", async () => {
+      await setup(baseConfig({ theme: "dark" }));
+      expect(A.cap.wallet[0].buttonColor).toBe("black");
+    });
+
+    it("respects an explicit wallet button theme override", async () => {
+      const override =
+        method === "googlepay" ? { googlePayButtonTheme: "dark" as const } : { applePayButtonTheme: "dark" as const };
+      await setup(baseConfig({ theme: "light", ...override }));
+      expect(A.cap.wallet[0].buttonColor).toBe("black");
     });
 
     it("marks itself active when submitted as an instant payment", async () => {
@@ -141,10 +212,48 @@ wallets.forEach(({ name, Comp, method }) => {
       await waitFor(() => expect(screen.getByTestId("tds").textContent).toBe("true"));
     });
 
+    it("gives the 3DS challenge a definite height (not the 150px iframe default)", async () => {
+      createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "ChallengeShopper" }) } as any);
+      const { onSubmit } = await setup(baseConfig(), true);
+      const mountNode = A.cap.mountNodes[A.cap.mountNodes.length - 1] as HTMLElement;
+      expect(mountNode.style.height).toBe("48px");
+      expect(mountNode.style.background).toBe("");
+      expect(mountNode.parentElement!.classList.contains("straumur__wallet-button--3ds-tile")).toBe(false);
+
+      await act(async () => {
+        await onSubmit(submitState, {}, actions());
+      });
+
+      // Adyen's challenge iframe is height="100%" under a `height: inherit` div: it only fills the
+      // space if the mount node's height is definite — same 600px as the card container.
+      await waitFor(() => expect(mountNode.style.height).toBe("600px"));
+      expect(mountNode.style.width).toBe("100%");
+      // Same surface as the card's 3DS container (theme token), not the page behind the widget.
+      expect(mountNode.style.background).toContain("var(--straumur__color-white)");
+      // Express-row wallet (no payment-method tile of its own): the wrapper takes the card tile's look.
+      // It is the SAME wrapper element as before 3DS — a new element would remount Adyen's node.
+      expect(mountNode.parentElement!.classList.contains("straumur__wallet-button--3ds-tile")).toBe(true);
+      expect(A.cap.mountNodes[A.cap.mountNodes.length - 1]).toBe(mountNode);
+    });
+
+    it("adds no extra tile in the radio list, where the wallet already sits inside a tile", async () => {
+      createPayment.mockResolvedValue({ ok: true, json: async () => ({ resultCode: "ChallengeShopper" }) } as any);
+      // In the radio list the shopper has selected this wallet before paying.
+      const { onSubmit } = await setup(baseConfig(), false, method);
+      const mountNode = A.cap.mountNodes[A.cap.mountNodes.length - 1] as HTMLElement;
+
+      await act(async () => {
+        await onSubmit(submitState, {}, actions());
+      });
+
+      await waitFor(() => expect(mountNode.style.height).toBe("600px"));
+      expect(mountNode.parentElement!.classList.contains("straumur__wallet-button--3ds-tile")).toBe(false);
+    });
+
     it("rejects and surfaces an error when the request is not ok", async () => {
       createPayment.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
-      const { onSubmit } = await setup();
-      const act1 = actions();
+      const { onSubmit, checkout } = await setup();
+      const act1 = adyenActions(checkout);
 
       await act(async () => {
         await onSubmit(submitState, {}, act1);
@@ -156,8 +265,8 @@ wallets.forEach(({ name, Comp, method }) => {
 
     it("rejects with paymentFailed when the response has no resultCode", async () => {
       createPayment.mockResolvedValue({ ok: true, json: async () => ({}) } as any);
-      const { onSubmit } = await setup();
-      const act1 = actions();
+      const { onSubmit, checkout } = await setup();
+      const act1 = adyenActions(checkout);
 
       await act(async () => {
         await onSubmit(submitState, {}, act1);
@@ -179,7 +288,7 @@ wallets.forEach(({ name, Comp, method }) => {
       await waitFor(() => expect(screen.getByTestId("success").textContent).toBe("success.paymentAuthorized"));
     });
 
-    it("fires onPaymentFailed with no argument when called without data", async () => {
+    it("fires onPaymentFailed with a synthesized Error resultCode when called without data", async () => {
       const onPaymentFailed = vi.fn();
       const { checkout } = await setup(baseConfig({ onPaymentFailed }));
 
@@ -187,7 +296,38 @@ wallets.forEach(({ name, Comp, method }) => {
         checkout.onPaymentFailed(undefined);
       });
 
-      expect(onPaymentFailed).toHaveBeenCalledWith();
+      expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
+    });
+
+    it("reports unavailable instead of crashing when the wallet has no configuration", async () => {
+      const onUnavailable = vi.fn();
+      const methodsWithoutConfig = makePaymentMethods({
+        paymentMethods: { paymentMethods: [{ type: method, name }] },
+      });
+
+      render(
+        <I18nProvider i18nService={new I18nService("en-US")}>
+          <PaymentMethodGroupContext
+            initialValue={null}
+            isSolePaymentMethod={false}
+            hasCard={false}
+            hasGooglePay={true}
+            hasApplePay={true}
+            hasKortalan={false}
+            hasStoredPaymentMethods={false}
+          >
+            <Comp
+              configuration={baseConfig()}
+              paymentMethods={methodsWithoutConfig}
+              isInstantPayment={false}
+              onUnavailable={onUnavailable}
+            />
+          </PaymentMethodGroupContext>
+        </I18nProvider>
+      );
+
+      await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
+      expect(A.cap.wallet.length).toBe(0);
     });
   });
 });

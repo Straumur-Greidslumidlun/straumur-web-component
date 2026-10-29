@@ -1,4 +1,5 @@
-import { h, Fragment } from "preact";
+﻿import { h, Fragment } from "preact";
+import { ResultMessage } from "../src/models/models";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act, fireEvent } from "@testing-library/preact";
 
@@ -6,6 +7,7 @@ const A = vi.hoisted(() => {
   const cap: any = { checkout: [], card: [] };
   class FakeCustomCard {
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     submit = vi.fn();
     constructor(_core: unknown, opts: any) {
@@ -50,9 +52,12 @@ const paymentMethods = makePaymentMethods({
   paymentMethods: { paymentMethods: [], storedPaymentMethods: [storedCard()] },
 });
 
+const messageText = (message: ResultMessage | null) =>
+  message === null ? String(message) : "key" in message ? message.key : message.text;
+
 function Probe() {
   const { error } = usePaymentMethodGroup();
-  return <span data-testid="error">{String(error)}</span>;
+  return <span data-testid="error">{messageText(error)}</span>;
 }
 
 async function setup(config = baseConfig()) {
@@ -64,6 +69,7 @@ async function setup(config = baseConfig()) {
         hasCard={false}
         hasGooglePay={false}
         hasApplePay={false}
+        hasKortalan={false}
         hasStoredPaymentMethods={true}
       >
         <Probe />
@@ -132,7 +138,7 @@ describe("Stored card removal", () => {
     );
   });
 
-  it("surfaces an error and keeps the card when the disable request is not ok", async () => {
+  it("shows the failure inline, keeping the card and the checkout, when the disable request is not ok", async () => {
     disableToken.mockResolvedValue({ ok: false, json: async () => ({}) } as any);
     await setup();
 
@@ -141,13 +147,13 @@ describe("Stored card removal", () => {
       fireEvent.click(screen.getByText("Yes, remove"));
     });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("error").textContent).toBe("error.failedToSubmitRemoveStoredPaymentCard")
-    );
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("Failed to remove stored payment card"));
     expect(screen.getByText("•••• 1234")).toBeTruthy();
+    // A failed removal is not a checkout failure: no global error screen.
+    expect(screen.getByTestId("error").textContent).toBe("null");
   });
 
-  it("surfaces an error when the server reports success: false", async () => {
+  it("shows the failure inline when the server reports success: false", async () => {
     disableToken.mockResolvedValue({ ok: true, json: async () => ({ success: false }) } as any);
     await setup();
 
@@ -156,8 +162,74 @@ describe("Stored card removal", () => {
       fireEvent.click(screen.getByText("Yes, remove"));
     });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("error").textContent).toBe("error.failedToRemoveStoredPaymentCard")
-    );
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("Stored payment card was not removed"));
+    expect(screen.getByTestId("error").textContent).toBe("null");
+  });
+
+  it("sends one disable request even if Confirm is double-clicked", async () => {
+    let respond!: (value: unknown) => void;
+    disableToken.mockReturnValue(new Promise((resolve) => (respond = resolve)) as any);
+    await setup();
+
+    fireEvent.click(screen.getByText("Remove"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Yes, remove"));
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByText("Yes, remove"));
+    });
+
+    expect(disableToken).toHaveBeenCalledTimes(1);
+    await act(async () => respond({ ok: true, json: async () => ({ success: true }) }));
+    await waitFor(() => expect(screen.queryByText("•••• 1234")).toBeNull());
+  });
+});
+
+describe("Stored card theme", () => {
+  it("passes light field styles to the Adyen card by default", async () => {
+    await setup();
+    expect(A.cap.card[0].styles.base.color).toBe("#00112c");
+  });
+
+  it("passes dark field styles to the Adyen card when the theme is dark", async () => {
+    await setup(baseConfig({ theme: "dark" }));
+    expect(A.cap.card[0].styles.base.color).toBe("#e8edf2");
+    expect(A.cap.card[0].styles.placeholder.color).toBe("#aab4bf");
+  });
+});
+
+describe("Stored card field callbacks", () => {
+  it("shows Adyen's CVC error message", async () => {
+    await setup();
+    const card = A.cap.card[0];
+
+    await act(async () => {
+      card.onValidationError([{ fieldType: "encryptedSecurityCode", error: "error-1", errorI18n: "Incomplete code" }]);
+    });
+
+    expect(screen.getByText("Incomplete code")).toBeTruthy();
+  });
+
+  it("enables the pay button and notifies the host once the CVC is valid", async () => {
+    const onCardValidityChanged = vi.fn();
+    await setup(baseConfig({ onCardValidityChanged }));
+    const card = A.cap.card[0];
+    const payButton = screen.getByRole("button", { name: paymentMethods.formattedAmount }) as HTMLButtonElement;
+    expect(payButton.disabled).toBe(true);
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
+
+    await act(async () => card.onAllValid({ allValid: true }));
+
+    expect(payButton.disabled).toBe(false);
+    expect(onCardValidityChanged).toHaveBeenLastCalledWith(true, true);
+  });
+
+  it("labels the CVC as optional when the brand's cvcPolicy is optional", async () => {
+    await setup();
+    const card = A.cap.card[0];
+
+    await act(async () => card.onBrand({ brand: "visa", cvcPolicy: "optional" }));
+
+    expect(screen.getByText("Security code (optional)", { selector: "label" })).toBeTruthy();
   });
 });

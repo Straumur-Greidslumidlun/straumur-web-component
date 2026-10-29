@@ -19,6 +19,41 @@
   --straumur__color-white: #ffffff;
   --straumur__color-transparent: transparent;
 
+  /* Kortalán brand surfaces. Like the Google Pay / Apple Pay buttons, these are the provider's own
+     colors — we never restyle them to match the widget theme, so NONE of these are overridden in the
+     dark block below (same rule as --straumur__color-brand-chip). They are tokens only so the values
+     live in one place, not so the theme can move them.
+     Button: baby blue fill + brand blue label. Lockup: two-tone #002649 wordmark + #4D5F6F subtext. */
+  --straumur__color-kortalan-standalone-bg: #002649;
+  --straumur__color-kortalan-standalone-ink: #dafda3;
+  --straumur__color-kortalan-button-bg: #bce6f3;
+  --straumur__color-kortalan-button-text: #002649;
+  --straumur__color-kortalan-logo-primary: #002649;
+  --straumur__color-kortalan-logo-secondary: #4d5f6f;
+
+  /* Always-light backing for brand-logo "chips" (networks with no reversed mark keep their
+     multicolor logo on a light field on every theme). Intentionally NOT overridden in dark. */
+  --straumur__color-brand-chip: #ffffff;
+
+  /* Foreground color for content sitting ON the primary color (submit-button label). Defaults to
+     the white token via var() indirection, so it stays theme-aware (resolves to the dark theme's
+     white at use time) with no dark-theme override needed here. A host embedding the widget can
+     override this token (alongside --straumur__color-primary) to theme the button with its own
+     palette — e.g. a light brand primary needs a dark label for contrast. */
+  --straumur__color-on-primary: var(--straumur__color-white);
+
+  /* Role tokens for colors that were previously hard-coded in component CSS.
+     Kept as variables so the dark theme below can override them in one place. */
+  --straumur__color-text: #00112c;
+  --straumur__color-border: #dbdee2;
+  --straumur__color-warning-text: #775d00;
+  --straumur__color-warning-bg: #fff7db;
+  --straumur__color-danger-text: #d03e00;
+  /* Field error text (labels + messages). Same hue as -red-beta, darkened to meet WCAG AA 4.5:1 on
+     the white surface and the input/error-input fills; -red-beta stays for error borders (3:1). */
+  --straumur__color-error-text: #c03030;
+  --straumur__color-success: #1f9d57;
+
   --straumur__border-radius-xxs: 4px;
   --straumur__border-radius-xs: 6px;
   --straumur__border-radius-s: 8px;
@@ -43,13 +78,90 @@
 
   --apple-pay-button-width: 100%;
   --apple-pay-button-height: 48px;
-  --apple-pay-button-border-radius: 4px;
+  /* Match the payment-method "card box" radius (border-radius-lg) so the express wallet buttons
+     are consistent with the tiles they sit alongside. Kept in sync with Google Pay's buttonRadius. */
+  --apple-pay-button-border-radius: var(--straumur__border-radius-lg);
 }
 
+/* Family registered from JS by styles/fonts.ts (tsup's injectStyle doesn't resolve url() in CSS). */
 .straumur__root-component {
-  font-family: "AkzidenzGroteskPro", sans-serif;
-  max-width: 676px;
+  font-family: "StraumurAkzidenzGroteskPro", sans-serif;
+  /* Self-contained base text color per theme, so text (e.g. the floating field labels, which set
+     no color of their own) doesn't inherit an unpredictable color from the host page — and is
+     readable in dark mode instead of dark-on-dark. */
+  color: var(--straumur__color-text);
+  /* Fill the host container (down to a 320px floor). The embedding container controls the width —
+     e.g. the hosted checkout's card column — so the widget stretches to it rather than capping at a
+     fixed max. (Note: in a very wide container the card form and the Google Pay / Apple Pay buttons
+     stretch full-width; constrain the host container if a narrower checkout look is wanted.) */
   min-width: 320px;
+  /* Establish a query container so descendants can respond to the WIDGET's own width, not the
+     viewport. This is an embeddable widget — its width is set by the host container, so viewport
+     @media is the wrong tool (a narrow host column on a wide screen would never match). Use
+     @container (name: straumur) in component CSS instead. */
+  container: straumur / inline-size;
+  /* Suppress the mobile tap-highlight (the blue/grey flash Android/iOS paint over a tapped element)
+     on the widget's custom tap targets — payment-method tiles, stored-card tiles, buttons. This
+     property inherits, so setting it on the root covers every descendant; the tiles/buttons provide
+     their own :hover/:checked/:active feedback. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Dark theme. Scoped to the widget wrapper (via data-theme) so it never leaks to the host page.
+ * These override the color-named tokens with their dark-mode equivalents — the token *names*
+ * still read "white", "primary", etc., but in this scope they hold dark values. RootComponent
+ * sets data-theme; "system" resolves it from prefers-color-scheme at runtime.
+ * NOTE: these hex values are a sensible default palette, not confirmed brand colors — worth a
+ * design pass before they're treated as final.
+ */
+.straumur__root-component[data-theme="dark"] {
+  --straumur__color-primary: #e8edf2;
+  --straumur__color-secondary: #9aa7b5;
+  --straumur__color-secondary-gamma: #2a313b;
+
+  --straumur__color-blue-beta: #24506b;
+  --straumur__color-blue-gamma: #1b2733;
+
+  --straumur__color-neon-green-zeta: #9cbf5e;
+
+  --straumur__color-red-beta: #e08a8a;
+  --straumur__color-red-gamma: #2e2020;
+
+  --straumur__color-gray-epsilon: #3a424d;
+
+  --straumur__color-cosmos-blue-delta: #3a424d;
+  --straumur__color-cosmos-blue-gamma: #262d36;
+
+  /* Near-black surface so the black Google Pay / Apple Pay buttons (which can only be black or
+     white — no custom color) blend into the widget instead of reading as mismatched rectangles.
+     The input fields stay at --straumur__color-secondary-gamma, one step lighter, so they read as
+     a subtly elevated layer. If the black wallet buttons ever look edgeless, nudge this lighter. */
+  --straumur__color-white: #0d0f13;
+
+  --straumur__color-text: #e8edf2;
+  --straumur__color-border: #3a424d;
+  --straumur__color-warning-text: #e6c766;
+  --straumur__color-warning-bg: #2f2a17;
+  --straumur__color-danger-text: #f0895f;
+  --straumur__color-error-text: #e08a8a;
+  --straumur__color-success: #3fd98a;
+}
+
+/* Text for screen readers only (e.g. a spinner's accessible name). */
+.straumur__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.straumur__loading-indicator,
+.straumur__loading-indicator__icon {
+  display: inline-flex;
 }
 
 .straumur__component * {
@@ -57,7 +169,18 @@
 }
 
 .straumur__render-brand-icons__overflow {
-  color: #72889d;
+  color: var(--straumur__color-secondary);
+}
+
+/* Light rounded tile behind a brand logo that has no reversed variant (JCB / Diners / UnionPay),
+   so its multicolor mark keeps a light field and gains a defined edge on the dark surface. Only
+   rendered on the dark theme (see RenderBrandIcon), so it needs no light-theme rule. */
+.straumur__brand-chip {
+  display: inline-flex;
+  background: var(--straumur__color-brand-chip);
+  border: 1px solid var(--straumur__color-border);
+  border-radius: var(--straumur__border-radius-xxs);
+  overflow: hidden;
 }
 
 .straumur__component {
@@ -65,10 +188,29 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--straumur__space-5xlg);
+  padding: var(--straumur__space-6xlg);
   width: 100%;
-  height: 300px;
+  /* min-height, not a fixed height, so a long localized error/message can't clip. */
+  min-height: 300px;
   background-color: var(--straumur__color-white);
   border-radius: var(--straumur__border-radius-xxlg);
+}
+
+/* Success/failure message under the result icon (shared by the in-widget result screen and the
+   imperative status screen). Constrained width so a longer message wraps to a couple of centered
+   rows instead of one wide line; padding keeps it off the widget edges. */
+.straumur__result-message {
+  max-width: 320px;
+  margin: 0;
+  padding: 0 var(--straumur__space-4xlg);
+  text-align: center;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--straumur__color-text);
+  /* Honour explicit newlines in a host-supplied message (e.g. "Payment successful.\nRedirecting…"),
+     while still collapsing incidental whitespace like a normal paragraph. */
+  white-space: pre-line;
 }
 
 .js-iframe {
