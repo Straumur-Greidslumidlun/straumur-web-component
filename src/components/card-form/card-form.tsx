@@ -51,6 +51,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   const customCardRef = useRef<CustomCard>();
   const { i18n } = useI18n();
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
+  // Last validity reported to the host's onCardValidityChanged (deduplicates Adyen's onChange).
+  const reportedValidityRef = useRef(false);
   const [securityCodePolicy, setSecurityCodePolicy] = useState<"hidden" | "optional" | "required">("required");
   const [storePaymentMethod, setStorePaymentMethod] = useState(false);
   const [isDualBrand, setIsDualBrand] = useState(false);
@@ -107,7 +109,8 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
 
     registerSubmitHandler(handleSubmitClick);
     // Signal "active but not yet valid" on activation so a host's custom submit button can appear
-    // (disabled) right away. onAllValid then updates the valid state as the shopper fills fields.
+    // (disabled) right away. onChange then updates the valid state as the shopper fills fields.
+    reportedValidityRef.current = false;
     configuration.onCardValidityChanged?.(false, true);
     return () => {
       unregisterSubmitHandler(handleSubmitClick);
@@ -296,9 +299,17 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
 
         setFormErrors(defaultErrors);
       },
-      onAllValid: (event) => {
-        setPayButtonDisabled(!event.allValid);
-        configuration.onCardValidityChanged?.(event.allValid, true);
+      // Validity comes from onChange, not onAllValid. Adyen fires onChange after CustomCard's own state is
+      // updated, so state.isValid is exactly what submit() checks; onAllValid fires a render earlier, and
+      // a click in that gap fell into submit()'s showValidation() branch and silently did nothing (#56).
+      // onChange fires on every field change, so the host is only told when validity actually flips.
+      onChange: (state: { isValid?: boolean }) => {
+        const isValid = !!state.isValid;
+        setPayButtonDisabled(!isValid);
+        if (reportedValidityRef.current !== isValid) {
+          reportedValidityRef.current = isValid;
+          configuration.onCardValidityChanged?.(isValid, true);
+        }
       },
     });
 

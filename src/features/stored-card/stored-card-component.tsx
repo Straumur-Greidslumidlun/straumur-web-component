@@ -34,6 +34,8 @@ function StoredCardComponent({
   const customCardRef = useRef<CustomCard>();
   const { i18n } = useI18n();
   const [payButtonDisabled, setPayButtonDisabled] = useState<boolean>(true);
+  // Last validity reported to the host's onCardValidityChanged (deduplicates Adyen's onChange).
+  const reportedValidityRef = useRef(false);
   const [securityCodePolicy, setSecurityCodePolicy] = useState<"hidden" | "optional" | "required">("required");
   const [askConfirmRemoveStoredCard, setAskConfirmRemoveStoredCard] = useState<boolean>(false);
   // Removal is a side action: its failure is shown inline in the confirm box and the checkout stays
@@ -93,7 +95,8 @@ function StoredCardComponent({
 
     registerSubmitHandler(handleSubmitClick);
     // Signal "active but not yet valid" on activation so a host's custom submit button can appear
-    // (disabled) right away. onAllValid then updates the valid state as the shopper fills the CVC.
+    // (disabled) right away. onChange then updates the valid state as the shopper fills the CVC.
+    reportedValidityRef.current = false;
     configuration.onCardValidityChanged?.(false, true);
     return () => {
       unregisterSubmitHandler(handleSubmitClick);
@@ -222,9 +225,17 @@ function StoredCardComponent({
 
         setFormErrors(defaultErrors);
       },
-      onAllValid: (event) => {
-        setPayButtonDisabled(!event.allValid);
-        configuration.onCardValidityChanged?.(event.allValid, true);
+      // Validity comes from onChange, not onAllValid. Adyen fires onChange after CustomCard's own state is
+      // updated, so state.isValid is exactly what submit() checks; onAllValid fires a render earlier, and
+      // a click in that gap fell into submit()'s showValidation() branch and silently did nothing (#56).
+      // onChange fires on every field change, so the host is only told when validity actually flips.
+      onChange: (state: { isValid?: boolean }) => {
+        const isValid = !!state.isValid;
+        setPayButtonDisabled(!isValid);
+        if (reportedValidityRef.current !== isValid) {
+          reportedValidityRef.current = isValid;
+          configuration.onCardValidityChanged?.(isValid, true);
+        }
       },
       placeholders: configuration.placeholders,
       // Adyen appears to ignore challengeWindowSize on CustomCard; kept for parity with the wallet configs.

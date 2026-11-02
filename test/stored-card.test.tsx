@@ -218,10 +218,23 @@ describe("Stored card field callbacks", () => {
     expect(payButton.disabled).toBe(true);
     await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
 
-    await act(async () => card.onAllValid({ allValid: true }));
+    await act(async () => card.onChange({ isValid: true }));
 
     expect(payButton.disabled).toBe(false);
     expect(onCardValidityChanged).toHaveBeenLastCalledWith(true, true);
+  });
+
+  // #56: onAllValid arrives a render before CustomCard.isValid is true; the button must wait for onChange.
+  it("keeps the pay button disabled on onAllValid alone, until CustomCard reports isValid", async () => {
+    await setup();
+    const card = A.cap.card[0];
+    const payButton = screen.getByRole("button", { name: paymentMethods.formattedAmount }) as HTMLButtonElement;
+
+    await act(async () => card.onAllValid?.({ allValid: true }));
+    expect(payButton.disabled).toBe(true);
+
+    await act(async () => card.onChange({ isValid: true }));
+    expect(payButton.disabled).toBe(false);
   });
 
   it("labels the CVC as optional when the brand's cvcPolicy is optional", async () => {

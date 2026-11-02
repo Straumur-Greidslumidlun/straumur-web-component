@@ -132,10 +132,29 @@ describe("CardForm field validation", () => {
     // Activation signals "active, not yet valid" first; validity arrives as the shopper types.
     await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
 
-    await act(async () => card.onAllValid({ allValid: true }));
+    await act(async () => card.onChange({ isValid: true }));
 
     expect(payButton.disabled).toBe(false);
     expect(onCardValidityChanged).toHaveBeenLastCalledWith(true, true);
+  });
+
+  // #56: Adyen fires onAllValid a render before CustomCard.isValid (what submit() checks) turns true.
+  // Enabling on it let a fast click reach submit() while invalid, which only re-validates: nothing happened.
+  it("keeps the pay button disabled on onAllValid alone, until CustomCard reports isValid", async () => {
+    const onCardValidityChanged = vi.fn();
+    const card = await setup({ config: baseConfig({ onCardValidityChanged }) });
+    const payButton = screen.getByRole("button", { name: "ISK 10" }) as HTMLButtonElement;
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
+    onCardValidityChanged.mockClear();
+
+    await act(async () => card.onAllValid?.({ allValid: true }));
+
+    expect(payButton.disabled).toBe(true);
+    expect(onCardValidityChanged).not.toHaveBeenCalled();
+
+    await act(async () => card.onChange({ isValid: true }));
+
+    expect(payButton.disabled).toBe(false);
   });
 
   it.each([

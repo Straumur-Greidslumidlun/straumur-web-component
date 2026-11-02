@@ -314,21 +314,41 @@ describe("CardForm onCardValidityChanged", () => {
     onCardValidityChanged.mockClear();
 
     await act(async () => {
-      card.onAllValid({ allValid: true });
+      card.onChange({ isValid: true });
     });
     expect(onCardValidityChanged).toHaveBeenCalledWith(true, true);
 
     await act(async () => {
-      card.onAllValid({ allValid: false });
+      card.onChange({ isValid: false });
     });
     expect(onCardValidityChanged).toHaveBeenCalledWith(false, true);
+  });
+
+  it("tells the host only when validity flips, not on every field change", async () => {
+    const onCardValidityChanged = vi.fn();
+    const { card } = await setup(baseConfig({ onCardValidityChanged }));
+    await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
+    onCardValidityChanged.mockClear();
+
+    await act(async () => {
+      card.onChange({ isValid: false });
+      card.onChange({ isValid: true });
+      card.onChange({ isValid: true });
+      card.onChange({ isValid: false });
+      card.onChange({ isValid: false });
+    });
+
+    expect(onCardValidityChanged.mock.calls).toEqual([
+      [true, true],
+      [false, true],
+    ]);
   });
 
   it("reports (false, true) as soon as the card becomes active, so a custom submit button can appear disabled", async () => {
     const onCardValidityChanged = vi.fn();
     await setup(baseConfig({ onCardValidityChanged }));
 
-    // Fires on activation (before any onAllValid), so a host's hidden-internal-button setup can
+    // Fires on activation (before any onChange), so a host's hidden-internal-button setup can
     // reveal its external button immediately rather than waiting for the first validity event.
     await waitFor(() => expect(onCardValidityChanged).toHaveBeenCalledWith(false, true));
   });
