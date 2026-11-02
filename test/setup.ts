@@ -2,7 +2,7 @@ import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/preact";
 
 // jsdom does not implement matchMedia; provide a default (non-matching) stub so components
-// using useMediaQuery render. Individual tests can override window.matchMedia as needed.
+// using it (useResolvedTheme for theme: "system") render. Individual tests can override window.matchMedia as needed.
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({

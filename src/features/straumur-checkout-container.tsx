@@ -4,12 +4,14 @@ import { SuccessResponse } from "../services/models";
 import CardComponent from "./card/card-component";
 import GooglePayComponent from "./google-pay/google-pay-component";
 import ApplePayComponent from "./apple-pay/apple-pay-component";
+import KortalanComponent from "./kortalan/kortalan-component";
 import StoredCardContainerComponent from "./stored-card/stored-card-container-component";
 import PaymentMethodGroup from "../components/payment-method-group/payment-method-group";
 import ResultComponent from "./result-component/result-component";
 import PaymentMethodsWrapper from "./payment-methods-wrapper/payment-methods-wrapper";
 import InstantPaymentsComponent from "./instantPayments/instant-payments-component";
-import { PaymentMethod } from "../models/constants";
+import { OpenDefaultPaymentMethod, PaymentMethod, PaymentMethodOrder } from "../models/constants";
+import { resolvePaymentMethodOrder } from "../utils/payment-method-order";
 import { SubmitApi } from "../components/payment-method-group/payment-method-group-context";
 
 interface StraumurCheckoutContainerProps {
@@ -22,22 +24,44 @@ export function determineInitialState(
   hasCard: boolean,
   hasGooglePay: boolean,
   hasApplePay: boolean,
+  hasKortalan: boolean,
   storedCount: number,
-  instantPayments: StraumurCheckoutConfiguration["instantPayments"]
+  instantPayments: StraumurCheckoutConfiguration["instantPayments"],
+  openDefaultPaymentMethod?: OpenDefaultPaymentMethod
 ): { initialPaymentMethod: PaymentMethod | null; isSolePaymentMethod: boolean } {
   const gpayInStandard = hasGooglePay && !instantPayments?.some((x) => x === "googlepay");
   const apayInStandard = hasApplePay && !instantPayments?.some((x) => x === "applepay");
+  // Kortalán cannot be an express button, so it is always a standard option when available.
+  const kortalanInStandard = hasKortalan;
 
-  const totalOptions = storedCount + (hasCard ? 1 : 0) + (gpayInStandard ? 1 : 0) + (apayInStandard ? 1 : 0);
+  const totalOptions =
+    storedCount +
+    (hasCard ? 1 : 0) +
+    (gpayInStandard ? 1 : 0) +
+    (apayInStandard ? 1 : 0) +
+    (kortalanInStandard ? 1 : 0);
 
-  if (totalOptions !== 1) {
+  // Exactly one option: auto-select it and hide the chooser (sole mode).
+  if (totalOptions === 1) {
+    if (storedCount === 1) return { initialPaymentMethod: "storedcard", isSolePaymentMethod: true };
+    if (hasCard) return { initialPaymentMethod: "card", isSolePaymentMethod: true };
+    if (gpayInStandard) return { initialPaymentMethod: "googlepay", isSolePaymentMethod: true };
+    if (apayInStandard) return { initialPaymentMethod: "applepay", isSolePaymentMethod: true };
+    if (kortalanInStandard) return { initialPaymentMethod: "kortalan", isSolePaymentMethod: true };
     return { initialPaymentMethod: null, isSolePaymentMethod: false };
   }
 
-  if (storedCount === 1) return { initialPaymentMethod: "storedcard", isSolePaymentMethod: true };
-  if (hasCard) return { initialPaymentMethod: "card", isSolePaymentMethod: true };
-  if (gpayInStandard) return { initialPaymentMethod: "googlepay", isSolePaymentMethod: true };
-  if (apayInStandard) return { initialPaymentMethod: "applepay", isSolePaymentMethod: true };
+  // More than one (or zero) options: pre-open the requested method only if it's available. If it
+  // isn't (a wallet moved to instantPayments, or no saved cards), leave the chooser collapsed — the
+  // same as when no option is given. Never fall back to opening a different method.
+  if (openDefaultPaymentMethod === "card" && hasCard)
+    return { initialPaymentMethod: "card", isSolePaymentMethod: false };
+  if (openDefaultPaymentMethod === "googlepay" && gpayInStandard)
+    return { initialPaymentMethod: "googlepay", isSolePaymentMethod: false };
+  if (openDefaultPaymentMethod === "applepay" && apayInStandard)
+    return { initialPaymentMethod: "applepay", isSolePaymentMethod: false };
+  if (openDefaultPaymentMethod === "firstStoredCard" && storedCount > 0)
+    return { initialPaymentMethod: "storedcard", isSolePaymentMethod: false };
 
   return { initialPaymentMethod: null, isSolePaymentMethod: false };
 }
@@ -56,6 +80,7 @@ function StraumurCheckoutContainer({
   const hasCard = methods.some((x) => x.type === "scheme") && isAllowed("card");
   const hasGooglePay = methods.some((x) => x.type === "googlepay") && isAllowed("googlepay");
   const hasApplePay = methods.some((x) => x.type === "applepay") && isAllowed("applepay");
+  const hasKortalan = methods.some((x) => x.type === "kortalan") && isAllowed("kortalan");
   const storedCount = isAllowed("storedcard") ? stored.length : 0;
   const hasStoredPaymentMethods = storedCount > 0;
 
@@ -63,27 +88,48 @@ function StraumurCheckoutContainer({
     hasCard,
     hasGooglePay,
     hasApplePay,
+    hasKortalan,
     storedCount,
-    configuration.instantPayments
+    configuration.instantPayments,
+    configuration.openDefaultPaymentMethod
   );
+
+  // Opening "firstStoredCard" resolves to the storedcard method above; seed the specific card id
+  // (the first saved card) so exactly that stored-card row opens. Sole mode needs no id — the lone
+  // stored card matches on the method alone.
+  const initialStoredPaymentMethodId =
+    initialPaymentMethod === "storedcard" && !isSolePaymentMethod ? (stored[0]?.id ?? null) : null;
+
+  // Each component self-guards on availability and instant-vs-standalone; the order only controls
+  // which slot renders where. A wallet in instantPayments returns null from its standalone slot.
+  const componentsBySlot: Record<PaymentMethodOrder, h.JSX.Element> = {
+    instantpayments: (
+      <InstantPaymentsComponent key="instantpayments" configuration={configuration} paymentMethods={paymentMethods} />
+    ),
+    storedcard: (
+      <StoredCardContainerComponent key="storedcard" configuration={configuration} paymentMethods={paymentMethods} />
+    ),
+    card: <CardComponent key="card" configuration={configuration} paymentMethods={paymentMethods} />,
+    kortalan: <KortalanComponent key="kortalan" configuration={configuration} paymentMethods={paymentMethods} />,
+    googlepay: <GooglePayComponent key="googlepay" configuration={configuration} paymentMethods={paymentMethods} />,
+    applepay: <ApplePayComponent key="applepay" configuration={configuration} paymentMethods={paymentMethods} />,
+  };
+
+  const order = resolvePaymentMethodOrder(configuration.orderPaymentMethods);
 
   return (
     <PaymentMethodGroup
       initialValue={initialPaymentMethod}
+      initialStoredPaymentMethodId={initialStoredPaymentMethodId}
       isSolePaymentMethod={isSolePaymentMethod}
       hasCard={hasCard}
       hasGooglePay={hasGooglePay}
       hasApplePay={hasApplePay}
+      hasKortalan={hasKortalan}
       hasStoredPaymentMethods={hasStoredPaymentMethods}
       onSubmitApiReady={onSubmitApiReady}
     >
-      <PaymentMethodsWrapper>
-        <InstantPaymentsComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <StoredCardContainerComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <CardComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <GooglePayComponent configuration={configuration} paymentMethods={paymentMethods} />
-        <ApplePayComponent configuration={configuration} paymentMethods={paymentMethods} />
-      </PaymentMethodsWrapper>
+      <PaymentMethodsWrapper>{order.map((slot) => componentsBySlot[slot])}</PaymentMethodsWrapper>
 
       <ResultComponent />
     </PaymentMethodGroup>

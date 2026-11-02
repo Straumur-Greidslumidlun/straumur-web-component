@@ -32,7 +32,7 @@
 }
 
 .straumur__card-component__form--wrapper--error {
-  color: var(--straumur__color-red-beta);
+  color: var(--straumur__color-error-text);
   font-size: 12px;
 }
 
@@ -51,7 +51,7 @@
 }
 
 .straumur__card-component__form--wrapper--label--error {
-  color: var(--straumur__color-red-beta);
+  color: var(--straumur__color-error-text);
   background: linear-gradient(to top, var(--straumur__color-red-gamma) 53%, var(--straumur__color-transparent) 50%);
 }
 
@@ -63,16 +63,18 @@
 
 .straumur__card-component__form--wrapper--input {
   background: var(--straumur__color-secondary-gamma);
-  color: #00112c;
+  color: var(--straumur__color-text);
   display: block;
   font-family: inherit;
   border: 1px solid var(--straumur__color-transparent);
   border-radius: var(--straumur__border-radius-s);
-  font-size: 1rem;
+  font-size: 16px;
   height: 48px;
   outline: none;
   padding-left: var(--straumur__space-lg);
-  transition: border 0.2s ease-out, box-shadow 0.2s ease-out;
+  transition:
+    border 0.2s ease-out,
+    box-shadow 0.2s ease-out;
 }
 
 .straumur__card-component__form--wrapper--input:hover {
@@ -91,16 +93,17 @@
 .straumur__card-component__form--field-wrapper {
   display: flex;
   width: 100%;
-  gap: var(--straumur__space-5xlg);
+  /* Standard intra-row gap between paired controls (matches wallets + dual-brand). */
+  gap: var(--straumur__space-lg);
 }
 
 .straumur__card-component__submit-button {
   background: var(--straumur__color-primary);
   border: none;
   border-radius: var(--straumur__border-radius-s);
-  color: var(--straumur__color-white);
+  color: var(--straumur__color-on-primary);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 16px;
   height: 40px;
   outline: none;
   padding: 0 var(--straumur__space-xxlg);
@@ -110,12 +113,13 @@
 
 .straumur__card-component__submit-button:hover {
   background: var(--straumur__color-primary);
-  border: 1px solid #dbdee2;
+  border: 1px solid var(--straumur__color-border);
 }
 
 .straumur__card-component__submit-button:disabled {
-  background: #72889d;
-  border: 1px solid #dbdee2;
+  background: var(--straumur__color-gray-epsilon);
+  color: var(--straumur__color-secondary);
+  border: 1px solid var(--straumur__color-border);
   cursor: not-allowed;
 }
 
@@ -155,7 +159,7 @@
 }
 
 .straumur__card-component__form--wrapper--label-checkbox--checkmark--checked {
-  background-color: var(--straumur__color-blue-beta);
+  background-color: var(--straumur__color-primary);
 }
 
 .straumur__card-component__form--wrapper--label-checkbox--checkmark--icon {
@@ -189,7 +193,7 @@
 .straumur__card-component__dual-branding {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--straumur__space-5xlg);
+  gap: var(--straumur__space-lg);
 }
 
 .straumur__card-component__dual-branding--logo {
