@@ -79,23 +79,24 @@ resolves to 1.x:
 
 Passed to the `StraumurCheckout` constructor:
 
-| Option                       | Type                                                       | Required | Description                                                                                                            |
-| ---------------------------- | ---------------------------------------------------------- | :------: | ---------------------------------------------------------------------------------------------------------------------- |
-| `sessionId`                  | `string`                                                   |    ✅    | The session id from your `/embeddedcheckout/session` response.                                                         |
-| `environment`                | `"test" \| "live"`                                         |    ✅    | Selects the Straumur staging or production backend.                                                                    |
-| `locale`                     | `"is" \| "en"`                                             |          | UI language. Defaults to Icelandic (`is`).                                                                             |
-| `theme`                      | `"light" \| "dark" \| "system" \| ThemeConfiguration`      |          | Color theme, optionally with wallet button styles — see [Theming](#theming).                                           |
-| `onPaymentCompleted`         | `(data: { resultCode }) => void`                           |          | Called when the payment flow completes (see result codes below).                                                       |
-| `onPaymentFailed`            | `(data: { resultCode }) => void`                           |          | Called when the payment flow fails (see result codes below).                                                           |
-| `instantPayments`            | `("googlepay" \| "applepay")[]`                            |          | Renders the listed wallets as express buttons above the standard methods.                                              |
-| `allowedPaymentMethods`      | `PaymentMethod[]`                                          |          | Only show these of the session's methods. Omit to show all.                                                            |
-| `orderPaymentMethods`        | `PaymentMethodOrder[]`                                     |          | Top-to-bottom order of the methods — see [Choosing methods](#choosing-methods).                                        |
-| `openDefaultPaymentMethod`   | `"card" \| "firstStoredCard" \| "googlepay" \| "applepay"` |          | Method to expand on load. Ignored if unavailable. Default: none expanded.                                              |
-| `hideSubmitButton`           | `boolean`                                                  |          | Hide the built-in card pay button and use your own — see [Your own pay button](#your-own-pay-button).                  |
-| `onCardValidityChanged`      | `(isValid: boolean, isActive: boolean) => void`            |          | Card form state for your own pay button.                                                                               |
-| `onApplePayValidateMerchant` | `(validationURL: string) => Promise<object>`               |          | Apple Pay with your own certificate — see [Apple Pay with your own certificate](#apple-pay-with-your-own-certificate). |
-| `placeholders`               | `object`                                                   |          | Input placeholders — see below.                                                                                        |
-| `localizations`              | `object`                                                   |          | Override built-in copy per language and key.                                                                           |
+| Option                       | Type                                                       | Required | Description                                                                                                                |
+| ---------------------------- | ---------------------------------------------------------- | :------: | -------------------------------------------------------------------------------------------------------------------------- |
+| `sessionId`                  | `string`                                                   |    ✅    | The session id from your `/embeddedcheckout/session` response.                                                             |
+| `environment`                | `"test" \| "live"`                                         |    ✅    | Selects the Straumur staging or production backend.                                                                        |
+| `locale`                     | `"is" \| "en"`                                             |          | UI language. Defaults to Icelandic (`is`).                                                                                 |
+| `theme`                      | `"light" \| "dark" \| "system" \| ThemeConfiguration`      |          | Color theme, optionally with wallet button styles — see [Theming](#theming).                                               |
+| `onPaymentCompleted`         | `(data: { resultCode }) => void`                           |          | Called when the payment flow completes (see result codes below).                                                           |
+| `onPaymentFailed`            | `(data: { resultCode }) => void`                           |          | Called when the payment flow fails (see result codes below).                                                               |
+| `instantPayments`            | `("googlepay" \| "applepay")[]`                            |          | Renders the listed wallets as express buttons above the standard methods.                                                  |
+| `allowedPaymentMethods`      | `PaymentMethod[]`                                          |          | Only show these of the session's methods. Omit to show all.                                                                |
+| `orderPaymentMethods`        | `PaymentMethodOrder[]`                                     |          | Top-to-bottom order of the methods — see [Choosing methods](#choosing-methods).                                            |
+| `openDefaultPaymentMethod`   | `"card" \| "firstStoredCard" \| "googlepay" \| "applepay"` |          | Method to expand on load. Ignored if unavailable. Default: none expanded.                                                  |
+| `hideSubmitButton`           | `boolean`                                                  |          | Hide the built-in card pay button and use your own — see [Your own pay button](#your-own-pay-button).                      |
+| `onCardValidityChanged`      | `(isValid: boolean, isActive: boolean) => void`            |          | Card form state for your own pay button.                                                                                   |
+| `onApplePayValidateMerchant` | `(validationURL: string) => Promise<object>`               |          | Apple Pay with your own certificate — see [Apple Pay with your own certificate](#apple-pay-with-your-own-certificate).     |
+| `placeholders`               | `object`                                                   |          | Input placeholders — see below.                                                                                            |
+| `localizations`              | `object`                                                   |          | Override built-in copy per language and key.                                                                               |
+| `enableLogging`              | `boolean`                                                  |          | Send diagnostics logs to Straumur. Default `true`; `false` turns it off — see [Diagnostics logging](#diagnostics-logging). |
 
 ### Choosing methods
 
@@ -262,6 +263,32 @@ Before you start:
   payments can be decrypted.
 
 If the promise rejects, the Apple Pay sheet closes and the failure screen is shown.
+
+## Diagnostics logging
+
+To help investigate payment problems, the widget sends Straumur a log of what happened during the
+checkout. Logging is on by default; pass `enableLogging: false` to turn it off.
+
+**What is sent.** Events with a timestamp and a sequence number, for example: the widget mounted, the
+payment methods that loaded (their types, such as `scheme` or `googlepay`), the method the shopper
+selected, the pay button or Enter key, the card form becoming valid or invalid, a field's validation
+error code (for example `error.va.sf-cc-num.04`), the payment result code and which result screen was
+shown, a 3-D Secure challenge being shown, timeouts and error names. Each batch also carries the session
+id, the widget version, and once per checkout the language, theme and integration mode. Straumur's
+server records the browser's user agent with each request.
+
+**What is never sent.** Card numbers, expiry dates, security codes or any part of them (the card fields
+are Adyen iframes the widget cannot read), encrypted card data, Adyen payment or 3-D Secure payloads,
+stored-card ids or tokens, Apple Pay validation URLs or merchant sessions, the values of your
+configuration (such as placeholders, translations or callbacks), and shopper details such as name,
+email, phone or address. Every event type has a fixed list of allowed fields; anything else is dropped
+in the browser before sending.
+
+**How it is sent.** In batches of up to 20 events, a few seconds apart, as a background request to the
+same Straumur host as the payment, with no cookies. When the page is hidden or closed the remaining
+events are sent with `navigator.sendBeacon`. A failed batch is retried a few times and then dropped.
+Logging never blocks or changes the payment: it runs off the payment path, and every error inside it
+is swallowed.
 
 ## Accessibility
 
