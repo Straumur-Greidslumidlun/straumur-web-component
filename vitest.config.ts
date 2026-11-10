@@ -1,11 +1,19 @@
 import { defineConfig } from "vitest/config";
+import { readFileSync } from "node:fs";
+
+const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string };
 
 export default defineConfig({
-  // The source uses Preact's classic JSX runtime (jsxFactory "h"), matching tsconfig.json.
-  esbuild: {
-    jsx: "transform",
-    jsxFactory: "h",
-    jsxFragment: "Fragment",
+  // Same define as tsup.config.ts: the component version sent with diagnostics logs.
+  define: { __STRAUMUR_VERSION__: JSON.stringify(version) },
+  // The source uses Preact's classic JSX runtime (jsxFactory "h"), matching tsconfig.json. Vite 8
+  // (Vitest 4) transforms with oxc, not esbuild — an `esbuild.jsx` block here is silently ignored.
+  oxc: {
+    jsx: {
+      runtime: "classic",
+      pragma: "h",
+      pragmaFrag: "Fragment",
+    },
   },
   test: {
     globals: true,
@@ -14,5 +22,20 @@ export default defineConfig({
     // CSS imports in components are irrelevant to unit tests; stub them out.
     css: false,
     include: ["test/**/*.test.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      reporter: ["text", "html", "lcov"],
+      // Ratchet-only floor: raise these as coverage improves, never lower them.
+      // Measured 2026-10-05 with Vitest 4's v8 provider (AST-based remapping, stricter than 3.x's —
+      // the same suite read 97.7/93.1/91.3/97.7 under Vitest 3): statements 94.0, branches 91.0,
+      // functions 92.4, lines 94.6.
+      thresholds: {
+        lines: 93,
+        functions: 90,
+        branches: 89,
+        statements: 92,
+      },
+    },
   },
 });

@@ -1,10 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   getPaymentMethods,
   createPaymentRequest,
   createDetailsRequest,
   postDisableTokenRequest,
+  REQUEST_TIMEOUT_MS,
+  PAYMENT_TIMEOUT_MS,
 } from "../src/adapter/straumur-adapter";
+import { RequestTimeoutError } from "../src/adapter/request-timeout-error";
 
 const STAGING = "https://checkout-api.staging.straumur.is/api/v1/embeddedcheckout";
 const PRODUCTION = "https://greidslugatt.straumur.is/api/v1/embeddedcheckout";
@@ -57,5 +60,54 @@ describe("straumur-adapter", () => {
     const [url, init] = lastCall();
     expect(url).toBe(`${PRODUCTION}/disable-token`);
     expect(JSON.parse(init.body).storedPaymentMethodId).toBe("tok");
+  });
+});
+
+describe("straumur-adapter timeouts", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** A fetch that never answers, but rejects like the browser does once its signal aborts. */
+  function hangingFetch() {
+    return vi.fn(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init.signal!.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")));
+        })
+    );
+  }
+
+  it("rejects with RequestTimeoutError when payment-methods hangs past REQUEST_TIMEOUT_MS", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", hangingFetch());
+
+    const pending = getPaymentMethods("test", { sessionId: "s1" });
+    const assertion = expect(pending).rejects.toBeInstanceOf(RequestTimeoutError);
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+    await assertion;
+  });
+
+  it("gives /payment the longer PAYMENT_TIMEOUT_MS before giving up", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", hangingFetch());
+    let settled = false;
+
+    const pending = createPaymentRequest("test", { sessionId: "s1" } as any).catch((error) => {
+      settled = true;
+      return error;
+    });
+    await vi.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(PAYMENT_TIMEOUT_MS - REQUEST_TIMEOUT_MS);
+    expect(await pending).toBeInstanceOf(RequestTimeoutError);
+  });
+
+  it("passes non-timeout network errors through unchanged", async () => {
+    const networkError = new TypeError("Failed to fetch");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(networkError));
+
+    await expect(getPaymentMethods("test", { sessionId: "s1" })).rejects.toBe(networkError);
   });
 });

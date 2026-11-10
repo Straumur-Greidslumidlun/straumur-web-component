@@ -1,11 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+﻿import { describe, it, expect, vi, beforeEach } from "vitest";
 import { waitFor } from "@testing-library/preact";
 import { translations, TranslationKey } from "../src/localizations/translations";
 
 const A = vi.hoisted(() => {
-  const cap: any = { card: [], instances: [] };
+  const cap: any = { card: [], instances: [], checkout: [], submitDetails: [] };
   class FakeCustomCard {
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     submit = vi.fn();
     constructor(_core: unknown, opts: any) {
@@ -18,7 +19,12 @@ const A = vi.hoisted(() => {
 });
 
 vi.mock("@adyen/adyen-web", () => ({
-  AdyenCheckout: vi.fn(async () => ({ submitDetails: vi.fn() })),
+  AdyenCheckout: vi.fn(async (config: any) => {
+    A.cap.checkout.push(config);
+    const submitDetails = vi.fn();
+    A.cap.submitDetails.push(submitDetails);
+    return { submitDetails };
+  }),
   CustomCard: A.FakeCustomCard,
   GooglePay: class {},
   ApplePay: class {},
@@ -36,6 +42,7 @@ vi.mock("../src/adapter/straumur-adapter", () => ({
 }));
 
 import StraumurCheckout from "../src/straumur-checkout";
+import { ResultMessage } from "../src/models/models";
 import { setupPaymentMethods } from "../src/services/straumur-service";
 
 const setup = vi.mocked(setupPaymentMethods);
@@ -48,6 +55,9 @@ const emptySuccess = {
 };
 
 const root = () => document.querySelector("#root")!;
+/** handleSuccess/handleError are private (internal result screens); tests drive them directly. */
+const internals = (checkout: StraumurCheckout) =>
+  checkout as unknown as { handleSuccess(m: ResultMessage): void; handleError(m: ResultMessage): void };
 const en = (k: TranslationKey) => translations["en-US"][k as keyof (typeof translations)["en-US"]];
 const is = (k: TranslationKey) => translations["is-IS"][k as keyof (typeof translations)["is-IS"]];
 
@@ -57,48 +67,119 @@ beforeEach(() => {
   setup.mockResolvedValue(emptySuccess as any);
   A.cap.card.length = 0;
   A.cap.instances.length = 0;
+  A.cap.checkout.length = 0;
+  A.cap.submitDetails.length = 0;
 });
 
 describe("StraumurCheckout locale mapping", () => {
   it("defaults to Icelandic when no locale is given", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test" });
     await checkout.mount("#root");
-    checkout.handleError("error.unknownError");
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 
   it("maps 'en' to en-US", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
-    checkout.handleError("error.unknownError");
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(en("error.unknownError"));
   });
 
   it("maps 'is' to is-IS", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "is" });
     await checkout.mount("#root");
-    checkout.handleError("error.unknownError");
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 });
 
-describe("StraumurCheckout config updates", () => {
-  it("switches the active language via updateConfig", async () => {
+describe("StraumurCheckout theme", () => {
+  it("defaults to the light theme on the widget wrapper", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test" });
+    await checkout.mount("#root");
+
+    expect(root().querySelector('.straumur__root-component[data-theme="light"]')).toBeTruthy();
+  });
+
+  it("applies the dark theme when requested", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "dark" });
+    await checkout.mount("#root");
+
+    expect(root().querySelector('.straumur__root-component[data-theme="dark"]')).toBeTruthy();
+  });
+
+  it("applies the theme to the failure screen too", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "dark" });
+    await checkout.mount("#root");
+    internals(checkout).handleError({ key: "error.unknownError" });
+
+    expect(root().querySelector('.straumur__root-component[data-theme="dark"]')).toBeTruthy();
+  });
+
+  it("switches theme via updateConfig", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "light" });
+    await checkout.mount("#root");
+    expect(root().querySelector('[data-theme="light"]')).toBeTruthy();
+
+    checkout.updateConfig({ theme: "dark" });
+    expect(root().querySelector('[data-theme="dark"]')).toBeTruthy();
+  });
+});
+
+describe("StraumurCheckout status screen accessibility", () => {
+  it("renders the failure screen with role=alert so screen readers announce it", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
 
-    checkout.updateConfig({ locale: "is-IS" });
-    checkout.handleError("error.unknownError");
+    internals(checkout).handleError({ key: "error.unknownError" });
+
+    const alert = root().querySelector('[role="alert"]');
+    expect(alert?.textContent).toContain(en("error.unknownError"));
+  });
+
+  it("renders the success screen with role=status", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    internals(checkout).handleSuccess({ key: "success.paymentAuthorized" });
+
+    const status = root().querySelector('[role="status"]');
+    expect(status?.textContent).toContain(en("success.paymentAuthorized"));
+  });
+});
+
+describe("StraumurCheckout config updates", () => {
+  it("switches the active language via updateConfig using the public short code", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ locale: "is" });
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
   });
 
-  it("switches the active language via setLanguage", async () => {
+  it("switches the active language via setLanguage using the public short code", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
     await checkout.mount("#root");
 
-    checkout.setLanguage("is-IS");
-    checkout.handleError("error.unknownError");
+    checkout.setLanguage("is");
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain(is("error.unknownError"));
+  });
+
+  it("tolerates the legacy full locale tags at runtime", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    // 1.x accepted "is-IS"/"en-US" here; IIFE consumers get no compile-time narrowing.
+    checkout.setLanguage("is-IS" as any);
+    internals(checkout).handleError({ key: "error.unknownError" });
+    expect(root().textContent).toContain(is("error.unknownError"));
+
+    checkout.updateConfig({ locale: "en-US" as any });
+    internals(checkout).handleError({ key: "error.unknownError" });
+    expect(root().textContent).toContain(en("error.unknownError"));
   });
 
   it("applies custom localizations passed to updateConfig", async () => {
@@ -106,7 +187,7 @@ describe("StraumurCheckout config updates", () => {
     await checkout.mount("#root");
 
     checkout.updateConfig({ customLocalizations: { "en-US": { "error.unknownError": "Custom boom" } } });
-    checkout.handleError("error.unknownError");
+    internals(checkout).handleError({ key: "error.unknownError" });
     expect(root().textContent).toContain("Custom boom");
   });
 });
@@ -123,14 +204,101 @@ describe("StraumurCheckout.destroy", () => {
 });
 
 describe("StraumurCheckout.submitDetails", () => {
-  it("renders an error when payment-method setup fails", async () => {
+  it("posts the redirect result and paymentCheckoutReference directly, without bootstrapping Adyen", async () => {
     const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
-    await checkout.mount("#root");
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised" }),
+    } as any);
 
-    setup.mockResolvedValueOnce({ resultCode: "Error", error: "error.paymentDetailsFailed" } as any);
-    await checkout.submitDetails("redirect-result");
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
 
-    expect(root().textContent).toContain(en("error.paymentDetailsFailed"));
+    // The redirect return goes straight to /additional-details through the flow, carrying the
+    // per-attempt reference the backend routes on — no Adyen SDK, so a native-only terminal works too.
+    expect(createDetailsRequest).toHaveBeenCalledWith(
+      "test",
+      expect.objectContaining({
+        sessionId: "s1",
+        paymentCheckoutReference: "pcr-1",
+        details: { redirectResult: "redirect-result" },
+      })
+    );
+    expect(A.cap.checkout.length).toBe(0);
+  });
+
+  it("shows the loader while /additional-details is in flight", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    let respond!: (value: unknown) => void;
+    vi.mocked(createDetailsRequest).mockReturnValue(new Promise((resolve) => (respond = resolve)) as any);
+
+    const pending = checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    const root = document.querySelector("#root")!;
+    await vi.waitFor(() => expect(root.querySelector(".straumur__component svg")).not.toBeNull());
+    expect(root.querySelector(".straumur__result-message")).toBeNull();
+
+    respond({ ok: true, json: async () => ({ resultCode: "Authorised" }) });
+    await pending;
+    expect(root.querySelector(".straumur__result-message")).not.toBeNull();
+  });
+
+  it("routes an authorised details result to onPaymentCompleted and the success screen", async () => {
+    const onPaymentCompleted = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentCompleted,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised" }),
+    } as any);
+
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    expect(onPaymentCompleted).toHaveBeenCalledWith({ resultCode: "Authorised" });
+    expect(root().textContent).toContain(en("success.paymentAuthorized"));
+  });
+
+  it("routes a refused details result to onPaymentFailed and the failure screen", async () => {
+    const onPaymentFailed = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentFailed,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Refused" }),
+    } as any);
+
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Refused" });
+    expect(root().textContent).toContain(en("error.paymentUnsuccessful"));
+  });
+
+  it("shows the failure screen and notifies the host when the details request fails", async () => {
+    const onPaymentFailed = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentFailed,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({ ok: false } as any);
+
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    expect(onPaymentFailed).toHaveBeenCalledWith({ resultCode: "Error" });
+    expect(root().textContent).toContain(en("error.failedToSubmitPaymentDetails"));
   });
 });
 
@@ -182,5 +350,119 @@ describe("StraumurCheckout.submitCard", () => {
     // retry submitCard() until the registration effect has had a chance to run.
     await waitFor(() => expect(checkout.submitCard()).toBe(true));
     expect(A.cap.instances[0].submit).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("StraumurCheckout updateConfig/setLanguage safety", () => {
+  it("does not throw when called while the session fetch is still in flight", async () => {
+    let respond!: (value: unknown) => void;
+    setup.mockReturnValue(new Promise((resolve) => (respond = resolve)) as any);
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+
+    const mounting = checkout.mount("#root");
+    expect(() => checkout.setLanguage("is")).not.toThrow();
+
+    respond(emptySuccess);
+    await mounting;
+  });
+
+  it("keeps a redirect-return success screen (in the new language) instead of re-showing the checkout", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised" }),
+    } as any);
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    checkout.setLanguage("is");
+
+    expect(root().textContent).toContain(is("success.paymentAuthorized"));
+  });
+
+  it("keeps an init-failure screen after updateConfig", async () => {
+    setup.mockResolvedValue({ resultCode: "Error", error: "error.failedToInitializePaymentMethods" } as any);
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ theme: "dark" });
+
+    expect(root().textContent).toContain(en("error.failedToInitializePaymentMethods"));
+  });
+
+  it("replaces the loader with an error when the session fetch throws", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    setup.mockRejectedValue(new Error("network down"));
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+
+    await expect(checkout.mount("#root")).resolves.toBeUndefined();
+
+    expect(root().textContent).toContain(en("error.failedToInitializePaymentMethods"));
+    expect(consoleError).toHaveBeenCalledWith("[StraumurCheckout] mount() failed:", expect.any(Error));
+    consoleError.mockRestore();
+  });
+});
+
+describe("StraumurCheckout merchant callback isolation", () => {
+  it("keeps the success outcome when the host's onPaymentCompleted throws", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const onPaymentFailed = vi.fn();
+    const checkout = new StraumurCheckout({
+      sessionId: "s1",
+      environment: "test",
+      locale: "en",
+      onPaymentCompleted: () => {
+        throw new Error("host bug");
+      },
+      onPaymentFailed,
+    });
+    const { createDetailsRequest } = await import("../src/adapter/straumur-adapter");
+    vi.mocked(createDetailsRequest).mockResolvedValue({
+      ok: true,
+      json: async () => ({ resultCode: "Authorised" }),
+    } as any);
+
+    await checkout.submitDetails("redirect-result", "pcr-1", "#root");
+
+    expect(onPaymentFailed).not.toHaveBeenCalled();
+    expect(root().textContent).toContain(en("success.paymentAuthorized"));
+    expect(consoleError).toHaveBeenCalledWith("[StraumurCheckout] onPaymentCompleted threw:", expect.any(Error));
+    consoleError.mockRestore();
+  });
+});
+
+describe("StraumurCheckout updateConfig public options", () => {
+  it("accepts a theme object and keeps its mode (it used to be stored raw)", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", theme: "light" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ theme: { mode: "dark", googlePayButtonTheme: "white" } });
+
+    expect(root().querySelector('.straumur__root-component[data-theme="dark"]')).toBeTruthy();
+  });
+
+  it("applies `localizations` (the constructor's name) with short-code keys", async () => {
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ localizations: { en: { "error.unknownError": "Custom boom" } } });
+    internals(checkout).handleError({ key: "error.unknownError" });
+
+    expect(root().textContent).toContain("Custom boom");
+  });
+
+  it("ignores (and warns about) fields fixed at construction", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const checkout = new StraumurCheckout({ sessionId: "s1", environment: "test", locale: "en" });
+    await checkout.mount("#root");
+
+    checkout.updateConfig({ sessionId: "other", environment: "live" } as any);
+
+    expect(warn).toHaveBeenCalledWith(
+      '[StraumurCheckout] updateConfig: "sessionId" cannot change after construction; ignored.'
+    );
+    expect((checkout as any).configuration.sessionId).toBe("s1");
+    expect((checkout as any).configuration.environment).toBe("test");
+    warn.mockRestore();
   });
 });

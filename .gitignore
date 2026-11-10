@@ -2,3 +2,11 @@
 node_modules
 .vscode
 .idea
+coverage
+
+dist
+.claude/analytics.json
+
+# Local MTK working artifacts (specs/plans are kept out of the repo)
+docs/specs/
+docs/plans/

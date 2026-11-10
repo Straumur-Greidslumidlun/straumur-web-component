@@ -1,0 +1,27 @@
+/* Single master loader shown over the payment-method area until every method that initializes on
+   load (the wallets, plus whichever card/stored card is open) is ready. */
+.straumur__master-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 240px;
+}
+
+/* Holds the payment methods; carries the inter-method spacing (previously on the group). */
+.straumur__methods {
+  display: flex;
+  flex-direction: column;
+  gap: var(--straumur__space-xxlg);
+}
+
+/* While loading, the methods still render (so they initialize) but are pulled out of flow and made
+   invisible behind the master loader. Anchored to .straumur__payment-method-group (position: relative). */
+.straumur__methods--loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+}

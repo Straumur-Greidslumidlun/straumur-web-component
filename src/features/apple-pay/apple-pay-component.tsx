@@ -16,7 +16,7 @@ interface ApplePayComponentProps {
 
 function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentProps): h.JSX.Element | null {
   const { i18n } = useI18n();
-  const { activePaymentMethod, setActivePaymentMethod, threeDSecureActive, isSolePaymentMethod, hasApplePay } =
+  const { activePaymentMethod, setActivePaymentMethod, isObscuredByThreeDS, isSolePaymentMethod, hasApplePay } =
     usePaymentMethodGroup();
   const [isUnavailable, setIsUnavailable] = useState(false);
 
@@ -28,7 +28,7 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
     return null;
   }
 
-  if (activePaymentMethod !== "applepay" && threeDSecureActive) {
+  if (isObscuredByThreeDS("applepay")) {
     return null;
   }
 
@@ -38,6 +38,8 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       title={i18n.t("applePay.title")}
       isActive={activePaymentMethod === "applepay"}
       isSole={isSolePaymentMethod}
+      logger={configuration.logger}
+      paymentMethod={"applepay"}
       onChange={() => setActivePaymentMethod("applepay")}
     >
       <ApplePayButton

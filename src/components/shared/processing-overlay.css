@@ -1,0 +1,53 @@
+/* Wraps an Adyen mount node so the processing overlay can sit on top of it. */
+.straumur__processing-host {
+  position: relative;
+}
+
+.straumur__processing-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--straumur__space-xxs);
+  color: var(--straumur__color-primary);
+  /* Blocks clicks on the dimmed fields/button underneath while the payment is in flight. */
+  cursor: progress;
+}
+
+/* Translucent backdrop on its own layer so the spinner and label stay fully opaque. */
+.straumur__processing-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--straumur__color-white);
+  opacity: 0.85;
+}
+
+.straumur__processing-overlay__icon {
+  display: flex;
+}
+
+.straumur__processing-overlay__label {
+  font-size: 14px;
+  color: var(--straumur__color-text);
+}
+
+/* Compact: over a 48px wallet tile there's no room for the label — spinner only, label kept for
+   screen readers (visually hidden). */
+.straumur__processing-overlay--compact .straumur__processing-overlay__icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.straumur__processing-overlay--compact .straumur__processing-overlay__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

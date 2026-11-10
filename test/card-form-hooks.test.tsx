@@ -15,6 +15,7 @@ const { FakeCustomCard } = vi.hoisted(() => {
   class FakeCustomCard {
     static instances: FakeCustomCard[] = [];
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     constructor(_core: unknown, opts: any) {
       FakeCustomCard.instances.push(this);
@@ -76,6 +77,7 @@ function tree() {
         hasCard={true}
         hasGooglePay={true}
         hasApplePay={false}
+        hasKortalan={false}
         hasStoredPaymentMethods={false}
       >
         <Controls />
@@ -105,9 +107,7 @@ describe("CardForm render-guard hook stability", () => {
     await waitFor(() => expect(screen.queryByText("Card number")).toBeNull());
 
     // No hook-order / render errors should have been logged during the transition.
-    const hookErrors = errorSpy.mock.calls.filter((args) =>
-      String(args[0]).toLowerCase().includes("hook")
-    );
+    const hookErrors = errorSpy.mock.calls.filter((args) => String(args[0]).toLowerCase().includes("hook"));
     expect(hookErrors).toEqual([]);
   });
 });

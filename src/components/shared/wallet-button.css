@@ -1,0 +1,12 @@
+/* An express-row wallet (instantPayments) has no payment-method tile around it, unlike the card or a
+   wallet in the radio list. While its 3DS challenge takes over the widget, give the challenge the same
+   tile look as the card's (.straumur__payment-method-item: surface, radius, padding). Applied as a class
+   on the always-present wrapper — never a conditional wrapper element, which would remount the node Adyen
+   draws the challenge into. */
+.straumur__wallet-button--3ds-tile {
+  background: var(--straumur__color-white);
+  border-radius: var(--straumur__border-radius-lg);
+  padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);
+  /* The wrapper is width: 100% during 3DS; keep the padding inside it, not past the widget's edge. */
+  box-sizing: border-box;
+}
