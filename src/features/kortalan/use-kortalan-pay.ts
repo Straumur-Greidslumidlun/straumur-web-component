@@ -43,9 +43,16 @@ export function useKortalanPay(configuration: StraumurCheckoutConfiguration): {
     }
 
     setIsSubmitting(true);
+    let submitted = false;
 
     try {
-      const allowed = await runBeforeSubmit(configuration.paymentFlow);
+      let allowed: boolean;
+      try {
+        allowed = await runBeforeSubmit(configuration.paymentFlow);
+      } catch (error) {
+        logger.log("payment.beforeSubmit", { paymentMethod: KORTALAN_TYPE, allowed: false, threw: true });
+        throw error;
+      }
       logger.log("payment.beforeSubmit", { paymentMethod: KORTALAN_TYPE, allowed, threw: false });
 
       if (!allowed) {
@@ -56,6 +63,7 @@ export function useKortalanPay(configuration: StraumurCheckoutConfiguration): {
       // Lock the rest of the widget for the in-flight window (mirrors the Adyen flow).
       setPaymentInProgress(true);
       logger.log("payment.submitted", { paymentMethod: KORTALAN_TYPE });
+      submitted = true;
 
       // No Adyen client state for a native method — just the method type the backend routes on.
       const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitPayment({
@@ -89,7 +97,9 @@ export function useKortalanPay(configuration: StraumurCheckoutConfiguration): {
       setPaymentInProgress(false);
       setIsSubmitting(false);
     } catch (error) {
-      logger.log("payment.requestFailed", { paymentMethod: KORTALAN_TYPE, stage: "payment" });
+      if (submitted) {
+        logger.log("payment.requestFailed", { paymentMethod: KORTALAN_TYPE, stage: "payment" });
+      }
       handleError(toResultMessage(error, "error.failedToSubmitPayment"));
 
       // Nothing else owns the outcome for a native method (no Adyen element to dispatch it), so a

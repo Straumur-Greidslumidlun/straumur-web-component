@@ -47,6 +47,8 @@ function KortalanComponent({ configuration }: KortalanComponentProps): h.JSX.Ele
       title={i18n.t("kortalan.title")}
       isActive={activePaymentMethod === KORTALAN_TYPE}
       isSole={isSolePaymentMethod}
+      logger={configuration.logger}
+      paymentMethod={KORTALAN_TYPE}
       onChange={() => setActivePaymentMethod(KORTALAN_TYPE)}
       headerRight={
         <span className="straumur__kortalan-component__logo">

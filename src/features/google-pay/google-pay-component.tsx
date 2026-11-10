@@ -38,6 +38,8 @@ function GooglePayComponent({ configuration, paymentMethods }: GooglePayComponen
       title={i18n.t("googlePay.title")}
       isActive={activePaymentMethod === "googlepay"}
       isSole={isSolePaymentMethod}
+      logger={configuration.logger}
+      paymentMethod={"googlepay"}
       onChange={() => setActivePaymentMethod("googlepay")}
     >
       <GooglePayButton

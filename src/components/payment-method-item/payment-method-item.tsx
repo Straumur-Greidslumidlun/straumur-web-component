@@ -1,6 +1,7 @@
 import { h, ComponentChildren } from "preact";
 import "./payment-method-item.css";
 import { usePaymentMethodGroup } from "../payment-method-group/payment-method-group-context";
+import { Logger, NOOP_LOGGER } from "../../logging/component-logger";
 
 interface PaymentMethodItemProps {
   icon: h.JSX.Element;
@@ -11,6 +12,9 @@ interface PaymentMethodItemProps {
   children: ComponentChildren;
   headerRight?: h.JSX.Element | null;
   confirmSection?: h.JSX.Element;
+  /** Diagnostics: logged as ui.methodSelected when the shopper picks this method. */
+  logger?: Logger;
+  paymentMethod?: string;
 }
 
 function PaymentMethodItem({
@@ -22,10 +26,17 @@ function PaymentMethodItem({
   children,
   headerRight,
   confirmSection,
+  logger = NOOP_LOGGER,
+  paymentMethod,
 }: PaymentMethodItemProps): h.JSX.Element {
   // Prevent switching methods while a payment is in flight (the buttons are disabled too).
   const { paymentInProgress } = usePaymentMethodGroup();
   const expanded = isSole || isActive;
+
+  function select(): void {
+    logger.log("ui.methodSelected", { paymentMethod });
+    onChange();
+  }
 
   const header = (
     <span className="straumur__payment-method-item__content">
@@ -48,7 +59,7 @@ function PaymentMethodItem({
       }`}
       // Keep the whole collapsed tile clickable (it used to be one big label); the radio stays the
       // keyboard/AT control.
-      onClick={!isSole && !isActive && !paymentInProgress ? onChange : undefined}
+      onClick={!isSole && !isActive && !paymentInProgress ? select : undefined}
     >
       <div
         className={`straumur__payment-method-item__header${
@@ -63,7 +74,7 @@ function PaymentMethodItem({
               type="radio"
               className="straumur__payment-method-item__radio-selector"
               checked={isActive}
-              onChange={onChange}
+              onChange={select}
               disabled={paymentInProgress}
             />
             {header}

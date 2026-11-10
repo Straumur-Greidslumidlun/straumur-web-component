@@ -38,6 +38,8 @@ function ApplePayComponent({ configuration, paymentMethods }: ApplePayComponentP
       title={i18n.t("applePay.title")}
       isActive={activePaymentMethod === "applepay"}
       isSole={isSolePaymentMethod}
+      logger={configuration.logger}
+      paymentMethod={"applepay"}
       onChange={() => setActivePaymentMethod("applepay")}
     >
       <ApplePayButton

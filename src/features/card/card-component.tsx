@@ -33,6 +33,8 @@ function CardComponent({ configuration, paymentMethods }: CardComponentProps): h
       title={i18n.t("cards.title")}
       isActive={activePaymentMethod === "card"}
       isSole={isSolePaymentMethod}
+      logger={configuration.logger}
+      paymentMethod={"card"}
       onChange={() => setActivePaymentMethod("card")}
       headerRight={
         <span className="straumur__card-component--brands">

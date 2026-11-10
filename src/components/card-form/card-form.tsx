@@ -18,6 +18,7 @@ import { useFocusOnActivate } from "../../utils/custom-hooks/use-focus-on-activa
 import { useResolvedTheme } from "../../utils/custom-hooks/use-resolved-theme";
 import { getAdyenFieldStyles } from "../../utils/adyen-field-styles";
 import { ProcessingOverlay } from "../shared/processing-overlay";
+import { createFieldErrorReporter } from "../../logging/field-errors";
 
 export interface CardFormProps {
   configuration: StraumurCheckoutConfiguration;
@@ -197,6 +198,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       if (generation !== initGenerationRef.current) return;
       // Bad clientKey, blocked Adyen script, …: never leave the shopper on an endless loader.
       console.error("[StraumurCheckout] card initialization failed:", error);
+      configuration.logger.log("error.init", { paymentMethod: "card" });
       handleError({ key: "error.failedToInitializePaymentMethods" });
     }
   }
@@ -230,6 +232,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
     // (destroy-style cleanup) to match the wallet components (google-pay/apple-pay buttons).
     customCardRef.current?.remove();
     adyenCheckoutRef.current = core;
+    const reportFieldErrors = createFieldErrorReporter(configuration.logger, "card");
 
     customCardRef.current = new CustomCard(core, {
       brands: schemeBrands,
@@ -284,6 +287,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
       // Enter inside the secure fields: route through the gated entry point instead of Adyen's
       // direct submit(), so beforeSubmit and the double-submit lock apply there too.
       onEnterKeyPressed: () => {
+        configuration.logger.log("ui.enterPressed", { paymentMethod: "card" });
         handleSubmitClick();
       },
       onConfigSuccess() {
@@ -304,6 +308,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
           });
 
         setFormErrors(defaultErrors);
+        reportFieldErrors(event);
       },
       // Validity comes from onChange, not onAllValid. Adyen fires onChange after CustomCard's own state is
       // updated, so state.isValid is exactly what submit() checks; onAllValid fires a render earlier, and
@@ -315,6 +320,7 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
         if (reportedValidityRef.current !== isValid) {
           reportedValidityRef.current = isValid;
           configuration.onCardValidityChanged?.(isValid, true);
+          configuration.logger.log("validation.cardValidityChanged", { paymentMethod: "card", isValid });
         }
       },
     });
@@ -339,11 +345,13 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
   }, [storePaymentMethod]);
 
   function dualBrandListener(e: h.JSX.TargetedMouseEvent<HTMLSpanElement>) {
+    configuration.logger.log("ui.dualBrandSelected", { brand: e.currentTarget?.getAttribute("data-value") });
     customCardRef.current!.dualBrandingChangeHandler(e);
   }
 
   function handleStorePaymentMethodChange(event: h.JSX.TargetedEvent<HTMLInputElement, Event>) {
     setStorePaymentMethod(event.currentTarget.checked);
+    configuration.logger.log("ui.storeDetailsToggled", { checked: event.currentTarget.checked });
   }
 
   // When the 3DS challenge replaces the card fields, move focus into the container.
@@ -518,7 +526,10 @@ function CardForm({ configuration, paymentMethods, onBrandHidden }: CardFormProp
             <button
               className="straumur__card-component__submit-button"
               disabled={payButtonDisabled || paymentInProgress}
-              onClick={handleSubmitClick}
+              onClick={() => {
+                configuration.logger.log("ui.payClicked", { paymentMethod: "card" });
+                void handleSubmitClick();
+              }}
             >
               {paymentMethods.minorUnitsAmount === 0 ? i18n.t("cards.saveCardDetails") : paymentMethods.formattedAmount}
             </button>

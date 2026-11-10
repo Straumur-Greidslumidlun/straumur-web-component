@@ -20,6 +20,7 @@ import { getAdyenFieldStyles } from "../../utils/adyen-field-styles";
 import { toResultMessage } from "../../flows/payment-flow";
 import { ResultMessage } from "../../models/models";
 import { ProcessingOverlay } from "../../components/shared/processing-overlay";
+import { createFieldErrorReporter } from "../../logging/field-errors";
 
 function StoredCardComponent({
   configuration,
@@ -172,6 +173,7 @@ function StoredCardComponent({
     } catch (error) {
       if (generation !== initGenerationRef.current) return;
       console.error("[StraumurCheckout] stored card initialization failed:", error);
+      configuration.logger.log("error.init", { paymentMethod: "storedcard" });
       handleError({ key: "error.failedToInitializePaymentMethods" });
     }
   }
@@ -202,6 +204,8 @@ function StoredCardComponent({
     customCardRef.current?.remove();
     adyenCheckoutRef.current = core;
 
+    const reportFieldErrors = createFieldErrorReporter(configuration.logger, "storedcard");
+
     customCardRef.current = new CustomCard(core, {
       brands: [storedPaymentMethod.brand!],
       styles: getAdyenFieldStyles(resolvedTheme),
@@ -209,6 +213,7 @@ function StoredCardComponent({
       // Enter inside the secure fields: route through the gated entry point instead of Adyen's
       // direct submit(), so beforeSubmit and the double-submit lock apply there too.
       onEnterKeyPressed: () => {
+        configuration.logger.log("ui.enterPressed", { paymentMethod: "storedcard" });
         handleSubmitClick();
       },
       onConfigSuccess() {
@@ -230,6 +235,7 @@ function StoredCardComponent({
           });
 
         setFormErrors(defaultErrors);
+        reportFieldErrors(event);
       },
       // Validity comes from onChange, not onAllValid. Adyen fires onChange after CustomCard's own state is
       // updated, so state.isValid is exactly what submit() checks; onAllValid fires a render earlier, and
@@ -241,6 +247,7 @@ function StoredCardComponent({
         if (reportedValidityRef.current !== isValid) {
           reportedValidityRef.current = isValid;
           configuration.onCardValidityChanged?.(isValid, true);
+          configuration.logger.log("validation.cardValidityChanged", { paymentMethod: "storedcard", isValid });
         }
       },
       placeholders: configuration.placeholders,
@@ -304,8 +311,10 @@ function StoredCardComponent({
     setRemoveStoredCardError(null);
     try {
       await disableToken(storedPaymentMethod.id);
+      configuration.logger.log("ui.storedCardRemoved", { success: true });
       onStoredCardRemoved(storedPaymentMethod.id);
     } catch (error) {
+      configuration.logger.log("ui.storedCardRemoved", { success: false });
       setRemoveStoredCardError(toResultMessage(error, "error.failedToSubmitRemoveStoredPaymentCard"));
     } finally {
       setIsRemovingStoredCard(false);
@@ -385,6 +394,8 @@ function StoredCardComponent({
       title={`•••• ${storedPaymentMethod.lastFour}`}
       isActive={isActive}
       isSole={isSolePaymentMethod}
+      logger={configuration.logger}
+      paymentMethod={"storedcard"}
       onChange={handleBoxChange}
       headerRight={headerRight}
       confirmSection={confirmSection}
@@ -472,7 +483,10 @@ function StoredCardComponent({
               <button
                 className="straumur__stored-card-component__submit-button"
                 disabled={payButtonDisabled || paymentInProgress}
-                onClick={handleSubmitClick}
+                onClick={() => {
+                  configuration.logger.log("ui.payClicked", { paymentMethod: "storedcard" });
+                  void handleSubmitClick();
+                }}
               >
                 {paymentMethods.minorUnitsAmount === 0
                   ? i18n.t("stored-cards.saveCardDetails")

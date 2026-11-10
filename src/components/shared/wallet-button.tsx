@@ -80,7 +80,12 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         // Merchant's own Apple Pay certificate: they validate the merchant session themselves. Without it
         // Adyen's default validation runs (Adyen's certificate) — unchanged behaviour.
         ...(configuration.onApplePayValidateMerchant
-          ? { onValidateMerchant: createApplePayMerchantValidation(configuration.onApplePayValidateMerchant) }
+          ? {
+              onValidateMerchant: createApplePayMerchantValidation(
+                configuration.onApplePayValidateMerchant,
+                configuration.logger
+              ),
+            }
           : {}),
       };
 
@@ -223,6 +228,7 @@ function WalletButton({
       if (generation !== initGenerationRef.current) return;
       // A wallet that can't start is just unavailable — hide it, don't take down the whole checkout.
       console.error(`[StraumurCheckout] ${method} initialization failed:`, error);
+      configuration.logger.log("error.init", { paymentMethod: method });
       markUnavailable();
     }
   }
@@ -276,9 +282,14 @@ function WalletButton({
       await element.isAvailable();
     } catch {
       // isAvailable() rejecting is Adyen's normal "not available on this device/browser" signal.
-      if (generation === initGenerationRef.current) markUnavailable();
+      if (generation === initGenerationRef.current) {
+        configuration.logger.log("wallet.availability", { paymentMethod: method, available: false });
+        markUnavailable();
+      }
       return;
     }
+
+    configuration.logger.log("wallet.availability", { paymentMethod: method, available: true });
 
     if (generation !== initGenerationRef.current || !walletElementRef.current) return;
     element.mount(walletElementRef.current);

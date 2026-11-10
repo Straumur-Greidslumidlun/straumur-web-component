@@ -26,9 +26,7 @@ export const LOG_EVENTS = {
   "ui.enterPressed": { category: "ui", fields: ["paymentMethod"] },
   "ui.dualBrandSelected": { category: "ui", fields: ["brand"] },
   "ui.storeDetailsToggled": { category: "ui", fields: ["checked"] },
-  "ui.storedCardSelected": { category: "ui", fields: [] },
   "ui.storedCardRemoved": { category: "ui", fields: ["success"] },
-  "ui.tooltipOpened": { category: "ui", fields: ["id"] },
 
   "validation.cardValidityChanged": { category: "validation", fields: ["paymentMethod", "isValid"] },
   "validation.fieldError": { category: "validation", fields: ["paymentMethod", "field", "errorCode"] },

@@ -1,4 +1,5 @@
 import { ApplePayMerchantSession } from "../../models/models";
+import { Logger, NOOP_LOGGER } from "../../logging/component-logger";
 
 type AdyenValidateMerchant = (
   resolve: (session: ApplePayMerchantSession) => void,
@@ -14,7 +15,8 @@ type AdyenValidateMerchant = (
  * A synchronous throw and a non-object result are rejections too, so the sheet can never hang waiting.
  */
 export function createApplePayMerchantValidation(
-  validate: (validationURL: string) => Promise<ApplePayMerchantSession>
+  validate: (validationURL: string) => Promise<ApplePayMerchantSession>,
+  logger: Logger = NOOP_LOGGER
 ): AdyenValidateMerchant {
   return (resolve, reject, validationURL) => {
     Promise.resolve()
@@ -23,9 +25,12 @@ export function createApplePayMerchantValidation(
         if (!session || typeof session !== "object") {
           throw new Error("onApplePayValidateMerchant must resolve with Apple's merchant session object");
         }
+        // The outcome only: never the validationURL or the merchant session.
+        logger.log("wallet.merchantValidation", { success: true });
         resolve(session);
       })
       .catch((error: unknown) => {
+        logger.log("wallet.merchantValidation", { success: false });
         console.error("[StraumurCheckout] onApplePayValidateMerchant failed:", error);
         reject(error);
       });

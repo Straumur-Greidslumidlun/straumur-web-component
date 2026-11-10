@@ -40,6 +40,7 @@ import {
   usePaymentMethodGroup,
 } from "../src/components/payment-method-group/payment-method-group-context";
 import { AdyenCheckout } from "@adyen/adyen-web";
+import { NOOP_LOGGER } from "../src/logging/component-logger";
 import { I18nProvider } from "../src/localizations/i18n-context";
 import { I18nService } from "../src/localizations/i18n-service";
 
@@ -111,8 +112,8 @@ describe("CardForm Adyen re-initialization", () => {
 });
 
 describe("CardForm Adyen re-initialization guards", () => {
-  const configEn = { sessionId: "s1", environment: "test", locale: "en-US" } as any;
-  const configIs = { sessionId: "s1", environment: "test", locale: "is-IS" } as any;
+  const configEn = { sessionId: "s1", environment: "test", locale: "en-US", logger: NOOP_LOGGER } as any;
+  const configIs = { sessionId: "s1", environment: "test", locale: "is-IS", logger: NOOP_LOGGER } as any;
 
   beforeEach(() => {
     FakeCustomCard.instances.length = 0;
@@ -174,7 +175,7 @@ describe("CardForm Adyen re-initialization guards", () => {
 });
 
 describe("CardForm Adyen teardown on unmount", () => {
-  const config = { sessionId: "s1", environment: "test", locale: "en-US" } as any;
+  const config = { sessionId: "s1", environment: "test", locale: "en-US", logger: NOOP_LOGGER } as any;
 
   beforeEach(() => {
     FakeCustomCard.instances.length = 0;
