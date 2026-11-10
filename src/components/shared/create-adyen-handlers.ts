@@ -20,6 +20,8 @@ import {
 import { toResultMessage } from "../../flows/payment-flow";
 import { dispatchFinalResult } from "./dispatch-final-result";
 import { CANCEL } from "../../models/constants";
+import { RequestTimeoutError } from "../../adapter/request-timeout-error";
+import { Logger, NOOP_LOGGER } from "../../logging/component-logger";
 
 export interface AdyenPaymentHandlersOptions {
   configuration: StraumurCheckoutConfiguration;
@@ -35,6 +37,8 @@ export interface AdyenPaymentHandlersOptions {
   setPaymentProcessing?: (value: boolean) => void;
   enrichSubmitData?: (data: SubmitData["data"]) => AdvancedSubmitState["data"];
   onSubmitStart?: () => void;
+  /** The method these handlers pay with, as logged (e.g. "card", "storedcard", "googlepay"). */
+  paymentMethod: string;
 }
 
 export interface AdyenPaymentHandlers {
@@ -60,7 +64,20 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     setPaymentProcessing,
     enrichSubmitData,
     onSubmitStart,
+    paymentMethod,
   } = options;
+  const { logger } = configuration;
+
+  // Only the action's type (e.g. "threeDS2", "redirect"), never the action itself: it carries tokens and URLs.
+  function logResponse(resultCode: ResultCode, action: unknown): void {
+    const actionType = typeof action === "object" && action !== null ? (action as { type?: unknown }).type : undefined;
+    logger.log("payment.response", { paymentMethod, resultCode, hasAction: !!action, actionType });
+  }
+
+  function logRequestFailure(error: unknown, stage: "payment" | "details"): void {
+    const type = error instanceof RequestTimeoutError ? "payment.timeout" : "payment.requestFailed";
+    logger.log(type, { paymentMethod, stage });
+  }
 
   // Buyer-friendly failure message from the host (advanced mode). Set on submit, shown when the payment fails.
   let failureMessage: string | undefined;
@@ -75,6 +92,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       handleSuccess,
       handleError: (message) => handleError(thrownFailure ?? message),
       failureMessage,
+      paymentMethod,
     });
   }
 
@@ -93,6 +111,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     // The overlay stays up through /payments and — for IdentifyShopper — the invisible fingerprint
     // iframe; handleActionHandled lifts it once a challenge is actually visible.
     setPaymentProcessing?.(true);
+    logger.log("payment.submitted", { paymentMethod });
 
     try {
       const data = enrichSubmitData ? enrichSubmitData(state.data) : (state.data as AdvancedSubmitState["data"]);
@@ -100,6 +119,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitPayment(data);
 
       failureMessage = errorMessage;
+      logResponse(resultCode, action);
 
       if (resultCode === "ChallengeShopper" || resultCode === "IdentifyShopper") {
         setThreeDSecureActive(true);
@@ -112,6 +132,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
       setPaymentInProgress?.(false);
       setPaymentProcessing?.(false);
       thrownFailure = toResultMessage(error, "error.failedToSubmitPayment");
+      logRequestFailure(error, "payment");
       // Adyen answers with onPaymentFailed -> handlePaymentFailed, which shows thrownFailure.
       actions.reject();
     }
@@ -124,11 +145,13 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
   ) {
     // Fingerprint or challenge finished: the shopper is waiting on /payments/details again.
     setPaymentProcessing?.(true);
+    logger.log("payment.detailsSubmitted", { paymentMethod });
 
     try {
       const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitAdditionalDetails(state.data);
 
       failureMessage = errorMessage;
+      logResponse(resultCode, action);
 
       // If the /payments/details request from your server is successful, you must call this to resolve whichever of the listed objects are available.
       // You must call this, even if the result of the payment is unsuccessful.
@@ -140,6 +163,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     } catch (error) {
       setPaymentProcessing?.(false);
       thrownFailure = toResultMessage(error, "error.failedToSubmitPaymentDetails");
+      logRequestFailure(error, "details");
       // Adyen answers the reject with onPaymentFailed, which shows thrownFailure.
       actions.reject();
     }
@@ -160,6 +184,7 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
     // hidden (display:none), so its "loaded" event must NOT lift the overlay.
     if (data.componentType === "3DS2Challenge") {
       setPaymentProcessing?.(false);
+      logger.log("payment.threeDSChallengeShown", { paymentMethod, componentType: data.componentType });
     }
   }
 
@@ -183,12 +208,16 @@ export function createAdyenPaymentHandlers(options: AdyenPaymentHandlersOptions)
  */
 export function createAdyenErrorHandler(
   handleError: (message: ResultMessage) => void,
-  source: string
+  source: string,
+  logger: Logger = NOOP_LOGGER
 ): (error: AdyenCheckoutError, element?: UIElement<UIElementProps>) => void {
   return (error) => {
     if (error?.name === CANCEL) {
+      logger.log("wallet.cancelled", { paymentMethod: source });
       return;
     }
+    // The error's name only (e.g. "NETWORK_ERROR"); its message and cause can carry request details.
+    logger.log("error.adyen", { paymentMethod: source, name: error?.name, stage: "adyen" });
     console.error(`[StraumurCheckout] Adyen error (${source}):`, error);
     handleError({ key: "error.unknownError" });
   };

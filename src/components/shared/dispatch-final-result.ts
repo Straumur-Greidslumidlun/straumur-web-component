@@ -8,11 +8,14 @@ export const FAILED_RESULT_CODES: readonly ResultCode[] = ["Refused", "Cancelled
 export const PENDING_RESULT_CODES: readonly ResultCode[] = ["Pending", "Received"];
 
 export interface DispatchFinalResultDeps {
-  configuration: Pick<StraumurCheckoutConfiguration, "onPaymentCompleted" | "onPaymentFailed">;
+  configuration: Pick<StraumurCheckoutConfiguration, "onPaymentCompleted" | "onPaymentFailed"> &
+    Partial<Pick<StraumurCheckoutConfiguration, "logger">>;
   handleSuccess: (message: ResultMessage) => void;
   handleError: (message: ResultMessage) => void;
   /** Buyer-friendly failure message from the host (advanced mode); overrides the generic failure copy. */
   failureMessage?: string;
+  /** The method that was paid with, for the diagnostics log (unknown on a redirect return). */
+  paymentMethod?: string;
 }
 
 /**
@@ -25,18 +28,23 @@ export interface DispatchFinalResultDeps {
  * (including Pending/Received/PresentToShopper) → onPaymentCompleted.
  */
 export function dispatchFinalResult(resultCode: ResultCode, deps: DispatchFinalResultDeps): void {
-  const { configuration, handleSuccess, handleError, failureMessage } = deps;
+  const { configuration, handleSuccess, handleError, failureMessage, paymentMethod } = deps;
+  let screen: "success" | "pending" | "failure";
 
   if (resultCode === "Authorised") {
+    screen = "success";
     handleSuccess({ key: "success.paymentAuthorized" });
   } else if (PENDING_RESULT_CODES.includes(resultCode)) {
     // Was the "Payment unsuccessful" screen — wrong for a payment that was accepted for processing.
+    screen = "pending";
     handleSuccess({ key: "success.paymentPending" });
   } else {
+    screen = "failure";
     handleError(failureMessage ? { text: failureMessage } : { key: "error.paymentUnsuccessful" });
   }
 
   const failed = FAILED_RESULT_CODES.includes(resultCode);
+  let hostCallbackThrew = false;
 
   // The host's callback runs last and isolated: if it throws, that's the host's bug and must not flip
   // the reported outcome — callers' catch blocks (submitDetails, Kortalán) would otherwise also fire
@@ -48,6 +56,9 @@ export function dispatchFinalResult(resultCode: ResultCode, deps: DispatchFinalR
       configuration.onPaymentCompleted?.({ resultCode });
     }
   } catch (error) {
+    hostCallbackThrew = true;
     console.error(`[StraumurCheckout] ${failed ? "onPaymentFailed" : "onPaymentCompleted"} threw:`, error);
   }
+
+  configuration.logger?.log("payment.finalResult", { paymentMethod, resultCode, screen, hostCallbackThrew });
 }

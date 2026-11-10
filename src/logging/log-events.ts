@@ -40,6 +40,7 @@ export const LOG_EVENTS = {
   "payment.threeDSChallengeShown": { category: "payment", fields: ["paymentMethod", "componentType"] },
   "payment.detailsSubmitted": { category: "payment", fields: ["paymentMethod"] },
   "payment.timeout": { category: "payment", fields: ["paymentMethod", "stage"] },
+  "payment.requestFailed": { category: "payment", fields: ["paymentMethod", "stage"] },
   "payment.redirectReturn": { category: "payment", fields: ["hasPaymentCheckoutReference"] },
   "payment.finalResult": {
     category: "payment",

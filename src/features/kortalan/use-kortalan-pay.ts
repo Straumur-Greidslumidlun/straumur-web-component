@@ -35,6 +35,7 @@ export function useKortalanPay(configuration: StraumurCheckoutConfiguration): {
 } {
   const { handleSuccess, handleError, setPaymentInProgress } = usePaymentMethodGroup();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { logger } = configuration;
 
   const pay = async (): Promise<void> => {
     if (isSubmitting) {
@@ -44,18 +45,29 @@ export function useKortalanPay(configuration: StraumurCheckoutConfiguration): {
     setIsSubmitting(true);
 
     try {
-      if (!(await runBeforeSubmit(configuration.paymentFlow))) {
+      const allowed = await runBeforeSubmit(configuration.paymentFlow);
+      logger.log("payment.beforeSubmit", { paymentMethod: KORTALAN_TYPE, allowed, threw: false });
+
+      if (!allowed) {
         setIsSubmitting(false);
         return;
       }
 
       // Lock the rest of the widget for the in-flight window (mirrors the Adyen flow).
       setPaymentInProgress(true);
+      logger.log("payment.submitted", { paymentMethod: KORTALAN_TYPE });
 
       // No Adyen client state for a native method — just the method type the backend routes on.
       const { resultCode, action, errorMessage } = await configuration.paymentFlow.submitPayment({
         clientStateDataIndicator: false,
         paymentMethod: { type: KORTALAN_TYPE },
+      });
+
+      logger.log("payment.response", {
+        paymentMethod: KORTALAN_TYPE,
+        resultCode,
+        hasAction: !!action,
+        actionType: (action as { type?: unknown } | undefined)?.type,
       });
 
       const redirectUrl = getRedirectUrl(action);
@@ -67,10 +79,17 @@ export function useKortalanPay(configuration: StraumurCheckoutConfiguration): {
       }
 
       // No redirect (e.g. an outright refusal before the redirect) — surface the outcome in place.
-      dispatchFinalResult(resultCode, { configuration, handleSuccess, handleError, failureMessage: errorMessage });
+      dispatchFinalResult(resultCode, {
+        configuration,
+        handleSuccess,
+        handleError,
+        failureMessage: errorMessage,
+        paymentMethod: KORTALAN_TYPE,
+      });
       setPaymentInProgress(false);
       setIsSubmitting(false);
     } catch (error) {
+      logger.log("payment.requestFailed", { paymentMethod: KORTALAN_TYPE, stage: "payment" });
       handleError(toResultMessage(error, "error.failedToSubmitPayment"));
 
       // Nothing else owns the outcome for a native method (no Adyen element to dispatch it), so a

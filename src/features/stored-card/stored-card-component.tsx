@@ -76,10 +76,15 @@ function StoredCardComponent({
   const resolvedTheme = useResolvedTheme(configuration.theme);
 
   async function handleSubmitClick(): Promise<void> {
-    await submitCardWithGate(configuration.paymentFlow, () => customCardRef.current, {
-      tryStart: tryStartPayment,
-      release: () => setPaymentInProgress(false),
-    });
+    await submitCardWithGate(
+      configuration.paymentFlow,
+      () => customCardRef.current,
+      {
+        tryStart: tryStartPayment,
+        release: () => setPaymentInProgress(false),
+      },
+      { logger: configuration.logger, paymentMethod: "storedcard" }
+    );
   }
 
   useEffect(() => {
@@ -128,9 +133,10 @@ function StoredCardComponent({
         storedPaymentMethodId: storedPaymentMethod.id,
       },
     }),
+    paymentMethod: "storedcard",
   });
 
-  const handleOnError = createAdyenErrorHandler(handleError, "stored card");
+  const handleOnError = createAdyenErrorHandler(handleError, "storedcard", configuration.logger);
 
   // Tear down the Adyen element when this method unmounts (another method's result screen, destroy()).
   // Without it the secure-field iframe and its core stay alive after the widget is gone. Bumping the generation makes

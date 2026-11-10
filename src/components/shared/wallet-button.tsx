@@ -67,7 +67,10 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         },
         environment: configuration.environment,
         onSubmit: handleOnSubmit,
-        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow, isPaymentLocked),
+        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow, isPaymentLocked, {
+          logger: configuration.logger,
+          paymentMethod: "applepay",
+        }),
         // Follows the widget theme (light → white-outline, dark → black); overridable via applePayButtonTheme.
         buttonColor: resolveApplePayButtonColor(resolvedTheme, configuration.applePayButtonTheme),
         configuration: {
@@ -99,7 +102,10 @@ const WALLETS: Record<WalletMethod, WalletDescriptor> = {
         countryCode: configuration.countryCode,
         environment: configuration.environment,
         onSubmit: handleOnSubmit,
-        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow, isPaymentLocked),
+        onClick: createBeforeSubmitClickHandler(configuration.paymentFlow, isPaymentLocked, {
+          logger: configuration.logger,
+          paymentMethod: "googlepay",
+        }),
         // Follows the widget theme (light → white, dark → black); overridable via googlePayButtonTheme.
         buttonColor: resolveGooglePayButtonColor(resolvedTheme, configuration.googlePayButtonTheme),
         // "plain" renders only the Google Pay mark (no "Pay"/"Buy with" text), matching the
@@ -171,9 +177,10 @@ function WalletButton({
         setActivePaymentMethod(method);
       }
     },
+    paymentMethod: method,
   });
 
-  const handleOnError = createAdyenErrorHandler(handleError, `${method}`);
+  const handleOnError = createAdyenErrorHandler(handleError, `${method}`, configuration.logger);
 
   function markUnavailable(): void {
     // Initialized-but-unavailable: the loader must disappear and the method must not stay selected.

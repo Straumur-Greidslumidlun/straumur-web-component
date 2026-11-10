@@ -28,6 +28,7 @@ function setup(flowOverrides: Partial<PaymentFlow> = {}, optionOverrides: Partia
     handleSuccess: vi.fn(),
     handleError: vi.fn(),
     setThreeDSecureActive: vi.fn(),
+    paymentMethod: "card",
     ...optionOverrides,
   };
   return { handlers: createAdyenPaymentHandlers(options), options, paymentFlow };
