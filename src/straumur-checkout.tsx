@@ -20,7 +20,19 @@ import { buildCheckoutConfiguration, normalizeTheme } from "./config/build-check
 
 // Captured by the payment flow at construction; changing them later would load one session and pay
 // into another.
-const FIXED_CONFIG_KEYS = ["sessionId", "environment", "countryCode", "mode", "paymentFlow"] as const;
+// The logger is created once per instance too: replacing it would drop its queue and listeners.
+const FIXED_CONFIG_KEYS = ["sessionId", "environment", "countryCode", "mode", "paymentFlow", "logger"] as const;
+
+// Method types only (never ids or tokens), plus "storedcard" when the shopper has saved cards.
+function describePaymentMethods(response: SuccessResponse): { count: number; methods: string } {
+  const types = (response.paymentMethods?.paymentMethods ?? []).map((x) => x.type);
+
+  if ((response.paymentMethods?.storedPaymentMethods ?? []).length > 0) {
+    types.push("storedcard");
+  }
+
+  return { count: types.length, methods: types.join(",") };
+}
 
 class StraumurCheckout {
   private configuration: StraumurCheckoutConfiguration;
@@ -43,6 +55,7 @@ class StraumurCheckout {
     this.paymentMethods = initialization.paymentMethods;
     this.initializationFailed = initialization.initializationFailed;
     this.i18n = new I18nService(this.configuration.locale, this.configuration.customLocalizations);
+    this.configuration.logger.start();
   }
 
   async mount(selector: HTMLElement | string): Promise<void> {
@@ -50,17 +63,24 @@ class StraumurCheckout {
     try {
       this.mountElement = typeof selector === "string" ? document.querySelector(selector) : selector;
       this.resultScreen = null;
+      this.configuration.logger.log("lifecycle.mount");
 
       if (!this.mountElement) {
         return;
       }
 
       if (this.initializationFailed) {
+        this.configuration.logger.log("lifecycle.mountFailed", {
+          errorKey: "error.failedToInitializeStraumurWebComponent",
+        });
         this.handleError({ key: "error.failedToInitializeStraumurWebComponent" });
         return;
       }
 
       if (this.configuration.mode === "advanced") {
+        if (this.paymentMethods) {
+          this.configuration.logger.log("lifecycle.methodsLoaded", describePaymentMethods(this.paymentMethods));
+        }
         this.renderComponent();
         return;
       }
@@ -73,17 +93,20 @@ class StraumurCheckout {
       const response = await setupPaymentMethods(this.configuration.environment, this.configuration.sessionId!);
 
       if (response.resultCode === "Error") {
+        this.configuration.logger.log("lifecycle.mountFailed", { errorKey: response.error });
         this.handleError({ key: response.error });
         return;
       }
 
       this.paymentMethods = response;
+      this.configuration.logger.log("lifecycle.methodsLoaded", describePaymentMethods(response));
 
       this.renderComponent();
     } catch (error) {
       // Never throw into the host page, but leave a trace for the merchant's console — and replace
       // the loader, which would otherwise spin forever.
       console.error("[StraumurCheckout] mount() failed:", error);
+      this.configuration.logger.log("lifecycle.mountFailed", { errorKey: "error.failedToInitializePaymentMethods" });
       this.handleError({ key: "error.failedToInitializePaymentMethods" });
     }
   }
@@ -145,6 +168,10 @@ class StraumurCheckout {
         return;
       }
 
+      this.configuration.logger.log("payment.redirectReturn", {
+        hasPaymentCheckoutReference: !!paymentCheckoutReference,
+      });
+
       // The shopper just landed back from the 3DS/Kortalán redirect: show progress while /details runs.
       if (this.mountElement) {
         render(
@@ -173,6 +200,8 @@ class StraumurCheckout {
   }
 
   updateConfig(newConfig: StraumurCheckoutUpdateOptions): void {
+    // Option names only, never their values (callbacks, localization strings).
+    this.configuration.logger.log("lifecycle.updateConfig", { keys: Object.keys(newConfig ?? {}).join(",") });
     const { locale, localizations, customLocalizations, theme, ...rest } = newConfig;
 
     // IIFE consumers get no type checking: refuse the fields that are fixed for the instance's
@@ -218,13 +247,17 @@ class StraumurCheckout {
   }
 
   setLanguage(locale: PublicLocale): void {
+    this.configuration.logger.log("lifecycle.setLanguage", { locale });
     this.updateConfig({
       locale: locale,
     });
   }
 
   destroy(): void {
-    // Clean up resources
+    // Send what is queued now: the host may remove the page next.
+    this.configuration.logger.log("lifecycle.destroy");
+    this.configuration.logger.stop();
+
     if (this.mountElement) {
       render(null, this.mountElement);
       this.mountElement = null;
@@ -245,6 +278,7 @@ class StraumurCheckout {
     }
 
     const triggered = this.submitApi.triggerSubmit();
+    this.configuration.logger.log("ui.submitCardCalled", { accepted: triggered });
 
     if (!triggered) {
       console.warn(

@@ -1,4 +1,7 @@
 import { defineConfig } from "tsup";
+import { readFileSync } from "node:fs";
+
+const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string };
 
 export default defineConfig({
   entry: ["src/index.ts"],
@@ -10,6 +13,8 @@ export default defineConfig({
   // Maps are generated for local debugging but excluded from the npm package ("files" in package.json).
   sourcemap: true,
   bundle: true,
+  // Sent with every diagnostics log batch as componentVersion.
+  define: { __STRAUMUR_VERSION__: JSON.stringify(version) },
   // Nothing is forced external, but tsup still externalizes package.json `dependencies` (preact,
   // @adyen/adyen-web) for the ESM/CJS builds — the merchant's bundler resolves them. Only the IIFE
   // inlines everything, so the CDN <script> is self-contained.

@@ -7,6 +7,7 @@ import { I18nService } from "../../src/localizations/i18n-service";
 import { SuccessResponse } from "../../src/services/models";
 import { StraumurCheckoutConfiguration, StraumurWebAdvancedConfiguration } from "../../src/models/models";
 import { createSessionPaymentFlow } from "../../src/flows/payment-flow";
+import { NOOP_LOGGER } from "../../src/logging/component-logger";
 
 /**
  * A Success payment-methods response with sensible defaults; override any slice per test.
@@ -63,6 +64,7 @@ export function baseConfig(overrides: Partial<StraumurCheckoutConfiguration> = {
     paymentFlow: createSessionPaymentFlow("test", "s1"),
     locale: "en-US",
     theme: "light",
+    logger: NOOP_LOGGER,
     ...overrides,
   };
 }

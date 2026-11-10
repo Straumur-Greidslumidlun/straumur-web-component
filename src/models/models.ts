@@ -3,6 +3,7 @@ import { PublicLocale } from "../localizations/locale";
 import { OpenDefaultPaymentMethod, PaymentMethod, PaymentMethodOrder } from "./constants";
 import { ICreateDetailsBody, ICreatePaymentBody } from "../adapter/models";
 import { PaymentMethodsResponse } from "../services/models";
+import { Logger } from "../logging/component-logger";
 
 // configuration options shared by both session and advanced mode
 type StraumurWebBaseConfiguration = {
@@ -48,6 +49,13 @@ type StraumurWebBaseConfiguration = {
    * Defaults to "light".
    */
   theme?: Theme | ThemeConfiguration;
+  /**
+   * Sends diagnostics logs of the checkout to Straumur, so payment problems can be investigated. Defaults to true;
+   * pass false to turn it off. Logs are events (for example "payment method selected", "pay clicked", the payment
+   * result code) with timestamps. They never contain card data, wallet or 3-D Secure payloads, stored-card tokens,
+   * or shopper details such as name or email.
+   */
+  enableLogging?: boolean;
 };
 
 /**
@@ -121,6 +129,8 @@ export type StraumurWebAdvancedConfiguration = StraumurWebBaseConfiguration & {
    * Keep it synchronous when Apple Pay is offered — the payment sheet must open within the user gesture.
    */
   onBeforeSubmit?: () => boolean | Promise<boolean>;
+  /** Identifies this checkout to the diagnostics logs (advanced mode has no sessionId). Without it nothing is logged. */
+  checkoutReference?: string;
 };
 
 // INTERNAL — union the constructor actually accepts at runtime (public signature stays session-only)
@@ -237,6 +247,8 @@ export type StraumurCheckoutConfiguration = {
   theme: Theme;
   googlePayButtonTheme?: GooglePayButtonTheme;
   applePayButtonTheme?: ApplePayButtonTheme;
+  /** Created once per instance; updateConfig/setLanguage carry the same logger into the new configuration. */
+  logger: Logger;
 };
 
 /**

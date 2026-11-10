@@ -64,8 +64,18 @@ for (const file of ["dist/index.d.ts", "dist/index.d.cts"]) {
   check(existsSync(file), `types: ${file} is missing`);
 }
 
+// Diagnostics logging: the opt-out is public; the hosted-only checkoutReference stays internal.
+if (existsSync("dist/index.d.ts")) {
+  const declarations = readFileSync("dist/index.d.ts", "utf8");
+  check(/enableLogging\?: boolean/.test(declarations), "types: enableLogging?: boolean is not in the public config");
+  check(
+    !declarations.includes("checkoutReference"),
+    "types: the internal checkoutReference leaked into dist/index.d.ts"
+  );
+}
+
 if (failures.length > 0) {
   console.error(`Dist smoke test FAILED:\n  - ${failures.join("\n  - ")}`);
   process.exit(1);
 }
-console.log("Dist smoke test passed (IIFE mount/render/destroy, inlined fonts, ESM, CJS, types).");
+console.log("Dist smoke test passed (IIFE mount/render/destroy, inlined fonts, ESM, CJS, types, logging option).");

@@ -1,6 +1,11 @@
 import { defineConfig } from "vitest/config";
+import { readFileSync } from "node:fs";
+
+const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string };
 
 export default defineConfig({
+  // Same define as tsup.config.ts: the component version sent with diagnostics logs.
+  define: { __STRAUMUR_VERSION__: JSON.stringify(version) },
   // The source uses Preact's classic JSX runtime (jsxFactory "h"), matching tsconfig.json. Vite 8
   // (Vitest 4) transforms with oxc, not esbuild — an `esbuild.jsx` block here is silently ignored.
   oxc: {

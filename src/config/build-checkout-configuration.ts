@@ -12,6 +12,8 @@ import { createAdvancedPaymentFlow, createSessionPaymentFlow } from "../flows/pa
 import { normalizeLocale, normalizeLocalizations } from "../localizations/locale";
 import { normalizeAdvancedConfiguration } from "../services/advanced-normalizer";
 import { SuccessResponse } from "../services/models";
+import { createComponentLogger, LogIdentifier, Logger, NOOP_LOGGER } from "../logging/component-logger";
+import { env } from "../env";
 
 // Session mode has no countryCode input and the payment-methods response carries none,
 // so it is fixed to Iceland until the backend provides one.
@@ -57,6 +59,43 @@ export function isValidAdvancedConfiguration(config: StraumurWebAdvancedConfigur
   );
 }
 
+// Session mode logs against the sessionId; the internal advanced mode (Hosted Checkout) against the
+// checkoutReference the host page passes. Without either, the checkout cannot be matched and nothing is logged.
+export function getLogIdentifier(config: StraumurWebInternalConfiguration, isSession: boolean): LogIdentifier | null {
+  if (isSession) {
+    return { sessionId: config.sessionId! };
+  }
+
+  const checkoutReference = (config as StraumurWebAdvancedConfiguration).checkoutReference;
+
+  return typeof checkoutReference === "string" && checkoutReference.length > 0 ? { checkoutReference } : null;
+}
+
+function createLogger(
+  config: StraumurWebInternalConfiguration,
+  isSession: boolean,
+  theme: Theme,
+  locale: string
+): Logger {
+  try {
+    if (config.environment !== "test" && config.environment !== "live") {
+      return NOOP_LOGGER;
+    }
+
+    const baseUrl = config.environment === "live" ? env.PRODUCTION_BASE_URL : env.STAGING_BASE_URL;
+
+    return createComponentLogger({
+      enabled: config.enableLogging !== false,
+      url: `${baseUrl}/${env.POST_COMPONENT_LOGS_URL}`,
+      identifier: getLogIdentifier(config, isSession),
+      componentVersion: __STRAUMUR_VERSION__,
+      context: { mode: isSession ? "session" : "advanced", locale, theme },
+    });
+  } catch {
+    return NOOP_LOGGER;
+  }
+}
+
 export interface CheckoutInitialization {
   configuration: StraumurCheckoutConfiguration;
   /** Advanced mode only: the configuration normalized into a session-style Success response. */
@@ -98,6 +137,7 @@ export function buildCheckoutConfiguration(publicConfig: StraumurWebConfiguratio
     theme: themeConfig.theme,
     googlePayButtonTheme: themeConfig.googlePayButtonTheme,
     applePayButtonTheme: themeConfig.applePayButtonTheme,
+    logger: createLogger(config, isSession, themeConfig.theme, locale),
   };
 
   if (isSession) {
