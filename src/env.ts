@@ -7,6 +7,7 @@ const getEnv = (): Env => {
     POST_PAYMENT_URL: "payment",
     POST_DETAILS_URL: "details",
     POST_DISABLE_TOKEN_URL: "disable-token",
+    POST_COMPONENT_LOGS_URL: "component-logs",
   };
 };
 
@@ -18,6 +19,7 @@ interface Env {
   POST_PAYMENT_URL: string;
   POST_DETAILS_URL: string;
   POST_DISABLE_TOKEN_URL: string;
+  POST_COMPONENT_LOGS_URL: string;
 }
 
 export const env = getEnv();

@@ -1,0 +1,138 @@
+/* Animated success / failure result icons.
+   Colors come from the palette tokens (var(--straumur__color-*)) so they adapt to light/dark
+   automatically; all motion is disabled under prefers-reduced-motion (final state shown). */
+
+.straumur__result-icon {
+  display: block;
+}
+
+.straumur__result-icon__ring,
+.straumur__result-icon__check,
+.straumur__result-icon__x,
+.straumur__result-icon__halo,
+.straumur__result-icon__cross {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Colored ring that draws itself in */
+.straumur__result-icon__ring {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: straumur-result-draw 0.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+/* Soft expanding pulse behind the ring */
+.straumur__result-icon__halo {
+  opacity: 0;
+  animation: straumur-result-halo 0.9s 0.45s ease-out;
+}
+
+/* Success checkmark: draws after the ring, then a little pop */
+.straumur__result-icon__check {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation:
+    straumur-result-draw 0.4s 0.55s cubic-bezier(0.65, 0, 0.35, 1) forwards,
+    straumur-result-pop 0.45s 0.9s ease-out;
+}
+
+/* Failure cross: two strokes drawn in sequence, then a subtle shake */
+.straumur__result-icon__x {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: straumur-result-draw 0.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.straumur__result-icon__x--1 {
+  animation-delay: 0.6s;
+}
+.straumur__result-icon__x--2 {
+  animation-delay: 0.82s;
+}
+.straumur__result-icon__cross {
+  animation: straumur-result-shake 0.4s 1.15s ease-in-out;
+}
+
+/* Theme-aware colors */
+.straumur__result-icon--success .straumur__result-icon__ring,
+.straumur__result-icon--success .straumur__result-icon__check {
+  stroke: var(--straumur__color-success);
+}
+.straumur__result-icon--success .straumur__result-icon__halo {
+  fill: var(--straumur__color-success);
+}
+.straumur__result-icon--failure .straumur__result-icon__ring,
+.straumur__result-icon--failure .straumur__result-icon__x {
+  stroke: var(--straumur__color-danger-text);
+}
+.straumur__result-icon--failure .straumur__result-icon__halo {
+  fill: var(--straumur__color-danger-text);
+}
+
+@keyframes straumur-result-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes straumur-result-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes straumur-result-halo {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+@keyframes straumur-result-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+/* Respect reduced-motion: no animation, show the completed icon. */
+@media (prefers-reduced-motion: reduce) {
+  .straumur__result-icon__ring,
+  .straumur__result-icon__check,
+  .straumur__result-icon__x,
+  .straumur__result-icon__halo,
+  .straumur__result-icon__cross {
+    animation: none;
+  }
+  .straumur__result-icon__ring,
+  .straumur__result-icon__check,
+  .straumur__result-icon__x {
+    stroke-dashoffset: 0;
+  }
+  .straumur__result-icon__halo {
+    opacity: 0;
+  }
+}

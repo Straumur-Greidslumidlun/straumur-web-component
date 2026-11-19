@@ -1,6 +1,6 @@
 import { h, Fragment } from "preact";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/preact";
+import { screen, waitFor, fireEvent } from "@testing-library/preact";
 
 const A = vi.hoisted(() => {
   const cap: any = { gpayAvailable: true, apayAvailable: true };
@@ -64,7 +64,10 @@ describe("GooglePayComponent gating", () => {
 
   it("renders nothing when Google Pay is configured as an instant payment", () => {
     renderInGroup(
-      <GooglePayComponent configuration={baseConfig({ instantPayments: ["googlepay"] })} paymentMethods={gpayMethods} />,
+      <GooglePayComponent
+        configuration={baseConfig({ instantPayments: ["googlepay"] })}
+        paymentMethods={gpayMethods}
+      />,
       { hasGooglePay: true }
     );
     expect(screen.queryByText("Google Pay")).toBeNull();
@@ -110,7 +113,10 @@ describe("InstantPaymentsComponent", () => {
 
   it("renders nothing when the configured instant method is not available in the response", () => {
     const { container } = renderInGroup(
-      <InstantPaymentsComponent configuration={baseConfig({ instantPayments: ["googlepay"] })} paymentMethods={gpayMethods} />,
+      <InstantPaymentsComponent
+        configuration={baseConfig({ instantPayments: ["googlepay"] })}
+        paymentMethods={gpayMethods}
+      />,
       { hasGooglePay: false }
     );
     expect(container.querySelector(".instant-payments")).toBeNull();
@@ -118,10 +124,37 @@ describe("InstantPaymentsComponent", () => {
 
   it("renders the instant-payments wrapper for a configured, available method", () => {
     const { container } = renderInGroup(
-      <InstantPaymentsComponent configuration={baseConfig({ instantPayments: ["googlepay"] })} paymentMethods={gpayMethods} />,
+      <InstantPaymentsComponent
+        configuration={baseConfig({ instantPayments: ["googlepay"] })}
+        paymentMethods={gpayMethods}
+      />,
       { hasGooglePay: true }
     );
     expect(container.querySelector(".instant-payments")).toBeTruthy();
+  });
+
+  it("drops a wallet that reports unavailable at runtime, collapsing its cell", async () => {
+    // Both wallets are present in the response (so both mount and run isAvailable), but Apple Pay
+    // rejects at runtime. The strip must unmount the Apple Pay element rather than leave an empty
+    // fixed-height cell behind, and fall back to the single-column layout.
+    A.cap.apayAvailable = false;
+    const bothMethods = makePaymentMethods({
+      paymentMethods: { paymentMethods: [googlePayMethod(), applePayMethod()] },
+    });
+    const { container } = renderInGroup(
+      <InstantPaymentsComponent
+        configuration={baseConfig({ instantPayments: ["googlepay", "applepay"] })}
+        paymentMethods={bothMethods}
+      />,
+      { hasGooglePay: true, hasApplePay: true }
+    );
+
+    const wrapper = container.querySelector(".instant-payments")!;
+    await waitFor(() => {
+      // Only the available (Google Pay) wallet element survives; the Apple Pay cell is gone.
+      expect(wrapper.querySelectorAll(":scope > div").length).toBe(1);
+      expect(wrapper.className).toContain("instant-payments--single");
+    });
   });
 
   it("filters out invalid entries and keeps only available wallets", () => {
