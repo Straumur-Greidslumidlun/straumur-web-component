@@ -11,9 +11,9 @@ interface KortalanStandaloneButtonProps {
 }
 
 /**
- * Kortalán rendered as a button on its own, used when it is the widget's only payment method: there
- * is nothing to choose between, so the radio row collapses to a single call to action (Figma node
- * 2253:2713). It triggers the same native redirect flow as the row (via useKortalanPay).
+ * Kortalán's branded one-click button (Figma nodes 2253:2713 and 2635:3047), shown inside
+ * KortalanInstantCard when Kortalán is in `instantPayments` or is the only payment method. It
+ * triggers the same native redirect flow as the row (via useKortalanPay).
  *
  * The button has one fixed brand appearance and takes no theme input: like the Google Pay / Apple Pay
  * buttons, its colors belong to the provider, so the widget theme never restyles it.
@@ -34,7 +34,7 @@ function KortalanStandaloneButton({ configuration }: KortalanStandaloneButtonPro
       onClick={() => void pay()}
     >
       <StraumurSymbol />
-      <span>{i18n.t("kortalan.title")}</span>
+      <span>{i18n.t("kortalan.brandButton")}</span>
     </button>
   );
 }

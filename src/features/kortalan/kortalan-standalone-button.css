@@ -1,10 +1,5 @@
-/* Kortalán as the widget's only payment method, per Figma node 2253:2713: brand-blue fill, green
-   symbol + label, 16px radius, 30px side padding, 8px gap.
-
-   Height deliberately matches a COLLAPSED payment-method row rather than the design's 76px, so a
-   Kortalán-only widget is the same size as the same widget with other methods present. That height is
-   the row's own box model: its vertical padding twice, plus the tallest thing in the row header (the
-   26px Straumur x Kortalán lockup). Keep this in sync if either changes.
+/* Kortalán's branded button inside KortalanInstantCard, per Figma nodes 2253:2713 and 2635:3047:
+   brand-blue fill, green symbol + label, 76px high, 16px radius, 30px side padding, 8px gap.
 
    The colors are the provider's, so — exactly like the Google Pay / Apple Pay buttons, which can only
    be the literal black or white the wallet ships — they are fixed and NOT overridden by the dark
@@ -15,7 +10,7 @@
   justify-content: center;
   gap: var(--straumur__space-s);
   width: 100%;
-  height: calc(var(--straumur__space-xxlg) * 2 + 26px);
+  height: 76px;
   padding: 0 30px;
   background: var(--straumur__color-kortalan-standalone-bg);
   color: var(--straumur__color-kortalan-standalone-ink);

@@ -29,9 +29,10 @@ type StraumurWebBaseConfiguration = {
   allowedPaymentMethods?: PaymentMethod[];
   /**
    * Top-to-bottom order of the payment-method options. Tokens: "card", "storedcard", "kortalan",
-   * "googlepay", "applepay", and "instantpayments" (the express row). A method listed in
+   * "googlepay", "applepay", and "instantpayments" (the express row). A wallet listed in
    * `instantPayments` renders only inside the "instantpayments" slot, never standalone, so its
-   * standalone token here is effectively ignored. Any available method you omit is appended in the
+   * standalone token here is effectively ignored. Kortalán listed in `instantPayments` keeps the
+   * "kortalan" slot and renders there as its own card. Any available method you omit is appended in the
    * default order. Defaults to ["instantpayments", "kortalan", "storedcard", "card", "googlepay", "applepay"].
    */
   orderPaymentMethods?: PaymentMethodOrder[];
@@ -218,12 +219,13 @@ export interface PaymentFlow {
 export type ResultMessage = { key: TranslationKey } | { text: string };
 
 /**
- * A payment method that can be placed in `instantPayments` to render as an express button at the top
- * of the widget: the two Adyen wallets. Kortalán is deliberately NOT expressible here — it cannot be
- * rendered in the express strip. Duplicates are ignored at runtime (the instant strip dedupes), so
- * this is a plain array rather than a unique-tuple union.
+ * A payment method that can be placed in `instantPayments` to pay in one click, without a radio row.
+ * The two wallets render as express buttons in the "instantpayments" row. Kortalán never joins that
+ * row: it renders as its own card (a heading plus the branded button) in the "kortalan" slot of
+ * `orderPaymentMethods`. Duplicates are ignored at runtime, so this is a plain array rather than a
+ * unique-tuple union.
  */
-export type InstantPaymentMethod = Extract<PaymentMethod, "googlepay" | "applepay">;
+export type InstantPaymentMethod = Extract<PaymentMethod, "googlepay" | "applepay" | "kortalan">;
 
 // this will be used for internal configuration of the checkout component
 export type StraumurCheckoutConfiguration = {

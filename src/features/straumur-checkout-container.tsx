@@ -31,8 +31,9 @@ export function determineInitialState(
 ): { initialPaymentMethod: PaymentMethod | null; isSolePaymentMethod: boolean } {
   const gpayInStandard = hasGooglePay && !instantPayments?.some((x) => x === "googlepay");
   const apayInStandard = hasApplePay && !instantPayments?.some((x) => x === "applepay");
-  // Kortalán cannot be an express button, so it is always a standard option when available.
-  const kortalanInStandard = hasKortalan;
+  // Kortalán in instantPayments renders as its own one-click card, not a radio row, so like an instant
+  // wallet it is not a standard option.
+  const kortalanInStandard = hasKortalan && !instantPayments?.some((x) => x === "kortalan");
 
   const totalOptions =
     storedCount +
@@ -101,7 +102,8 @@ function StraumurCheckoutContainer({
     initialPaymentMethod === "storedcard" && !isSolePaymentMethod ? (stored[0]?.id ?? null) : null;
 
   // Each component self-guards on availability and instant-vs-standalone; the order only controls
-  // which slot renders where. A wallet in instantPayments returns null from its standalone slot.
+  // which slot renders where. A wallet in instantPayments returns null from its standalone slot;
+  // Kortalán in instantPayments renders its one-click card in its own "kortalan" slot.
   const componentsBySlot: Record<PaymentMethodOrder, h.JSX.Element> = {
     instantpayments: (
       <InstantPaymentsComponent key="instantpayments" configuration={configuration} paymentMethods={paymentMethods} />

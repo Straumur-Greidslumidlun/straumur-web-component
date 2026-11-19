@@ -36,6 +36,7 @@ import InstantPaymentsComponent from "../src/features/instantPayments/instant-pa
 import KortalanComponent from "../src/features/kortalan/kortalan-component";
 import { renderInGroup, baseConfig, makePaymentMethods, googlePayMethod, applePayMethod } from "./helpers/fixtures";
 import { PaymentFlow } from "../src/models/models";
+import { I18nService } from "../src/localizations/i18n-service";
 
 function makeRedirectFlow(overrides: Partial<PaymentFlow> = {}): PaymentFlow {
   return {
@@ -52,8 +53,8 @@ const walletMethods = makePaymentMethods({
   paymentMethods: { paymentMethods: [googlePayMethod(), applePayMethod()] },
 });
 
-// Kortalán as the sole payment method renders as a single branded button instead of a one-option
-// radio chooser. It is deliberately NOT expressible in instantPayments — it cannot render there.
+// Kortalán as the sole payment method renders as its one-click card (heading + branded button) instead
+// of a one-option radio chooser. In instantPayments it renders the same card, never in the wallet row.
 describe("Kortalán standalone button", () => {
   const renderSole = (configuration = baseConfig()) =>
     renderInGroup(<KortalanComponent configuration={configuration} paymentMethods={makePaymentMethods()} />, {
@@ -71,19 +72,22 @@ describe("Kortalán standalone button", () => {
     expect(button.textContent).toContain("Kortalán");
   });
 
-  it("keeps its height tied to the collapsed row's box model", () => {
-    // A Kortalán-only widget must be the same size as the same widget with other methods present, so
-    // the button's height is the row's own box model: 2x the row's vertical padding token + the 26px
-    // brand lockup. jsdom never applies the bundled CSS, so assert the declarations themselves -
-    // this fails if the row's padding token changes without the button following.
-    const rowCss = readFileSync(
-      join(process.cwd(), "src/components/payment-method-item/payment-method-item.css"),
-      "utf8"
+  it("renders inside the card under the localized heading", () => {
+    const { container } = renderSole();
+    const card = container.querySelector(".straumur__kortalan-instant-card")!;
+
+    expect(card).toBeTruthy();
+    expect(card.querySelector(".straumur__kortalan-instant-card__title")?.textContent).toBe(
+      "Split your payment with Straumur Kortalán"
     );
+    expect(card.querySelector(".straumur__kortalan-standalone-button")?.textContent).toBe("Straumur Kortalán");
+  });
+
+  it("uses the design's 76px button height", () => {
+    // jsdom never applies the bundled CSS, so assert the declaration itself (Figma node 2635:3047).
     const buttonCss = readFileSync(join(process.cwd(), "src/features/kortalan/kortalan-standalone-button.css"), "utf8");
 
-    expect(rowCss).toContain("padding: var(--straumur__space-xxlg) var(--straumur__space-5xlg);");
-    expect(buttonCss).toContain("height: calc(var(--straumur__space-xxlg) * 2 + 26px);");
+    expect(buttonCss).toContain("height: 76px;");
   });
 
   it("renders one fixed brand appearance - no theme variants, in either widget theme", () => {
@@ -109,7 +113,7 @@ describe("Kortalán standalone button", () => {
 
     try {
       renderSole(baseConfig({ paymentFlow }));
-      fireEvent.click(await screen.findByText("Kortalán"));
+      fireEvent.click(await screen.findByText("Straumur Kortalán"));
 
       await waitFor(() =>
         expect(paymentFlow.submitPayment).toHaveBeenCalledWith(
@@ -122,12 +126,12 @@ describe("Kortalán standalone button", () => {
     }
   });
 
-  it("is never rendered in the instant strip, even if a JS caller forces the token", () => {
-    // The public type excludes "kortalan", but an untyped caller can still pass it - the strip must
-    // drop it rather than try to render a button it has no slot for.
+  it("is never rendered in the wallet row, even when listed in instantPayments", () => {
+    // "kortalan" is a valid instantPayments token, but it renders as its own card in the "kortalan"
+    // slot; the wallet row must skip it.
     const { container } = renderInGroup(
       <InstantPaymentsComponent
-        configuration={baseConfig({ instantPayments: ["kortalan" as never, "googlepay"] })}
+        configuration={baseConfig({ instantPayments: ["kortalan", "googlepay"] })}
         paymentMethods={walletMethods}
       />,
       { hasKortalan: true, hasGooglePay: true, hasApplePay: true }
@@ -136,5 +140,30 @@ describe("Kortalán standalone button", () => {
     expect(container.querySelector(".straumur__kortalan-standalone-button")).toBeNull();
     // The valid wallet token beside it still renders, so the drop is targeted, not a bail-out.
     expect(container.querySelectorAll(".straumur__instant-payments > div").length).toBe(1);
+  });
+
+  it("renders the card, not the radio row, when listed in instantPayments beside other methods", () => {
+    const { container } = renderInGroup(
+      <KortalanComponent
+        configuration={baseConfig({ instantPayments: ["kortalan"] })}
+        paymentMethods={makePaymentMethods()}
+      />,
+      { hasKortalan: true, hasCard: true, isSolePaymentMethod: false }
+    );
+
+    expect(container.querySelector(".straumur__kortalan-instant-card")).toBeTruthy();
+    expect(container.querySelector(".straumur__payment-method-item")).toBeNull();
+  });
+
+  it("shows the Icelandic heading", () => {
+    const { container } = renderInGroup(
+      <KortalanComponent configuration={baseConfig()} paymentMethods={makePaymentMethods()} />,
+      { hasKortalan: true, isSolePaymentMethod: true, initialValue: "kortalan" },
+      new I18nService("is-IS")
+    );
+
+    expect(container.querySelector(".straumur__kortalan-instant-card__title")?.textContent).toBe(
+      "Dreifðu greiðslu með Straumur Kortalán"
+    );
   });
 });

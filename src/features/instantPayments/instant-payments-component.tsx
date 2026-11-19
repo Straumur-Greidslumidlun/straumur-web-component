@@ -12,8 +12,9 @@ interface InstantPaymentsComponentProps {
   paymentMethods: SuccessResponse;
 }
 
-// The methods that may render as express buttons. Used only to validate the configured tokens — the
-// render order follows the merchant's `instantPayments` array, not this list.
+// The methods that render in this express row. Used only to validate the configured tokens — the
+// render order follows the merchant's `instantPayments` array, not this list. "kortalan" is a valid
+// instantPayments token but never renders here: KortalanComponent shows it as its own card.
 const INSTANT_METHODS: InstantPaymentMethod[] = ["googlepay", "applepay"];
 
 function InstantPaymentsComponent({

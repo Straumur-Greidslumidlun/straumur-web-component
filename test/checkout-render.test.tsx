@@ -46,6 +46,7 @@ import {
   googlePayMethod,
   applePayMethod,
   storedCard,
+  kortalanMethod,
 } from "./helpers/fixtures";
 
 function renderCheckout(paymentMethods: any, config = baseConfig()) {
@@ -119,6 +120,32 @@ describe("StraumurCheckoutContainer rendering", () => {
     expect(screen.queryByText("Apple Pay")).toBeNull();
     // ...and card still renders as a standard method.
     expect(screen.getByText("Card number")).toBeTruthy();
+  });
+
+  it("renders instant Kortalán as its own card in the kortalan slot, outside the wallet row", async () => {
+    const { container } = renderCheckout(
+      makePaymentMethods({
+        paymentMethods: {
+          paymentMethods: [scheme(), googlePayMethod(), applePayMethod(), kortalanMethod()],
+          storedPaymentMethods: [storedCard()],
+        },
+      }),
+      baseConfig({
+        instantPayments: ["googlepay", "applepay", "kortalan"],
+        orderPaymentMethods: ["instantpayments", "storedcard", "card", "kortalan"],
+      })
+    );
+
+    await waitFor(() => expect(container.querySelectorAll(".straumur__instant-payments > div").length).toBe(2));
+    const row = container.querySelector(".straumur__instant-payments")!;
+    const card = container.querySelector(".straumur__kortalan-instant-card")!;
+
+    // The wallet row holds only the two wallets; Kortalán has no radio row.
+    expect(row.querySelector(".straumur__kortalan-standalone-button")).toBeNull();
+    expect(screen.queryByText("Kortalán")).toBeNull();
+    // orderPaymentMethods puts the kortalan slot last: the card follows the card-payment row.
+    const cardRow = screen.getByText("Card payment").closest(".straumur__payment-method-item")!;
+    expect(cardRow.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("opens the requested payment method on load (openDefaultPaymentMethod)", () => {

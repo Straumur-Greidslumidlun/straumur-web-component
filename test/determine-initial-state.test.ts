@@ -102,8 +102,8 @@ describe("determineInitialState", () => {
     });
   });
 
-  it("always counts Kortalán as a standard option, even alongside instant wallets", () => {
-    // Kortalán cannot be an express button, so instantPayments never diverts it.
+  it("counts Kortalán as a standard option when it is not in instantPayments", () => {
+    // Only the wallets are instant here, so Kortalán stays a standard option.
     expect(determineInitialState(false, false, false, true, 0, ["googlepay"])).toEqual({
       initialPaymentMethod: "kortalan",
       isSolePaymentMethod: true,
@@ -123,6 +123,30 @@ describe("determineInitialState", () => {
     expect(determineInitialState(false, true, true, true, 0, ["googlepay", "applepay"])).toEqual({
       initialPaymentMethod: "kortalan",
       isSolePaymentMethod: true,
+    });
+  });
+});
+
+describe("determineInitialState — Kortalán in instantPayments", () => {
+  it("does not count instant Kortalán as a standard option, so card is sole", () => {
+    expect(determineInitialState(true, false, false, true, 0, ["kortalan"])).toEqual({
+      initialPaymentMethod: "card",
+      isSolePaymentMethod: true,
+    });
+  });
+
+  it("leaves nothing selected when instant Kortalán is the only method", () => {
+    // Its card renders on its own; there is no standard option to select.
+    expect(determineInitialState(false, false, false, true, 0, ["kortalan"])).toEqual({
+      initialPaymentMethod: null,
+      isSolePaymentMethod: false,
+    });
+  });
+
+  it("keeps the chooser when other standard options remain", () => {
+    expect(determineInitialState(true, false, false, true, 1, ["kortalan"])).toEqual({
+      initialPaymentMethod: null,
+      isSolePaymentMethod: false,
     });
   });
 });
