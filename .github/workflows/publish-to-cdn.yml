@@ -91,7 +91,7 @@ jobs:
 
       # The SRI hash only exists once this exact file is built, so it is published from here: into the
       # run summary and into the GitHub Release, whose "For the docs" block is pasted into the
-      # release note in kvika/straumur-documentation ("Updating to this version").
+      # release note in kvika/straumur-documentation (its "Installing" section).
       - name: Generate SRI hash and CDN snippet
         env:
           VERSION: ${{ steps.pkg.outputs.version }}
@@ -119,9 +119,13 @@ jobs:
             echo "<details><summary>For the docs release note</summary>"
             echo ""
             echo '````markdown'
-            echo "## Updating to this version"
+            echo "## Installing"
             echo ""
-            echo "If you load the component with a script tag, use:"
+            echo '```bash'
+            echo "npm install straumur-web-component@^$VERSION"
+            echo '```'
+            echo ""
+            echo "For the script tag, load this version from the Straumur CDN with its integrity hash:"
             echo ""
             echo '```html'
             echo "$TAG"

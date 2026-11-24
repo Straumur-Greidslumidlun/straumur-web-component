@@ -90,7 +90,7 @@ as a ready-to-copy script tag. Always include the SRI hash in production.
 
 **Maintainers:** the "Publish Package to CDN" workflow computes the hash from the uploaded file and adds a "Straumur
 CDN" section to the GitHub Release, including a block for the docs. Paste that block into the version's release note in
-`kvika/straumur-documentation` under "Updating to this version". The hash only exists after the CDN publish, so that
+`kvika/straumur-documentation` as its "Installing" section. The hash only exists after the CDN publish, so that
 docs step always comes last.
 
 The npm package is also available from public CDNs such as `https://unpkg.com/straumur-web-component@2.0.0`
