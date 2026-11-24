@@ -60,12 +60,11 @@ checkout.mount("#component-container");
 ### Using the CDN / script tag (no bundler)
 
 The package also ships an IIFE build that exposes a global `StraumurWeb`. Pin the exact version in
-production — 2.x pre-releases are published under the `next` tag, so an unversioned URL still
-resolves to 1.x:
+production, so a new release can't change the widget under you:
 
 ```html
 <div id="component-container"></div>
-<script src="https://unpkg.com/straumur-web-component@2.0.0-beta.6"></script>
+<script src="https://unpkg.com/straumur-web-component@2.0.0"></script>
 <script>
   const checkout = new StraumurWeb.StraumurCheckout({
     environment: "test",
