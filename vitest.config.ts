@@ -1,11 +1,14 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  // The source uses Preact's classic JSX runtime (jsxFactory "h"), matching tsconfig.json.
-  esbuild: {
-    jsx: "transform",
-    jsxFactory: "h",
-    jsxFragment: "Fragment",
+  // The source uses Preact's classic JSX runtime (jsxFactory "h"), matching tsconfig.json. Vite 8
+  // (Vitest 4) transforms with oxc, not esbuild — an `esbuild.jsx` block here is silently ignored.
+  oxc: {
+    jsx: {
+      runtime: "classic",
+      pragma: "h",
+      pragmaFrag: "Fragment",
+    },
   },
   test: {
     globals: true,
