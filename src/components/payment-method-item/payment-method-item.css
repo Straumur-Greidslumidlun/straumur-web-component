@@ -11,8 +11,26 @@
   cursor: default;
 }
 
-.straumur__payment-method-item:has(.straumur__payment-method-item__radio-selector:checked) {
+.straumur__payment-method-item--active {
   cursor: default;
+}
+
+/* Header row: the label (radio + icon + title) grows; headerRight (brands, Remove) sits at the end. */
+.straumur__payment-method-item__header {
+  display: flex;
+  align-items: center;
+  gap: var(--straumur__space-lg);
+}
+
+/* Spacing between the header and the expanded form. */
+.straumur__payment-method-item__header--expanded {
+  padding-bottom: var(--straumur__space-xxlg);
+}
+
+.straumur__payment-method-item__label {
+  flex: 1;
+  min-width: 0;
+  cursor: inherit;
 }
 
 .straumur__payment-method-item__radio-selector {
@@ -26,16 +44,6 @@
   align-items: center;
   gap: var(--straumur__space-lg);
   transition: background-color 0.3s ease;
-}
-
-/* Padding-bottom when radio checked (non-sole mode) */
-.straumur__payment-method-item__radio-selector:checked + .straumur__payment-method-item__content {
-  padding-bottom: var(--straumur__space-xxlg);
-}
-
-/* Padding-bottom in sole mode (always expanded) */
-.straumur__payment-method-item__content--expanded {
-  padding-bottom: var(--straumur__space-xxlg);
 }
 
 .straumur__payment-method-item--circle {
@@ -68,7 +76,7 @@
 .straumur__payment-method-item__radio-selector:checked
   + .straumur__payment-method-item__content
   .straumur__payment-method-item--circle {
-  background: var(--straumur__color-blue-beta);
+  background: var(--straumur__color-primary);
   border-color: var(--straumur__color-transparent);
 }
 
@@ -76,14 +84,14 @@
   + .straumur__payment-method-item__content
   .straumur__payment-method-item--circle::after {
   transform: translate(-50%, -50%) scale(1);
-  background: var(--straumur__color-primary);
+  background: var(--straumur__color-on-primary);
   height: var(--straumur__space-md);
   width: var(--straumur__space-md);
 }
 
 .straumur__payment-method-item--title {
-  color: #213547;
-  font-size: 1rem;
+  color: var(--straumur__color-text);
+  font-size: 16px;
   user-select: none;
 }
 
@@ -95,13 +103,7 @@
   opacity: 0;
 }
 
-/* Expandable via :checked sibling selector (non-sole mode) */
-.straumur__payment-method-item__radio-selector:checked ~ .straumur__payment-method-item__expandable {
-  max-height: 600px;
-  opacity: 1;
-}
-
-/* Expandable always visible in sole mode */
+/* Expanded when active, or always in sole mode. */
 .straumur__payment-method-item__expandable--visible {
   max-height: 600px;
   opacity: 1;
