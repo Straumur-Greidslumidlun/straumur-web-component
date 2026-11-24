@@ -13,7 +13,7 @@ on:
     branches: [feat/cdn-deploy-versioned-only]
 
 permissions:
-  contents: read
+  contents: write # add the CDN snippet + SRI hash to the GitHub Release
   id-token: write # mint the OIDC token AWS exchanges for short-lived creds
 
 jobs:
@@ -89,19 +89,61 @@ jobs:
             --cache-control "public, max-age=31536000, immutable" \
             --only-show-errors
 
-      - name: Generate SRI hashes and summary
+      # The SRI hash only exists once this exact file is built, so it is published from here: into the
+      # run summary and into the GitHub Release, whose "For the docs" block is pasted into the
+      # release note in kvika/straumur-documentation ("Updating to this version").
+      - name: Generate SRI hash and CDN snippet
         env:
           VERSION: ${{ steps.pkg.outputs.version }}
+          CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
         run: |
-          sri_js=$(openssl dgst -sha384 -binary dist/index.js | openssl base64 -A)
-          DIR="libs/straumur-web-component/$VERSION"
+          if [ -z "$CDN_BASE_URL" ]; then
+            echo "::error::Set the CDN_BASE_URL variable (e.g. https://d1234.cloudfront.net) on the GitHub environment."
+            exit 1
+          fi
+          SRI="sha384-$(openssl dgst -sha384 -binary dist/index.js | openssl base64 -A)"
+          URL="${CDN_BASE_URL%/}/libs/straumur-web-component/$VERSION/index.js"
+          TAG="<script src=\"$URL\" integrity=\"$SRI\" crossorigin=\"anonymous\"></script>"
 
+          # Between markers, so a re-run replaces the section instead of appending it twice.
           {
-            echo "## Straumur Web Component — CDN publish"
+            echo "<!-- cdn-snippet:start -->"
+            echo "## Straumur CDN"
             echo ""
-            echo "**Version:** \`$VERSION\`"
+            echo "Load this version with a pinned URL and its [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) hash:"
             echo ""
-            echo "| Bundle | Path | Integrity |"
-            echo "|---|---|---|"
-            echo "| IIFE (global \`StraumurWeb\`) | \`$DIR/index.js\` | \`sha384-$sri_js\` |"
-          } >> "$GITHUB_STEP_SUMMARY"
+            echo '```html'
+            echo "$TAG"
+            echo '```'
+            echo ""
+            echo "<details><summary>For the docs release note</summary>"
+            echo ""
+            echo '````markdown'
+            echo "## Updating to this version"
+            echo ""
+            echo "If you load the component with a script tag, use:"
+            echo ""
+            echo '```html'
+            echo "$TAG"
+            echo '```'
+            echo '````'
+            echo ""
+            echo "</details>"
+            echo "<!-- cdn-snippet:end -->"
+          } > cdn-snippet.md
+
+          cat cdn-snippet.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Add the CDN snippet to the GitHub Release
+        # Only for a real release: a manual or test run must not edit a published release's notes.
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: |
+          gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" --json body --jq .body > release-body.md
+          # Drop an earlier snippet (re-run), keep everything else as written.
+          sed -i '/<!-- cdn-snippet:start -->/,/<!-- cdn-snippet:end -->/d' release-body.md
+          # $(...) strips trailing newlines, so re-runs don't pile up blank lines.
+          { printf '%s\n\n' "$(cat release-body.md)"; cat cdn-snippet.md; } > release-body-new.md
+          gh release edit "$VERSION" --repo "$GITHUB_REPOSITORY" --notes-file release-body-new.md
