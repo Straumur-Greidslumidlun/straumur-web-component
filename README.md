@@ -59,11 +59,20 @@ checkout.mount("#component-container");
 
 ### Using the CDN / script tag (no bundler)
 
-The package also ships an IIFE build that exposes a global `StraumurWeb`:
+The package also ships an IIFE build that exposes a global `StraumurWeb`, plus an ESM build you can
+import directly from a `<script type="module">`. Both are published to Straumur's CDN on every
+GitHub Release, under an immutable, version-pinned path (recommended for production) and a mutable
+`latest/` path.
+
+**IIFE bundle** — exposes the global `StraumurWeb`:
 
 ```html
 <div id="component-container"></div>
-<script src="https://unpkg.com/straumur-web-component"></script>
+<script
+  src="https://<your-cdn-domain>/libs/straumur-web-component/<version>/index.js"
+  integrity="sha384-..."
+  crossorigin="anonymous"
+></script>
 <script>
   const checkout = new StraumurWeb.StraumurCheckout({
     environment: "test",
@@ -72,6 +81,29 @@ The package also ships an IIFE build that exposes a global `StraumurWeb`:
   checkout.mount("#component-container");
 </script>
 ```
+
+**ESM module:**
+
+```html
+<div id="component-container"></div>
+<script type="module">
+  import { StraumurCheckout } from "https://<your-cdn-domain>/libs/straumur-web-component/<version>/index.mjs";
+
+  const checkout = new StraumurCheckout({
+    environment: "test",
+    sessionId: "ftsdre3h...e5h5as2q4",
+  });
+  checkout.mount("#component-container");
+</script>
+```
+
+The exact versioned URL and the matching [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
+(`integrity`) hash for each release are printed in that release's GitHub Actions run summary (the
+"Publish Package to CDN" workflow). Always pin to a specific version with its SRI hash in
+production; the `latest/` path is convenient for testing but is not integrity-pinned.
+
+The npm package is also available from public CDNs such as `https://unpkg.com/straumur-web-component`,
+which is handy for quick prototypes but is not covered by Straumur's availability guarantees.
 
 ## Configuration
 

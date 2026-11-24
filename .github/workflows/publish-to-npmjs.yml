@@ -15,6 +15,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # Gate: required reviewers on the `production` environment.
+    environment: production
+
     steps:
       - uses: actions/checkout@v4
 
