@@ -1,8 +1,15 @@
 import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/preact";
 
+// Diagnostics logging must not touch the network in tests (existing tests count fetch calls). Every test
+// gets a transport that reports success; test/log-transport.test.ts unmocks it to test the real one.
+vi.mock("../src/logging/log-transport", () => ({
+  LOG_REQUEST_TIMEOUT_MS: 10_000,
+  sendLogBatch: vi.fn(async () => true),
+}));
+
 // jsdom does not implement matchMedia; provide a default (non-matching) stub so components
-// using useMediaQuery render. Individual tests can override window.matchMedia as needed.
+// using it (useResolvedTheme for theme: "system") render. Individual tests can override window.matchMedia as needed.
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({
@@ -17,11 +24,8 @@ if (!window.matchMedia) {
     }) as unknown as MediaQueryList;
 }
 
-// Unmount any Preact trees rendered during a test, then reset mocks. Vitest 4's restoreAllMocks only
-// restores vi.spyOn spies; resetAllMocks keeps the Vitest 3 behaviour of clearing vi.fn() call history
-// and per-test implementation overrides between tests.
+// Unmount any Preact trees rendered during a test.
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
-  vi.resetAllMocks();
 });

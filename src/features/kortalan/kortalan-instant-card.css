@@ -1,0 +1,21 @@
+/* Kortalán's one-click card, per Figma node 2635:3021: a surface card (8px top, 24px sides and bottom),
+   a 20px medium heading inset a further 8px with 18px above and below it, then the branded button.
+   The card surface, radius and text color use the row tokens, so it matches the method rows beside it
+   and follows the widget theme; only the button inside keeps Kortalán's fixed brand colors. */
+.straumur__kortalan-instant-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--straumur__space-s);
+  padding: var(--straumur__space-s) var(--straumur__space-5xlg) var(--straumur__space-5xlg);
+  background: var(--straumur__color-white);
+  border-radius: var(--straumur__border-radius-lg);
+}
+
+.straumur__kortalan-instant-card__title {
+  margin: 0;
+  padding: var(--straumur__space-3xlg) var(--straumur__space-s);
+  color: var(--straumur__color-text);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+}

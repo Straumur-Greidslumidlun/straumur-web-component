@@ -23,6 +23,8 @@ import { setupPaymentMethods } from "../src/services/straumur-service";
 describe("StraumurCheckout.mount error handling", () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="root"></div>';
+    // Each test asserts on call counts, so don't inherit the previous test's calls.
+    vi.clearAllMocks();
   });
 
   it("renders the localized error message when payment-method setup returns an Error result", async () => {

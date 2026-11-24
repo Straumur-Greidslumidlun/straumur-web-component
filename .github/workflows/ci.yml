@@ -4,6 +4,8 @@ on:
   push:
     branches: [dev, main]
   pull_request:
+  # Reused by publish-to-npmjs.yml so nothing is published that wouldn't pass CI.
+  workflow_call:
 
 jobs:
   test:
@@ -21,8 +23,18 @@ jobs:
       - name: Type-check (src + tests)
         run: npm run typecheck
 
-      - name: Run tests
-        run: npm test
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build
+
+      # Loads the built IIFE the way a merchant page does and mounts it; checks the ESM/CJS exports.
+      - name: Smoke-test dist
+        run: npm run test:smoke

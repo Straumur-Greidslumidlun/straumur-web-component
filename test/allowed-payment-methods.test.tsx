@@ -5,6 +5,7 @@ import { render, screen, waitFor } from "@testing-library/preact";
 const A = vi.hoisted(() => {
   class FakeCustomCard {
     mount = vi.fn();
+    remove = vi.fn();
     unmount = vi.fn();
     constructor(_c: unknown, opts: any) {
       opts.onConfigSuccess?.();
