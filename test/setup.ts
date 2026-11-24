@@ -17,8 +17,11 @@ if (!window.matchMedia) {
     }) as unknown as MediaQueryList;
 }
 
-// Unmount any Preact trees rendered during a test.
+// Unmount any Preact trees rendered during a test, then reset mocks. Vitest 4's restoreAllMocks only
+// restores vi.spyOn spies; resetAllMocks keeps the Vitest 3 behaviour of clearing vi.fn() call history
+// and per-test implementation overrides between tests.
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.resetAllMocks();
 });

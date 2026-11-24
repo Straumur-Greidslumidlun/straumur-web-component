@@ -1,6 +1,6 @@
 {
   "name": "straumur-web-component",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "license": "MIT",
   "homepage": "https://docs.straumur.is",
   "type": "module",
@@ -47,6 +47,9 @@
     "tslib": "^2.8.1",
     "tsup": "^8.5.1",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.7"
+    "vitest": "^4.1.12"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1"
   }
 }
